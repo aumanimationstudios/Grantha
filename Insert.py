@@ -23,7 +23,3 @@ except:
 
 db.close()
 
-
-.print(
-
-)
