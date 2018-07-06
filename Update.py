@@ -17,6 +17,7 @@ try:
     cursor = db.cursor()
     cursor.execute(sql)
     cursor.close()
+    print("Item location changed to "+ loc)
 except:
     print "Error: unable to fetch data : "+ str(sys.exc_info())
 
