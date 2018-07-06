@@ -6,6 +6,10 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-u", "--update", help="Update an item", action="store_true")
-parser.add_argument()
+
+args=parser.parse_args()
+
+if args.update:
+    execfile("Update.py")
 
 

@@ -7,10 +7,11 @@ import sys
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
 
-loc = input("location: ")
-iid = input("item_id: ")
+loc = str(raw_input("location: "))
+iid = str(raw_input("item_id: "))
 
-sql = """UPDATE ITEMS SET location = loc WHERE item_id = iid """
+
+sql = """ UPDATE ITEMS SET location = '%s' WHERE item_id = '%s' """ %(loc, iid)
 
 try:
     cursor = db.cursor()
