@@ -3,17 +3,11 @@
 
 import MySQLdb
 import sys
-#import datetime
-#import arrow
-#from datetime import date
-#from datetime import time
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
-iid = str(raw_input("item_id: "))
-
-sql = """SELECT * FROM ITEMS WHERE item_id= %s""" %(iid)
+sql = """SELECT * FROM ITEMS"""
 
 try:
     cursor.execute(sql)
@@ -28,13 +22,11 @@ try:
         item_type = row[6]
         location = row[7]
         user = row[8]
-        print "item_id=%s, serial_no=%s, model=%s, make=%s, purchased_on=%s, warranty_valid_till=%s, item_type=%s, " \
+        print "item_id=%s, serial_no=%s, model=%s,make=%s, purchased_on=%s, warranty_valid_till=%s, item_type=%s, " \
               "location=%s, user=%s" %(item_id,serial_no,model,make,purchased_on,warranty_valid_till,item_type,
                                       location,user)
-        #print row[0:9]
 except:
     print "Error: unable to fetch data : "+ str(sys.exc_info())
 
 cursor.close()
 db.close()
-

@@ -7,9 +7,8 @@ import sys
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
 
-loc = str(raw_input("location: "))
 iid = str(raw_input("item_id: "))
-
+loc = str(raw_input("location: "))
 
 sql = """ UPDATE ITEMS SET location = '%s' WHERE item_id = '%s' """ %(loc, iid)
 
