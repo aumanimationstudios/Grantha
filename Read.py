@@ -12,8 +12,10 @@ db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
 iid = str(raw_input("item_id: "))
+loc = str(raw_input("location: "))
+it = str(raw_input("item_type: "))
 
-sql = """SELECT * FROM ITEMS WHERE item_id= %s""" %(iid)
+sql = """SELECT * FROM ITEMS WHERE item_id= "%s" OR location= "%s" OR item_type= "%s" """ %(iid,loc,it)
 
 try:
     cursor.execute(sql)
