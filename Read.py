@@ -11,6 +11,7 @@ import sys
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
+print "Leave the field blank if not applicable"
 iid = str(raw_input("item_id: "))
 loc = str(raw_input("location: "))
 it = str(raw_input("item_type: "))

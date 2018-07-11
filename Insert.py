@@ -26,7 +26,7 @@ try:
     # db.commit()
     cursor.close()
     #print(db.insert_id())
-    print("Item added "+ str(db.insert_id()))
+    print("Item added, Item_id: "+ str(db.insert_id()))
 except:
     #db.rollback()
     print "Error: unable to fetch data : "+ str(sys.exc_info())
