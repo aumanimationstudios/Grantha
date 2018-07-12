@@ -12,8 +12,9 @@ mdl = str(raw_input("Model: "))
 mk = str(raw_input("Make: "))
 po = str(raw_input("Purchase_Date[YYYY-MM-DD]: "))
 wt = str(raw_input("Warranty_Till[YYYY-MM-DD]: "))
-it = str(raw_input("Item_type: "))
-loc = str(raw_input("Location: "))
+it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD, HARD_DISK, HEADPHONE, KEYBOARD,"
+                   " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, SMPS]: "))
+loc = str(raw_input("Location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
 usr = str(raw_input("User: "))
 
 sql = """INSERT INTO ITEMS (serial_no, model, make, purchased_on,

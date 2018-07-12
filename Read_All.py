@@ -8,7 +8,7 @@ import arrow
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
-sql = """SELECT * FROM ITEMS"""
+sql = """ SELECT * FROM ITEMS """ #ORDER BY item_type """
 
 try:
     cursor.execute(sql)

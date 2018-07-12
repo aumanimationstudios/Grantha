@@ -12,9 +12,10 @@ db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
 print "Leave the field blank if not applicable"
-iid = str(raw_input("item_id: "))
-loc = str(raw_input("location: "))
-it = str(raw_input("item_type: "))
+iid = str(raw_input("Item_id: "))
+loc = str(raw_input("Location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
+it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD, HARD_DISK, HEADPHONE, KEYBOARD,"
+                   " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, SMPS]: "))
 
 sql = """SELECT * FROM ITEMS WHERE item_id= "%s" OR location= "%s" OR item_type= "%s" """ %(iid,loc,it)
 
