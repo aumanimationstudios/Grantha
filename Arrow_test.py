@@ -14,7 +14,7 @@ print(local.timestamp)
 
 print(local.format())
 
-print(local.format('DD-MM-YYYY'))
+print(local.format('DD-MM-YYYY HH:mm:ss'))
 
 print(local.humanize())
 
