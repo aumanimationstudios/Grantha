@@ -3,13 +3,15 @@
 
 import MySQLdb
 import sys
-import arrow
+#import arrow
+import time
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
 
-utc = arrow.utcnow()
-local = utc.to('Asia/Kolkata')
+#utc = arrow.utcnow()
+#local = utc.to('Asia/Kolkata')
+now = time.strftime('%Y-%m-%d %H:%M:%S')
 
 iid = str(raw_input("item_id: "))
 
@@ -29,7 +31,8 @@ try:
     cursor.execute(sql)
     cursor.close()
     print("Item location changed to "+ loc)
-    print(local.format('DD-MM-YYYY HH:mm:ss'))
+    #print(local.format('DD-MM-YYYY HH:mm:ss'))
+    print now
 except:
     print "Error: unable to fetch data : "+ str(sys.exc_info())
 
@@ -37,7 +40,7 @@ cursor = db.cursor()
 for row in results:
     location = row[0]
     cursor.execute(""" INSERT INTO UPDATE_LOG (date_time, item_id, old_location, new_location) VALUES
-              ('%s', '%s', '%s', '%s') """ %(local, iid, location, loc) )
+              ('%s', '%s', '%s', '%s') """ %(now, iid, location, loc) )
 
 db.close()
 
