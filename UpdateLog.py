@@ -3,9 +3,12 @@
 
 import MySQLdb
 import sys
+from colours import *
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
+
+print CGREEN + "Enter Item_id to view Log" + CEND
 
 iid = str(raw_input("Item_id: "))
 

@@ -3,12 +3,11 @@
 
 import MySQLdb
 import sys
-import arrow
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
-sql = """ SELECT * FROM ITEMS """ #ORDER BY item_type """
+sql = """ SELECT * FROM ITEMS """
 
 try:
     cursor.execute(sql)

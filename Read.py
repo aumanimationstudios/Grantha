@@ -3,20 +3,18 @@
 
 import MySQLdb
 import sys
-#import datetime
-#import arrow
-#from datetime import date
-#from datetime import time
+from colours import *
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
-print "Leave the field blank if not applicable"
+print CGREEN + "Read the list for a specific item, location or item type"
+print "Leave the field blank if not applicable" + CEND
+
 iid = str(raw_input("Item_id: "))
 loc = str(raw_input("Location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
 it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD, HARD_DISK, HEADPHONE, KEYBOARD,"
                    " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, SMPS]: "))
-
 sql = """SELECT * FROM ITEMS WHERE item_id= "%s" OR location= "%s" OR item_type= "%s" """ %(iid,loc,it)
 
 try:
@@ -35,7 +33,7 @@ try:
         print "item_id=%s, serial_no=%s, model=%s, make=%s, purchased_on=%s, warranty_valid_till=%s, item_type=%s, " \
               "location=%s, user=%s" %(item_id,serial_no,model,make,purchased_on,warranty_valid_till,item_type,
                                       location,user)
-        #print row[0:9]
+
 except:
     print "Error: unable to fetch data : "+ str(sys.exc_info())
 

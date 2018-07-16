@@ -3,9 +3,12 @@
 
 import MySQLdb
 import sys
+from colours import *
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
+
+print CGREEN + "Enter the Item_id to delete " + CEND
 
 iid = str(raw_input("Item_id: "))
 

@@ -3,15 +3,15 @@
 
 import MySQLdb
 import sys
-#import arrow
 import time
+from colours import *
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
 
-#utc = arrow.utcnow()
-#local = utc.to('Asia/Kolkata')
 now = time.strftime('%Y-%m-%d %H:%M:%S')
+
+print CGREEN + "Enter Item_id to change its location" + CEND
 
 iid = str(raw_input("item_id: "))
 
@@ -31,7 +31,6 @@ try:
     cursor.execute(sql)
     cursor.close()
     print("Item location changed to "+ loc)
-    #print(local.format('DD-MM-YYYY HH:mm:ss'))
     print now
 except:
     print "Error: unable to fetch data : "+ str(sys.exc_info())

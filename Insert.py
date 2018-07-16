@@ -3,9 +3,12 @@
 
 import MySQLdb
 import sys
+from colours import *
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
+
+print CGREEN + "Insert Details of the Item" + CEND
 
 sl = str(raw_input("Serial_No: "))
 mdl = str(raw_input("Model: "))
@@ -24,12 +27,9 @@ sql = """INSERT INTO ITEMS (serial_no, model, make, purchased_on,
 try:
     cursor = db.cursor()
     cursor.execute(sql)
-    # db.commit()
     cursor.close()
-    #print(db.insert_id())
     print("Item added, Item_id: "+ str(db.insert_id()))
 except:
-    #db.rollback()
     print "Error: unable to fetch data : "+ str(sys.exc_info())
 
 db.close()

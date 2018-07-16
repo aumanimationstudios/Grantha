@@ -3,7 +3,7 @@
 
 import argparse
 
-parser = argparse.ArgumentParser(description = 'Inventory management tool')
+parser = argparse.ArgumentParser(description = 'Inventory Management Tool')
 
 parser.add_argument("-r", "--read", help="Read the list for a specific item, location or item type",
                     action="store_true")
