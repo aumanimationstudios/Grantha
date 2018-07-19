@@ -8,8 +8,10 @@ from colours import *
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
 
+#usage message
 print CGREEN + "Insert Details of the Item" + CEND
 
+#user input
 sl = str(raw_input("Serial_No: "))
 mdl = str(raw_input("Model: "))
 mk = str(raw_input("Make: "))
@@ -20,6 +22,7 @@ it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD, HARD_DISK, HEADPHONE, KEYBOA
 loc = str(raw_input("Location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
 usr = str(raw_input("User: "))
 
+#sql query to insert an item to the ITEMS table with user input data
 sql = """INSERT INTO ITEMS (serial_no, model, make, purchased_on,
          warranty_valid_till, item_type, location, user) VALUES 
          ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')""" %(sl, mdl, mk, po, wt, it, loc, usr)

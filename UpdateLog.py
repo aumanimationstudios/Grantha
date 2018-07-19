@@ -9,12 +9,14 @@ from tabulate import tabulate
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
+#usage message
 print CGREEN + "Enter Item_id to view Log" + CEND
 
+#user input
 iid = str(raw_input("Item_id: "))
 
+#sql query to fetch the entries from the UPDATE_LOG table
 sql = """ SELECT * FROM UPDATE_LOG WHERE item_id ="%s" """ %(iid)
-
 try:
     cursor.execute(sql)
     results = cursor.fetchall()

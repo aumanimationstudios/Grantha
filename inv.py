@@ -5,7 +5,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description = 'Inventory Management Tool')
 
-parser.add_argument("-r", "--read", help="Read the list for a specific item, location or item type",
+parser.add_argument("-r", "--read", help="Read the list for a specific item, location, item type, user",
                     action="store_true")
 parser.add_argument("-a", "--all", help="Read full list for all items", action ="store_true")
 parser.add_argument("-i", "--insert", help="Insert an item to the list", action="store_true")

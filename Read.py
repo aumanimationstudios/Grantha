@@ -9,14 +9,18 @@ from tabulate import tabulate
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
+#usage message
 print (CGREEN + "Read the list for a specific item, location or item type")
 print ("Leave the field blank if not applicable" + CEND)
 
+#user input
 iid = str(raw_input("Item_id: "))
 loc = str(raw_input("Location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
 it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD, HARD_DISK, HEADPHONE, KEYBOARD,"
                    " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, SMPS]: "))
 usr = str(raw_input("User[USER1-35]: "))
+
+#sql query to select rows which satisfies the conditions from user input
 sql = """SELECT * FROM ITEMS WHERE item_id= "%s" OR location= "%s" OR item_type= "%s" OR user= "%s" """ \
       %(iid,loc,it,usr)
 
