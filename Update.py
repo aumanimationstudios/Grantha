@@ -11,26 +11,28 @@ db.autocommit(1)
 
 now = time.strftime('%Y-%m-%d %H:%M:%S')
 
-print CGREEN + "Enter Item_id to change its location" + CEND
+print CGREEN + "Enter Item_id to change its Location and User" + CEND
 
 iid = str(raw_input("item_id: "))
 
 cursor = db.cursor()
-cursor.execute(""" SELECT location FROM ITEMS WHERE item_id="%s" """ %(iid))
+cursor.execute(""" SELECT location, user FROM ITEMS WHERE item_id="%s" """ %(iid))
 results = cursor.fetchall()
 for row in results:
     location = row[0]
-    print("Item is at "+ '%s' ) %(location)
+    user = row[1]
+    print("Item is at "+ '%s' + " User: " + '%s') %(location,user)
 
-loc = str(raw_input("New location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
+loc = str(raw_input("New Location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
+usr = str(raw_input("New User[USER1-35]: "))
 
-sql = """ UPDATE ITEMS SET location = '%s' WHERE item_id = '%s' """ %(loc, iid)
+sql = """ UPDATE ITEMS SET location = '%s', user= '%s' WHERE item_id = '%s' """ %(loc, usr, iid)
 
 try:
     cursor = db.cursor()
     cursor.execute(sql)
     cursor.close()
-    print("Item location changed to "+ loc)
+    print("Item location changed to "+ loc +" New User: "+ usr)
     print now
 except:
     print "Error: unable to fetch data : "+ str(sys.exc_info())
