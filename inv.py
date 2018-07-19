@@ -24,6 +24,8 @@ elif args.insert:
     execfile("Insert.py")
 elif args.update:
     execfile("Update.py")
+elif args.modify:
+    execfile("LocationModify.py")
 elif args.delete:
     execfile("Delete.py")
 elif args.log:

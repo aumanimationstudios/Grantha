@@ -16,7 +16,9 @@ iid = str(raw_input("Item_id: "))
 loc = str(raw_input("Location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
 it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD, HARD_DISK, HEADPHONE, KEYBOARD,"
                    " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, SMPS]: "))
-sql = """SELECT * FROM ITEMS WHERE item_id= "%s" OR location= "%s" OR item_type= "%s" """ %(iid,loc,it)
+usr = str(raw_input("User[USER1-35]: "))
+sql = """SELECT * FROM ITEMS WHERE item_id= "%s" OR location= "%s" OR item_type= "%s" OR user= "%s" """ \
+      %(iid,loc,it,usr)
 
 try:
     cursor.execute(sql)
