@@ -9,7 +9,8 @@ parser.add_argument("-r", "--read", help="Read the list for a specific item, loc
                     action="store_true")
 parser.add_argument("-a", "--all", help="Read full list for all items", action ="store_true")
 parser.add_argument("-i", "--insert", help="Insert an item to the list", action="store_true")
-parser.add_argument("-u", "--update", help="Update the location of an item", action="store_true")
+parser.add_argument("-u", "--update", help="Update the location and user of an item", action="store_true")
+parser.add_argument("-m", "--modify", help="Modify the parent_location of a location", action="store_true")
 parser.add_argument("-d", "--delete", help="Delete an item entry", action="store_true")
 parser.add_argument("-l", "--log", help="Read the update log for an item", action="store_true")
 
