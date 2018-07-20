@@ -13,7 +13,8 @@ db.autocommit(1)
 now = time.strftime('%Y-%m-%d %H:%M:%S')
 
 #usage message
-print CGREEN + "Enter Item_id to change its Location and User" + CEND
+print CGREEN + "Enter Item_id to change its Location and User"
+print "Don't leave any area blank"+ CEND
 
 #user input
 iid = str(raw_input("item_id: "))
