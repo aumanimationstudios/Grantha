@@ -14,20 +14,20 @@ print (CGREEN + "Read the list for a specific item, location or item type")
 print ("Leave the field blank if not applicable" + CEND)
 
 #user input
-iid = str(raw_input("Item_id: "))
-loc = str(raw_input("Location[REPAIR, STOCK(1-3), WORKSPACE(1-35)]: "))
-it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD, HARD_DISK, HEADPHONE, KEYBOARD,"
+sln = str(raw_input("Serial_no: "))
+loc = str(raw_input("Location[REPAIR, STOCK(1-3), aum_r01_workspace_(01-09)]: "))
+it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD-GT730-4GB, HARD_DISK-1TB_BLUE, HEADPHONE, KEYBOARD,"
                    " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, SMPS]: "))
-usr = str(raw_input("User[USER1-35]: "))
+usr = str(raw_input("User: "))
 
 #sql query to select rows which satisfies the conditions from user input
-sql = """SELECT * FROM ITEMS WHERE item_id= "%s" OR location= "%s" OR item_type= "%s" OR user= "%s" """ \
-      %(iid,loc,it,usr)
+sql = """SELECT serial_no, model, make, purchased_on, warranty_valid_till, item_type, location, user FROM ITEMS
+         WHERE serial_no= "%s" OR location= "%s" OR item_type= "%s" OR user= "%s" """ %(sln,loc,it,usr)
 
 try:
     cursor.execute(sql)
     results = cursor.fetchall()
-    print tabulate(results, headers=['item_id', 'serial_no', 'model', 'make', 'purchased_on', 'warranty_valid_till',
+    print tabulate(results, headers=['serial_no', 'model', 'make', 'purchased_on', 'warranty_valid_till',
                                      'item_type', 'location', 'user'])
     #for row in results:
         #item_id = row[0]

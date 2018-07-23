@@ -17,9 +17,9 @@ mdl = str(raw_input("Model: "))
 mk = str(raw_input("Make: "))
 po = str(raw_input("Purchase_Date[YYYY-MM-DD]: "))
 wt = str(raw_input("Warranty_Till[YYYY-MM-DD]: "))
-it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD, HARD_DISK, HEADPHONE, KEYBOARD,"
+it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD-GT730-4GB, HARD_DISK-1TB_BLUE, HEADPHONE, KEYBOARD,"
                    " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, SMPS]: "))
-loc = str(raw_input("Location[REPAIR, STOCK(1-3), aum_r01_workspace_(01-09), (blue0001-0035)]: "))
+loc = str(raw_input("Location[REPAIR, STOCK(1-3), aum_r01_workspace_(01-09), blue(0001-0035)]: "))
 usr = str(raw_input("User: "))
 
 #sql query to insert an item to the ITEMS table with user input data
@@ -31,7 +31,8 @@ try:
     cursor = db.cursor()
     cursor.execute(sql)
     cursor.close()
-    print("Item added, Item_id: "+ str(db.insert_id()))
+    print("Item added to the list")
+    #print("Item added, Item_id: "+ str(db.insert_id()))
 except:
     print "Error: unable to fetch data : "+ str(sys.exc_info())
 

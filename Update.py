@@ -13,15 +13,15 @@ db.autocommit(1)
 now = time.strftime('%Y-%m-%d %H:%M:%S')
 
 #usage message
-print CGREEN + "Enter Item_id to change its Location and User"
+print CGREEN + "Enter serial_no to change items Location and User"
 print "Don't leave any area blank"+ CEND
 
 #user input
-iid = str(raw_input("item_id: "))
+sln = str(raw_input("Serial_no: "))
 
 #sql query to fetch the present location and user of the item
 cursor = db.cursor()
-cursor.execute(""" SELECT location, user FROM ITEMS WHERE item_id="%s" """ %(iid))
+cursor.execute(""" SELECT location, user FROM ITEMS WHERE serial_no="%s" """ %(sln))
 results = cursor.fetchall()
 for row in results:
     location = row[0]
@@ -33,7 +33,7 @@ loc = str(raw_input("New Location[REPAIR, STOCK(1-3), aum_r01_workspace_(01-09)]
 usr = str(raw_input("New User: "))
 
 #sql query to update the location and user of the item
-sql = """ UPDATE ITEMS SET location = '%s', user= '%s' WHERE item_id = '%s' """ %(loc, usr, iid)
+sql = """ UPDATE ITEMS SET location = '%s', user= '%s' WHERE serial_no = '%s' """ %(loc, usr, sln)
 try:
     cursor = db.cursor()
     cursor.execute(sql)
@@ -47,8 +47,8 @@ except:
 cursor = db.cursor()
 for row in results:
     location = row[0]
-    cursor.execute(""" INSERT INTO UPDATE_LOG (date_time, item_id, old_location, new_location) VALUES
-              ('%s', '%s', '%s', '%s') """ %(now, iid, location, loc) )
+    cursor.execute(""" INSERT INTO UPDATE_LOG (date_time, serial_no, old_location, new_location) VALUES
+              ('%s', '%s', '%s', '%s') """ %(now, sln, location, loc) )
 
 db.close()
 

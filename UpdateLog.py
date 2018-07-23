@@ -10,17 +10,17 @@ db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
 #usage message
-print CGREEN + "Enter Item_id to view Log" + CEND
+print CGREEN + "Enter Serial_no of the Item to view Log" + CEND
 
 #user input
-iid = str(raw_input("Item_id: "))
+sln = str(raw_input("Serial_no: "))
 
 #sql query to fetch the entries from the UPDATE_LOG table
-sql = """ SELECT * FROM UPDATE_LOG WHERE item_id ="%s" """ %(iid)
+sql = """ SELECT * FROM UPDATE_LOG WHERE serial_no ="%s" """ %(sln)
 try:
     cursor.execute(sql)
     results = cursor.fetchall()
-    print tabulate(results, headers=['Date_time', 'Item_id', 'Old_location', 'New_location'])
+    print tabulate(results, headers=['Date_time', 'Serial_no', 'Old_location', 'New_location'])
     #for row in results:
         #date_time = row[0]
         #item_id = row[1]
