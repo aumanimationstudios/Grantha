@@ -29,7 +29,9 @@ for row in results:
     print("Item is at "+ '%s' + " User: " + '%s') %(location,user)
 
 #user input for the updated location
-loc = str(raw_input("New Location[REPAIR, STOCK(1-3), aum_r01_workspace_(01-09)]: "))
+loc = str(raw_input("Location[aum_r(01-03)_stock01, aum_r01_workspace_(01-09), aum_r02_workspace_M01, "
+                    "aum_r02_workspace_(pA1-pA10),aum_r02_workspace_(pB1-pB8), aum_r02_workspace_(pC1-pC9), "
+                    "blue(0001-0035)]: "))
 usr = str(raw_input("New User: "))
 
 #sql query to update the location and user of the item
