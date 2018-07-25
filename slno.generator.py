@@ -11,11 +11,15 @@ def id_generator(size=10, chars=string.ascii_uppercase + string.digits):
 
 db = MySQLdb.connect("localhost","test","test123","INVENTORY")
 db.autocommit(1)
-try:
-    cursor=db.cursor()
-    cursor.execute("""INSERT INTO SERIAL_NO (serial_no) VALUES ("%s") """ %(id_generator()))
-    cursor.close()
-except:
-    print "Error: unable to fetch data : "+ str(sys.exc_info())
+while(True):
+    try:
+        id = id_generator()
+        cursor=db.cursor()
+        cursor.execute("""INSERT INTO SERIAL_NO (serial_no) VALUES ("%s") """ %(id))
+        cursor.close()
+        break
+    except:
+        print "Error: unable to insert data : "+ str(sys.exc_info())
+
 db.close()
 
