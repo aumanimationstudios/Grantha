@@ -34,5 +34,5 @@ if os.environ['USER'] in adminlist:
     elif args.log:
         execfile("UpdateLog.py")
 else:
-    print "Unauthorized User"
+    print "You Are An Unauthorized User"
 
