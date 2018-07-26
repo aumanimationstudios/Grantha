@@ -33,6 +33,8 @@ if os.environ['USER'] in adminlist:
         execfile("Delete.py")
     elif args.log:
         execfile("UpdateLog.py")
+    else:
+        print "Please provide an argument or refer to 'help' with -h argument"
 else:
     print "You Are An Unauthorized User"
 
