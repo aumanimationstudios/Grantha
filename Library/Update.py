@@ -4,6 +4,13 @@
 import MySQLdb
 import sys
 import time
+import os
+
+filePath = os.path.abspath(__file__)
+progPath = os.sep.join(filePath.split(os.sep)[:-2])
+libraryPath = os.path.join(progPath,"Library","External_Modules")
+sys.path.append(libraryPath)
+
 from colours import *
 
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
