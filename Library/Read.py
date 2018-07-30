@@ -4,6 +4,7 @@
 import MySQLdb
 import sys
 import os
+import readchar
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -13,25 +14,87 @@ sys.path.append(libraryPath)
 from colours import *
 from tabulate import tabulate
 
-db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
-cursor = db.cursor()
-
 #usage message
 print (CGREEN + "Read the list for a specific item, location or item type")
 print ("Leave the field blank if not applicable" + CEND)
 
+def readList(option):
+    db = MySQLdb.connect("localhost","test","test123","INVENTORY")
+    cursor = db.cursor()
+
+    if (option == 'location'):
+        while True:
+            key = readchar.readkey()
+            if(key == 'l'):
+                cursor.execute("SELECT location FROM LOCATION")
+                results = cursor.fetchall()
+                print tabulate(results)
+                break
+            elif readchar.key.ENTER:
+                break
+            else:
+                print("Press a valid key")
+    elif (option == 'item_type'):
+         while True:
+            key = readchar.readkey()
+            if(key == 'l'):
+                cursor.execute("SELECT * FROM ITEM_TYPE")
+                results = cursor.fetchall()
+                print tabulate(results)
+                break
+            elif readchar.key.ENTER:
+                break
+            else:
+                print("Press a valid key")
+    elif(option == 'user'):
+        while True:
+            key = readchar.readkey()
+            if(key == 'l'):
+                cursor.execute("SELECT * FROM USER")
+                results = cursor.fetchall()
+                print tabulate(results)
+                break
+            elif readchar.key.ENTER:
+                break
+            else:
+                print("Press a valid key")
+
 #user input
-sln = str(raw_input("Serial_no: "))
-loc = str(raw_input("Location[aum_r(01-03)_stock01, aum_r01_workspace_(01-09), aum_r02_workspace_M01, "
-                    "aum_r02_workspace_(pA1-pA10),aum_r02_workspace_(pB1-pB8), aum_r02_workspace_(pC1-pC9), "
-                    "blue(0001-0035)]: "))
-it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD-GT730-4GB, HARD_DISK-1TB_BLUE, HEADPHONE, KEYBOARD,"
-                   " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, RAM-8GB-DDR3, SMPS]: "))
-usr = str(raw_input("User: "))
+userInput = {}
+
+userInput["serial_no"] = str(raw_input("Serial_no: "))
+
+print("Location (Type 'l' to see the list):")
+readList('location')
+
+userInput["location"] = str(raw_input("Location: "))
+
+print("Item_type (Type 'l' to see the list):")
+readList('item_type')
+
+userInput["item_type"] = str(raw_input("Item_type: "))
+
+print("User (Type 'l' to see the list):")
+readList('user')
+
+userInput["user"] = str(raw_input("User: "))
+
+whereClause = []
+for key in userInput.keys():
+    if userInput[key]:
+        whereClause.append(key +" = \'" + userInput[key] +"\'")
 
 #sql query to select rows which satisfies the conditions from user input
-sql = """SELECT serial_no, model, make, purchased_on, warranty_valid_till, item_type, location, user FROM ITEMS
-         WHERE serial_no= "%s" OR location= "%s" OR item_type= "%s" OR user= "%s" """ %(sln,loc,it,usr)
+#sql = """SELECT serial_no, model, make, purchased_on, warranty_valid_till, item_type, location, user FROM ITEMS
+         #WHERE serial_no= "%s" OR location= "%s" OR item_type= "%s" OR user= "%s" """ %(sln,loc,it,usr)
+if(whereClause):
+    db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
+    cursor = db.cursor()
+    sql = "SELECT * FROM ITEMS WHERE " + " OR ".join(whereClause)
+
+else:
+    print("Nothing to do. Exiting.. ")
+    sys.exit(0)
 
 try:
     cursor.execute(sql)
