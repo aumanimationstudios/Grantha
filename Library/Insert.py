@@ -12,6 +12,11 @@ sys.path.append(libraryPath)
 
 from colours import *
 
+libraryPath = os.path.join(progPath,"Library")
+sys.path.append(libraryPath)
+
+from ListOptions import readList
+
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
 
@@ -24,11 +29,20 @@ mdl = str(raw_input("Model: "))
 mk = str(raw_input("Make: "))
 po = str(raw_input("Purchase_Date[YYYY-MM-DD]: "))
 wt = str(raw_input("Warranty_Till[YYYY-MM-DD]: "))
-it = str(raw_input("Item_type[CABLE, GRAPHICS_CARD-GT730-4GB, HARD_DISK-1TB_BLUE, HEADPHONE, KEYBOARD,"
-                   " MONITOR, MOUSE, PEN_DISPLAY, PEN_TABLET, RAM-8GB-DDR3, SMPS]: "))
-loc = str(raw_input("Location[aum_r(01-03)_stock01, aum_r01_workspace_(01-09), aum_r02_workspace_M01, "
-                    "aum_r02_workspace_(pA1-pA10),aum_r02_workspace_(pB1-pB8), aum_r02_workspace_(pC1-pC9), "
-                    "blue(0001-0035)]: "))
+
+print("Item_type (Type 'l' to see the list):")
+readList('item_type')
+
+it = str(raw_input("Item_type: "))
+
+print("Location (Type 'l' to see the list):")
+readList('location')
+
+loc = str(raw_input("Location: "))
+
+print("User (Type 'l' to see the list):")
+readList('user')
+
 usr = str(raw_input("User: "))
 
 #sql query to insert an item to the ITEMS table with user input data
