@@ -13,6 +13,11 @@ sys.path.append(libraryPath)
 
 from colours import *
 
+libraryPath = os.path.join(progPath,"Library")
+sys.path.append(libraryPath)
+
+from ListOptions import readList
+
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 db.autocommit(1)
 
@@ -20,8 +25,7 @@ db.autocommit(1)
 now = time.strftime('%Y-%m-%d %H:%M:%S')
 
 #usage message
-print CGREEN + "Enter serial_no to change items Location and User"
-print "Don't leave any area blank"+ CEND
+print CGREEN + "Enter serial_no to change items Location " + CEND
 
 #user input
 sln = str(raw_input("Serial_no: "))
@@ -36,18 +40,19 @@ for row in results:
     print("Item is at "+ '%s' + " User: " + '%s') %(location,user)
 
 #user input for the updated location
-loc = str(raw_input("Location[aum_r(01-03)_stock01, aum_r01_workspace_(01-09), aum_r02_workspace_M01, "
-                    "aum_r02_workspace_(pA1-pA10),aum_r02_workspace_(pB1-pB8), aum_r02_workspace_(pC1-pC9), "
-                    "blue(0001-0035)]: "))
-usr = str(raw_input("New User: "))
+
+print("Location (Type 'l' to see the list):")
+readList('location')
+
+loc = str(raw_input("Location: "))
 
 #sql query to update the location and user of the item
-sql = """ UPDATE ITEMS SET location = '%s', user= '%s' WHERE serial_no = '%s' """ %(loc, usr, sln)
+sql = """ UPDATE ITEMS SET location = '%s' WHERE serial_no = '%s' """ %(loc, sln)
 try:
     cursor = db.cursor()
     cursor.execute(sql)
     cursor.close()
-    print("Item location changed to "+ loc +" New User: "+ usr)
+    print("Item location changed to "+ loc )
     print now
 except:
     print "Error: unable to fetch data : "+ str(sys.exc_info())
