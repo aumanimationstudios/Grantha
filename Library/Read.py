@@ -4,7 +4,7 @@
 import MySQLdb
 import sys
 import os
-import readchar
+
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -14,50 +14,13 @@ sys.path.append(libraryPath)
 from colours import *
 from tabulate import tabulate
 
+libraryPath = os.path.join(progPath,"Library")
+sys.path.append(libraryPath)
+from ListOptions import readList
+
 #usage message
 print (CGREEN + "Read the list for a specific item, location or item type")
 print ("Leave the field blank if not applicable" + CEND)
-
-def readList(option):
-    db = MySQLdb.connect("localhost","test","test123","INVENTORY")
-    cursor = db.cursor()
-
-    if (option == 'location'):
-        while True:
-            key = readchar.readkey()
-            if(key == 'l'):
-                cursor.execute("SELECT location FROM LOCATION")
-                results = cursor.fetchall()
-                print tabulate(results)
-                break
-            elif readchar.key.ENTER:
-                break
-            else:
-                print("Press a valid key")
-    elif (option == 'item_type'):
-         while True:
-            key = readchar.readkey()
-            if(key == 'l'):
-                cursor.execute("SELECT * FROM ITEM_TYPE")
-                results = cursor.fetchall()
-                print tabulate(results)
-                break
-            elif readchar.key.ENTER:
-                break
-            else:
-                print("Press a valid key")
-    elif(option == 'user'):
-        while True:
-            key = readchar.readkey()
-            if(key == 'l'):
-                cursor.execute("SELECT * FROM USER")
-                results = cursor.fetchall()
-                print tabulate(results)
-                break
-            elif readchar.key.ENTER:
-                break
-            else:
-                print("Press a valid key")
 
 #user input
 userInput = {}
