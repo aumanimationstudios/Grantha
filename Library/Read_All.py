@@ -15,13 +15,17 @@ from tabulate import tabulate
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
-sql = """ SELECT serial_no, model, make, purchased_on, warranty_valid_till, item_type, location, user FROM ITEMS """
+sql = "SELECT * FROM ITEMS"
+#sql = "SELECT serial_no, model, make, purchased_on, warranty_valid_till, item_type, location, user FROM ITEMS"
 
 try:
     cursor.execute(sql)
     results = cursor.fetchall()
-    print tabulate(results, headers=['serial_no', 'model', 'make', 'purchased_on', 'warranty_valid_till',
-                                     'item_type', 'location', 'user'])
+    cursor.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+    WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')")
+    head = cursor.fetchall()
+    my_head = sum(head, ())
+    print tabulate(results, headers=my_head)
     #for row in results:
         #item_id = row[0]
         #serial_no = row[1]
