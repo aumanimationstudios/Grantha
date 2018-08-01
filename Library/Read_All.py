@@ -15,17 +15,24 @@ from tabulate import tabulate
 db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
 cursor = db.cursor()
 
-sql = "SELECT * FROM ITEMS"
+cursor.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')")
+col = sum(cursor.fetchall(), ())
+#print col
+
+sql = "SELECT " + ','.join(col) + " FROM ITEMS ORDER BY item_type"
+
+#sql = "SELECT %s,%s,%s,%s,%s,%s,%s,%s FROM ITEMS ORDER BY item_type" %(a,b,c,d,e,f,g,h)
+#sql = "SELECT * FROM ITEMS ORDER BY item_type"
 #sql = "SELECT serial_no, model, make, purchased_on, warranty_valid_till, item_type, location, user FROM ITEMS"
 
 try:
     cursor.execute(sql)
     results = cursor.fetchall()
-    cursor.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
-    WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')")
-    head = cursor.fetchall()
-    my_head = sum(head, ())
-    print tabulate(results, headers=my_head)
+    #cursor.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+    #WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')")
+    #head = sum(cursor.fetchall(), ())
+    print tabulate(results, headers=col)
     #for row in results:
         #item_id = row[0]
         #serial_no = row[1]

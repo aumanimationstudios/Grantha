@@ -53,7 +53,11 @@ for key in userInput.keys():
 if(whereClause):
     db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
     cursor = db.cursor()
-    sql = "SELECT * FROM ITEMS WHERE " + " OR ".join(whereClause)
+    cursor.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+    WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')")
+    col = sum(cursor.fetchall(), ())
+
+    sql = "SELECT " + ','.join(col) + " FROM ITEMS WHERE " + " OR ".join(whereClause)
 
 else:
     print("Nothing to do. Exiting.. ")
@@ -62,13 +66,13 @@ else:
 try:
     cursor.execute(sql)
     results = cursor.fetchall()
-    cursor.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
-    WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')")
-    head = cursor.fetchall()
-    my_head = sum(head,())
+    #cursor.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+    #WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')")
+    #head = cursor.fetchall()
+    #my_head = sum(head,())
     #my_head = [element for x in head for element in x]
 
-    print tabulate(results, headers=my_head) #headers=['serial_no', 'model', 'make', 'purchased_on', 'warranty_valid_till',
+    print tabulate(results, headers=col) #headers=['serial_no', 'model', 'make', 'purchased_on', 'warranty_valid_till',
                                      #'item_type', 'location', 'user'])
     #for row in results:
         #item_id = row[0]
@@ -78,7 +82,7 @@ try:
         #purchased_on = row[4]
         #warranty_valid_till = row[5]
         #item_type = row[6]
-        #location = row[7]
+        #location =str(my_head0) row[7]
         #user = row[8]
         #print ("item_id=%s, serial_no=%s, model=%s, make=%s, purchased_on=%s, warranty_valid_till=%s, item_type=%s, " \
               #"location=%s, user=%s" %(item_id,serial_no,model,make,purchased_on,warranty_valid_till,item_type,
