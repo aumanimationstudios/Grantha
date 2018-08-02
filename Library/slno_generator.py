@@ -15,7 +15,7 @@ while(True):
     try:
         id = id_generator()
         cursor=db.cursor()
-        cursor.execute("""INSERT INTO SERIAL_NO (serial_no) VALUES ("%s") """ %(id))
+        cursor.execute("INSERT INTO SERIAL_NO (serial_no) VALUES ('%s') " %(id))
         print id
         cursor.close()
         break
