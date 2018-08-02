@@ -10,7 +10,7 @@ progPath = os.sep.join(filePath.split(os.sep)[:-2])
 libraryPath = os.path.join(progPath,"Library","External_Modules")
 sys.path.append(libraryPath)
 
-sl_no_generator = os.path.join(progPath,"Library","slno_generator.py")
+sl_no_generator = os.path.join(progPath,"Library","SlnoGenerator.py")
 
 from colours import *
 
