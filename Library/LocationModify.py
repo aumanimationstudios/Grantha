@@ -24,7 +24,7 @@ loc = str(raw_input("location[BLUE0001-0666]: "))
 
 #sql query to fetch the current parent_location
 cursor = db.cursor()
-cursor.execute(""" SELECT parent_location FROM LOCATION WHERE location="%s" """ %(loc))
+cursor.execute(" SELECT parent_location FROM LOCATION WHERE location='%s' " %(loc))
 results = cursor.fetchall()
 for row in results:
     parent_loc = row[0]
@@ -34,7 +34,7 @@ for row in results:
 parent_location = str(raw_input("New Parent Location[WORKSPACE1-35]: "))
 
 #sql query to set the parent_location for the user input location
-sql = """ UPDATE LOCATION SET parent_location = '%s' WHERE location = '%s' """ %(parent_location, loc)
+sql = " UPDATE LOCATION SET parent_location = '%s' WHERE location = '%s' " %(parent_location, loc)
 try:
     cursor = db.cursor()
     cursor.execute(sql)

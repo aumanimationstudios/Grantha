@@ -22,7 +22,7 @@ print CGREEN + "Enter the Serial_no of the item to delete " + CEND
 sln = str(raw_input("Serial_no: "))
 
 #sql query to delete the item
-sql = """DELETE FROM ITEMS WHERE serial_no = '%s' """ %(sln)
+sql = "DELETE FROM ITEMS WHERE serial_no = '%s' " %(sln)
 try:
     cursor = db.cursor()
     cursor.execute(sql)

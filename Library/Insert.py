@@ -46,9 +46,8 @@ readList('user')
 usr = str(raw_input("User: "))
 
 #sql query to insert an item to the ITEMS table with user input data
-sql = """INSERT INTO ITEMS (serial_no, model, make, purchased_on,
-         warranty_valid_till, item_type, location, user) VALUES 
-         ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')""" %(sl, mdl, mk, po, wt, it, loc, usr)
+sql = "INSERT INTO ITEMS (serial_no, model, make, purchased_on, warranty_valid_till, item_type, location, user) \
+       VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %(sl, mdl, mk, po, wt, it, loc, usr)
 
 try:
     cursor = db.cursor()

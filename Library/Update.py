@@ -32,7 +32,7 @@ sln = str(raw_input("Serial_no: "))
 
 #sql query to fetch the present location and user of the item
 cursor = db.cursor()
-cursor.execute(""" SELECT location, user FROM ITEMS WHERE serial_no="%s" """ %(sln))
+cursor.execute(" SELECT location, user FROM ITEMS WHERE serial_no='%s' " %(sln))
 results = cursor.fetchall()
 for row in results:
     location = row[0]
@@ -47,7 +47,7 @@ readList('location')
 loc = str(raw_input("Location: "))
 
 #sql query to update the location and user of the item
-sql = """ UPDATE ITEMS SET location = '%s' WHERE serial_no = '%s' """ %(loc, sln)
+sql = " UPDATE ITEMS SET location = '%s' WHERE serial_no = '%s' " %(loc, sln)
 try:
     cursor = db.cursor()
     cursor.execute(sql)
@@ -61,8 +61,8 @@ except:
 cursor = db.cursor()
 for row in results:
     location = row[0]
-    cursor.execute(""" INSERT INTO UPDATE_LOG (date_time, serial_no, old_location, new_location) VALUES
-              ('%s', '%s', '%s', '%s') """ %(now, sln, location, loc) )
+    cursor.execute(" INSERT INTO UPDATE_LOG (date_time, serial_no, old_location, new_location) VALUES \
+                     ('%s', '%s', '%s', '%s') " %(now, sln, location, loc) )
 
 db.close()
 

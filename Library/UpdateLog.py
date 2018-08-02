@@ -23,7 +23,7 @@ print CGREEN + "Enter Serial_no of the Item to view Log" + CEND
 sln = str(raw_input("Serial_no: "))
 
 #sql query to fetch the entries from the UPDATE_LOG table
-sql = """ SELECT * FROM UPDATE_LOG WHERE serial_no ="%s" """ %(sln)
+sql = " SELECT * FROM UPDATE_LOG WHERE serial_no ='%s' " %(sln)
 try:
     cursor.execute(sql)
     results = cursor.fetchall()
