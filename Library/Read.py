@@ -29,17 +29,14 @@ userInput["serial_no"] = str(raw_input("Serial_no: "))
 
 print("Location (Type 'l' to see the list):")
 readList('location')
-
 userInput["location"] = str(raw_input("Location: "))
 
 print("Item_type (Type 'l' to see the list):")
 readList('item_type')
-
 userInput["item_type"] = str(raw_input("Item_type: "))
 
 print("User (Type 'l' to see the list):")
 readList('user')
-
 userInput["user"] = str(raw_input("User: "))
 
 whereClause = []

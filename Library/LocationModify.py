@@ -13,14 +13,22 @@ sys.path.append(libraryPath)
 
 from colours import *
 
+libraryPath = os.path.join(progPath,"Library")
+sys.path.append(libraryPath)
+
+from ListOptions import readList
+
 db = MySQLdb.connect("localhost","test","test123","INVENTORY")
 db.autocommit(1)
 
 #usage message
-print CGREEN + "Enter location to change its Primary location" + CEND
+print CGREEN + "Enter location to change its Parent location" + CEND
 
 #user input
-loc = str(raw_input("location[BLUE0001-0666]: "))
+print("Location (Type 'l' to see the list):")
+readList('location')
+
+loc = str(raw_input("location: "))
 
 #sql query to fetch the current parent_location
 cursor = db.cursor()
