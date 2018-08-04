@@ -28,7 +28,7 @@ userInput = {}
 userInput["serial_no"] = str(raw_input("Serial_no: "))
 
 print("Location (Type 'l' to see the list):")
-readList('location')
+readList('all_locations')
 userInput["location"] = str(raw_input("Location: "))
 
 print("Item_type (Type 'l' to see the list):")

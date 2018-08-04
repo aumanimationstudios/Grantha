@@ -46,7 +46,7 @@ if userInput["serial_no"] in serial_no:
 
     #user input for the updated location
     print("Location (Type 'l' to see the list):")
-    readList('location')
+    readList('all_locations')
     userInput["new_location"] = str(raw_input("New_Location: "))
 
     userInput["updated_by"] = os.environ['USER']

@@ -17,7 +17,7 @@ def readList(option):
     db = MySQLdb.connect("localhost","test","test123","INVENTORY")
     cursor = db.cursor()
 
-    if (option == 'location'):
+    if (option == 'all_locations'):
         while True:
             key = readchar.readkey()
             if(key == 'l'):

@@ -41,7 +41,7 @@ userInput["purchased_on"] = str(raw_input("Purchase_Date[YYYY-MM-DD]: "))
 userInput["warranty_till"] = str(raw_input("Warranty_Till[YYYY-MM-DD]: "))
 
 print("Location (Type 'l' to see the list):")
-readList('location')
+readList('all_locations')
 userInput["location"] = str(raw_input("Location: "))
 
 print("User (Type 'l' to see the list):")

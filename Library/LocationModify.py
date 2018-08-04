@@ -27,7 +27,6 @@ print CGREEN + "Enter location to change its Parent location" + CEND
 #user input
 print("Location (Type 'l' to see the list):")
 readList('location')
-
 loc = str(raw_input("location: "))
 
 #sql query to fetch the current parent_location
