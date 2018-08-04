@@ -33,7 +33,7 @@ db.autocommit(1)
 
 #sql query to fetch the present location and user of the item
 cursor = db.cursor()
-cursor.execute("SELECT serial_no  FROM SERIAL_NO")
+cursor.execute("SELECT serial_no FROM SERIAL_NO")
 serial_no = sum(cursor.fetchall(), ())
 
 if userInput["serial_no"] in serial_no:
@@ -74,7 +74,7 @@ if userInput["serial_no"] in serial_no:
     #cursor.execute(" INSERT INTO UPDATE_LOG (date_time, serial_no, old_location, new_location) VALUES \
                          #('%s', '%s', '%s', '%s') " %(now, sln, location, new_location) )
 else:
-    print "Invalid Serial No."
+    print CRED + "Invalid Serial No." + CEND
 
 cursor.close()
 db.close()
