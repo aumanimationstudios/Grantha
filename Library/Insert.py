@@ -25,14 +25,20 @@ print CGREEN + "Insert Details of the Item" + CEND
 userInput = OrderedDict()
 
 userInput["serial_no"] = str(raw_input("Serial_No: "))
-userInput["model"] = str(raw_input("Model: "))
-userInput["make"] = str(raw_input("Make: "))
-userInput["purchase_date"] = str(raw_input("Purchase_Date[YYYY-MM-DD]: "))
-userInput["warranty_Till"] = str(raw_input("Warranty_Till[YYYY-MM-DD]: "))
 
 print("Item_type (Type 'l' to see the list):")
 readList('item_type')
 userInput["item_type"] = str(raw_input("Item_type: "))
+
+userInput["make"] = str(raw_input("Make: "))
+
+userInput["model"] = str(raw_input("Model: "))
+
+userInput["price"] = str(raw_input("Price: "))
+
+userInput["purchased_on"] = str(raw_input("Purchase_Date[YYYY-MM-DD]: "))
+
+userInput["warranty_till"] = str(raw_input("Warranty_Till[YYYY-MM-DD]: "))
 
 print("Location (Type 'l' to see the list):")
 readList('location')
@@ -82,7 +88,7 @@ col = sum(cursor.fetchall(), ())
 sql = "INSERT INTO ITEMS (" + ','.join(col) + ") VALUES %r" %(tuple(values),)
 #sql = "INSERT INTO ITEMS (serial_no, model, make, purchased_on, warranty_valid_till, item_type, location, user) \
        #VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %(sl, mdl, mk, po, wt, it, loc, usr)
-print sql
+#print sql
 try:
     cursor = db.cursor()
     cursor.execute(sql)
