@@ -4,8 +4,23 @@ import MySQLdb
 db = MySQLdb.connect("localhost","test","test123","INVENTORY")
 cursor = db.cursor()
 
-cursor.execute("SELECT location FROM LOCATION WHERE location LIKE 'blue%' ")
-results = cursor.fetchall()
-print (results)
+#cursor.execute("SELECT location FROM LOCATION WHERE location LIKE 'blue%' ")
+
+a = str(raw_input("Item type: "))
+b = str(raw_input("Location: "))
+
+if not b:
+    cursor.execute("SELECT COUNT(*) FROM ITEMS WHERE item_type='%s' " %(a))
+
+else:
+    cursor.execute("SELECT COUNT(*) FROM ITEMS WHERE item_type='%s' AND location='%s' " %(a,b))
+
+
+results = cursor.fetchone()
+print (results[0])
+
+
+cursor.close()
+db.close()
 
 
