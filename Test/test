@@ -1,0 +1,11 @@
+import MySQLdb
+
+
+db = MySQLdb.connect("localhost","test","test123","INVENTORY")
+cursor = db.cursor()
+
+cursor.execute("SELECT location FROM LOCATION WHERE location LIKE 'blue%' ")
+results = cursor.fetchall()
+print (results)
+
+
