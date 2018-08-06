@@ -30,6 +30,8 @@ print("Item_type (Type 'l' to see the list):")
 readList('item_type')
 userInput["item_type"] = str(raw_input("Item_type: "))
 
+userInput["description"] = str(raw_input("Description: "))
+
 userInput["make"] = str(raw_input("Make: "))
 
 userInput["model"] = str(raw_input("Model: "))
