@@ -29,6 +29,30 @@ def readList(option):
                 break
             else:
                 print("Press a valid key")
+    elif (option == 'primary_locations'):
+        while True:
+            key = readchar.readkey()
+            if(key == 'l'):
+                cursor.execute("SELECT location FROM LOCATION WHERE location LIKE 'blue%' ")
+                results = cursor.fetchall()
+                print tabulate(results)
+                break
+            elif readchar.key.ENTER:
+                break
+            else:
+                print("Press a valid key")
+    elif (option == 'parent_locations'):
+        while True:
+            key = readchar.readkey()
+            if(key == 'l'):
+                cursor.execute("SELECT location FROM LOCATION WHERE location LIKE '%a%' ")
+                results = cursor.fetchall()
+                print tabulate(results)
+                break
+            elif readchar.key.ENTER:
+                break
+            else:
+                print("Press a valid key")
     elif (option == 'item_type'):
          while True:
             key = readchar.readkey()
