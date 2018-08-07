@@ -5,31 +5,30 @@ import MySQLdb
 import sys
 import os
 
-filePath = os.path.abspath(__file__)
-progPath = os.sep.join(filePath.split(os.sep)[:-2])
-libraryPath = os.path.join(progPath, "Library")
-sys.path.append(libraryPath)
+#filePath = os.path.abspath(__file__)
+#progPath = os.sep.join(filePath.split(os.sep)[:-2])
+#libraryPath = os.path.join(progPath,"Library","External_Modules")
+#sys.path.append(libraryPath)
 
-from ListOptions import readList
+#from tabulate import tabulate
 
 db = MySQLdb.connect("localhost","test","test123","INVENTORY")
 cursor = db.cursor()
 
+cursor.execute("SELECT SUM(price) FROM ITEMS")
+total_all = cursor.fetchone()[0]
+#a = total1[0]
+print ("Total = " + str(total_all))
+#print tabulate(total1, headers=['total all'])
 
+item_type = str(raw_input("Item type: "))
+cursor.execute("SELECT SUM(price) FROM ITEMS WHERE item_type='%s' " %(item_type))
+total = cursor.fetchone()[0]
+print ("Total = " + str(total))
+#print tabulate(total2, headers=['total amount of the item'])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+cursor.close()
+db.close()
 
 
 '''print("Item type (type 'l' to see the list):")
