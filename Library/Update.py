@@ -42,10 +42,14 @@ if userInput["serial_no"] in serial_no:
     for row in results:
         userInput["location"] = row[0]
         user = row[1]
-        print("Item is at "+ '%s' + " User: " + '%s') %(userInput["location"],user)
+
+        if not user:
+            print ("Item is at "+ '%s') %(userInput["location"])
+        else:
+            print("Item is at "+ '%s' + " User: " + '%s') %(userInput["location"],user)
 
     #user input for the updated location
-    print("Location (Type 'l' to see the list):")
+    print("New_Location (Type 'l' to see the list):")
     readList('all_locations')
     userInput["new_location"] = str(raw_input("New_Location: "))
 
