@@ -23,15 +23,15 @@ location = str(raw_input("Location: "))
 
 db = MySQLdb.connect("localhost","test","test123","INVENTORY")
 cursor = db.cursor()
+
 if not location:
     cursor.execute("SELECT COUNT(*) FROM ITEMS WHERE item_type='%s' " %(item_type))
-
 else:
     cursor.execute("SELECT COUNT(*) FROM ITEMS WHERE item_type='%s' AND location='%s' " %(item_type,location))
 
 results = cursor.fetchone()
 n = results[0]
-#print n
+
 if not item_type:
     print ("No item type provided to count")
 elif not location:

@@ -15,7 +15,24 @@ from ListOptions import readList
 db = MySQLdb.connect("localhost","test","test123","INVENTORY")
 cursor = db.cursor()
 
-print("Item type (type 'l' to see the list):")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''print("Item type (type 'l' to see the list):")
 readList('item_type')
 item_type = str(raw_input("Item type: "))
 
@@ -39,5 +56,5 @@ else:
     print ("There are " + str(n) +" "+ item_type + " at " + location )
 
 cursor.close()
-db.close()
+db.close()'''
 
