@@ -19,7 +19,7 @@ update_py = os.path.join(progPath,"Library","Update.py")
 location_modify_py = os.path.join(progPath,"Library","LocationModify.py")
 delete_py = os.path.join(progPath,"Library","Delete.py")
 update_log_py = os.path.join(progPath,"Library", "UpdateLog.py")
-
+count_py = os.path.join(progPath, "Library", "Count.py")
 
 adminlist = ("sanath.shetty")
 if os.environ['USER'] in adminlist:
@@ -33,6 +33,7 @@ if os.environ['USER'] in adminlist:
     parser.add_argument("-m", "--modify", help="Modify the parent_location of a location", action="store_true")
     parser.add_argument("-d", "--delete", help="Delete an item entry", action="store_true")
     parser.add_argument("-l", "--log", help="Read the update log for an item", action="store_true")
+    parser.add_argument("-c", "--count", help="Get the count of an item",  action="store_true")
 
     args = parser.parse_args()
 
@@ -50,6 +51,8 @@ if os.environ['USER'] in adminlist:
         execfile(delete_py)
     elif args.log:
         execfile(update_log_py)
+    elif args.count:
+        execfile(count_py)
     else:
         print (CYELLOW2 + "Please provide an argument or refer to 'help' with -h argument" + CEND)
 else:
