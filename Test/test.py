@@ -12,7 +12,7 @@ import os
 
 #from tabulate import tabulate
 
-db = MySQLdb.connect("localhost","test","test123","INVENTORY")
+'''db = MySQLdb.connect("localhost","test","test123","INVENTORY")
 cursor = db.cursor()
 
 cursor.execute("SELECT SUM(price) FROM ITEMS")
@@ -28,8 +28,64 @@ print ("Total = " + str(total))
 #print tabulate(total2, headers=['total amount of the item'])
 
 cursor.close()
-db.close()
+db.close()'''
 
+import datetime
+import time
+import MySQLdb
+import arrow
+
+db = MySQLdb.connect("localhost", "test", "test123", "INVENTORY")
+db.autocommit(1)
+cursor = db.cursor()
+
+sln = '123'
+loc = 'REPAIR'
+cursor.execute("SELECT date_time FROM UPDATE_LOG WHERE serial_no='%s' AND new_location ='%s' " %(sln,loc))
+results = cursor.fetchone()
+logTime = str(results[0])
+
+a = arrow.get(logTime).shift(hours=-5,minutes=-30)
+
+print a.humanize()
+
+
+#print logTime
+#print("logtime :"+ str(logTime))
+
+#b = arrow.now()
+# c = a.to('Asia/Kolkata')
+#d = arrow.utcnow().shift(hours=5,minutes=30)
+#print a
+#print d
+# print c
+# time.strftime('%Y-%m-%d %H:%M:%S')
+
+#date_1 = arrow.get('2015-12-23 18:40:48','YYYY-MM-DD HH:mm:ss')
+#date_2 = arrow.get('2017-11-15 13:18:20','YYYY-MM-DD HH:mm:ss')
+#print(date_1)
+#print(date_2)
+
+#diff = d - a
+#print diff
+
+'''format = '%Y-%m-%d %H:%M:%S'
+#logtime = datetime.datetime.strptime(result, format)
+now = datetime.datetime.now()
+#print logtime
+now1 = now.strftime(format)
+print now1
+def convertTimestampToSQLDateTime(value):
+    return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(value))
+def convertSQLDateTimeToTimestamp(value):
+    return time.mktime(time.strptime(value, '%Y-%m-%d %H:%M:%S'))
+a = convertSQLDateTimeToTimestamp(logTime)
+b = convertSQLDateTimeToTimestamp(now1)
+print a
+print b
+
+print b-a
+'''
 
 '''print("Item type (type 'l' to see the list):")
 readList('item_type')

@@ -20,3 +20,5 @@ print(local.humanize())
 
 print(arrow.get(datetime.date(2018, 7, 1)))
 
+print(arrow.now())
+
