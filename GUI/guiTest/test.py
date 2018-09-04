@@ -35,8 +35,6 @@ class myWindow():
 
         self.ui.tableWidget.setRowCount(len(theRows))
 
-        # db.getValues()
-        # print theValues
         row = 0
         db.getValues(init=True)
         while True:

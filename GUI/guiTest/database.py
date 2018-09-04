@@ -7,18 +7,23 @@ import sys
 import os
 
 class DataBase:
+    col = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+           WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
+
+    cmd = "SELECT * FROM ITEMS ORDER BY item_type"
+
     def __init__(self):
         self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
         self.cursor = self.database.cursor(MySQLdb.cursors.DictCursor)
 
-        self.col = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
-                      WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
-
-        self.cmd = "SELECT * FROM ITEMS ORDER BY item_type "
+        # self.col = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+        #               WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
+        #
+        # self.cmd = "SELECT * FROM ITEMS ORDER BY item_type "
 
     def getColumns(self):
         try:
-            self.cursor.execute(self.col)
+            self.cursor.execute(DataBase.col)
             column = self.cursor.fetchall()
             columnNames =  [x['COLUMN_NAME'] for x in column]
             return columnNames
@@ -28,25 +33,22 @@ class DataBase:
 
     def getAllRows(self):
         try:
-            self.cursor.execute(self.cmd)
+            self.cursor.execute(DataBase.cmd)
             rows = self.cursor.fetchall()
             return rows
-            # print result
-            # for n in columnNames:
-            #     res = result[n]
-            #     return res
-            #     # print res
+
         except:
             print ("Error: unable to fetch data : "+ str(sys.exc_info()))
 
     def getValues(self,init=False):
-        # columnNames = DataBase().getColumns()
         try:
             if(init == False):
                 result = self.cursor.fetchone()
+                return result
             else:
                 self.cursor.execute(self.cmd)
-            return result
+
+            # return result
             # row =0
             # while True:
             #     primaryResult = self.cursor.fetchone()
