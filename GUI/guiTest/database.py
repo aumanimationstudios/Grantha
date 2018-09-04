@@ -4,13 +4,14 @@
 import MySQLdb
 import MySQLdb.cursors
 import sys
-import os
 
 class DataBase:
     col = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
            WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
 
-    cmd = "SELECT * FROM ITEMS ORDER BY item_type"
+    all = "SELECT * FROM ITEMS ORDER BY item_type"
+
+    comp = "SELECT serial_no,item_type,location,user FROM ITEMS"
 
     def __init__(self):
         self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
@@ -25,43 +26,40 @@ class DataBase:
         try:
             self.cursor.execute(DataBase.col)
             column = self.cursor.fetchall()
-            columnNames =  [x['COLUMN_NAME'] for x in column]
-            return columnNames
+            # columnNames =  [x['COLUMN_NAME'] for x in column]
+            return column
             # print columnNames
         except:
             print ("Error: unable to fetch data : "+ str(sys.exc_info()))
 
     def getAllRows(self):
         try:
-            self.cursor.execute(DataBase.cmd)
+            self.cursor.execute(DataBase.all)
             rows = self.cursor.fetchall()
             return rows
 
         except:
             print ("Error: unable to fetch data : "+ str(sys.exc_info()))
 
-    def getValues(self,init=False):
+    def getAllValues(self,init=False):
         try:
             if(init == False):
                 result = self.cursor.fetchone()
                 return result
             else:
-                self.cursor.execute(self.cmd)
-
-            # return result
-            # row =0
-            # while True:
-            #     primaryResult = self.cursor.fetchone()
-            #     if(not primaryResult):
-            #         break
-            #     col = 0
-            #     for n in columnNames:
-            #         result = primaryResult[n]
-            #         col += 1
-            #     row +=1
+                self.cursor.execute(DataBase.all)
 
         except:
             print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
+
+    def Completer(self):
+        try:
+            self.cursor.execute(DataBase.comp)
+            slList = self.cursor.fetchall()
+            return slList
+
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
 
 if __name__ == '__main__':

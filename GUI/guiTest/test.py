@@ -1,8 +1,6 @@
 #!/usr/bin/python2.7
 # *-* coding: utf-8 *-*
 
-import MySQLdb
-import MySQLdb.cursors
 import os
 import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
@@ -19,26 +17,34 @@ class myWindow():
         self.ui = uic.loadUi(os.path.join(uiFilePath, 'test.ui'))
         self.ui.show()
 
-        self.ui.allButton.pressed.connect(self.onClick)
-        self.ui.searchButton.clicked.connect(self.test)
+        self.ui.allButton.pressed.connect(self.allBtnClick)
+        self.ui.serialNoButton.pressed.connect(self.slNoBtnClick)
+        self.ui.itemTypeButton.pressed.connect(self.itBtnClick)
+        self.ui.locationButton.pressed.connect(self.locBtnClick)
+        self.ui.userButton.pressed.connect(self.usrBtnClick)
+
+        # self.ui.searchButton.clicked.connect(self.test)
 
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
 
-    def onClick(self):
-        db = database.DataBase()
-        theColumn = db.getColumns()
+        self.db = database.DataBase()
+
+    def allBtnClick(self):
+        #db = database.DataBase()
+        column = self.db.getColumns()
+        theColumn = [x['COLUMN_NAME'] for x in column]
 
         self.ui.tableWidget.setColumnCount(len(theColumn))
         self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
 
-        theRows = db.getAllRows()
+        theRows = self.db.getAllRows()
 
         self.ui.tableWidget.setRowCount(len(theRows))
 
         row = 0
-        db.getValues(init=True)
+        self.db.getAllValues(init=True)
         while True:
-            primaryResult = db.getValues()
+            primaryResult = self.db.getAllValues()
             # print primaryResult
             if (not primaryResult):
                 break
@@ -49,19 +55,40 @@ class myWindow():
                 col +=1
             row +=1
 
-        # self.ui.resizeColumnsToContents()
+    def slNoBtnClick(self):
+        theList = self.db.Completer()
+        slList = [x['serial_no'] for x in theList]
+        self.model = QtCore.QStringListModel()
+        self.model.setStringList(slList)
+        self.completer()
 
-        # print theFunc
-        # print anotherFunc
-        # for n in theFunc:
-        #     result = anotherFunc[n]
-        #     print result
+    def itBtnClick(self):
+        theList = self.db.Completer()
+        itList = list(set([x['item_type'] for x in theList]))
+        self.model = QtCore.QStringListModel()
+        self.model.setStringList(itList)
+        self.completer()
 
-    def test(self):
-        print self.ui.lineEdit.text()
+    def locBtnClick(self):
+        theList = self.db.Completer()
+        locList = list(set([x['location'] for x in theList]))
+        self.model = QtCore.QStringListModel()
+        self.model.setStringList(locList)
+        self.completer()
 
-    # def onUnclick(self):
-    #     print "False"
+    def usrBtnClick(self):
+        theList = self.db.Completer()
+        usrList = list(set([x['user'] for x in theList]))
+        self.model = QtCore.QStringListModel()
+        self.model.setStringList(usrList)
+        self.completer()
+
+    def completer(self):
+        completer = QtWidgets.QCompleter()
+        completer.setModel(self.model)
+        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.ui.lineEdit.setCompleter(completer)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
