@@ -23,7 +23,7 @@ class myWindow():
         self.ui.locationButton.pressed.connect(self.locBtnClick)
         self.ui.userButton.pressed.connect(self.usrBtnClick)
 
-        # self.ui.searchButton.clicked.connect(self.test)
+        self.ui.searchButton.clicked.connect(self.search)
 
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
 
@@ -54,6 +54,56 @@ class myWindow():
                 self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
                 col +=1
             row +=1
+
+    def search(self):
+        column = self.db.getColumns()
+        self.theColumn = [x['COLUMN_NAME'] for x in column]
+
+        self.ui.tableWidget.setColumnCount(len(self.theColumn))
+        self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+
+        if self.ui.serialNoButton.isChecked():
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(self.ui.lineEdit.text())
+            rows = self.db.getRows(self.query)
+            # print rows
+            self.ui.tableWidget.setRowCount(len(rows))
+            self.fillTable()
+
+        if self.ui.itemTypeButton.isChecked():
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE item_type='%s' " %(self.ui.lineEdit.text())
+            rows = self.db.getRows(self.query)
+            self.ui.tableWidget.setRowCount(len(rows))
+            self.fillTable()
+
+        if self.ui.locationButton.isChecked():
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE location='%s' " %(self.ui.lineEdit.text())
+            rows = self.db.getRows(self.query)
+            self.ui.tableWidget.setRowCount(len(rows))
+            self.fillTable()
+
+        if self.ui.userButton.isChecked():
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE user='%s' " %(self.ui.lineEdit.text())
+            rows = self.db.getRows(self.query)
+            self.ui.tableWidget.setRowCount(len(rows))
+            self.fillTable()
+
+        else:
+            self.message()
+
+    def fillTable(self):
+            row = 0
+            self.db.getValues(self.query,init=True)
+            while True:
+                primaryResult = self.db.getValues(self.query)
+                # print primaryResult
+                if (not primaryResult):
+                    break
+                col = 0
+                for n in self.theColumn:
+                    result = primaryResult[n]
+                    self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
+                    col +=1
+                row +=1
 
     def slNoBtnClick(self):
         theList = self.db.Completer()
@@ -88,6 +138,9 @@ class myWindow():
         completer.setModel(self.model)
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.ui.lineEdit.setCompleter(completer)
+
+    def message(self):
+        QtWidgets.QMessageBox.about(QtWidgets.QMessageBox(),"Error!","Please Check Input.")
 
 
 if __name__ == '__main__':

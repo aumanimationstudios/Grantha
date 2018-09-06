@@ -61,6 +61,26 @@ class DataBase:
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
+    def getRows(self,query):
+        try:
+            self.cursor.execute(query)
+            slSearch = self.cursor.fetchall()
+            return slSearch
+
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
+    def getValues(self,query,init=False):
+        try:
+            if(init == False):
+                result = self.cursor.fetchone()
+                return result
+            else:
+                self.cursor.execute(query)
+
+        except:
+            print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
+
 
 if __name__ == '__main__':
     # database = MySQLdb.connect("localhost","test","test123","INVENTORY")
