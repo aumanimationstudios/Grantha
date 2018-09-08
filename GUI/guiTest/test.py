@@ -30,15 +30,16 @@ class myWindow():
         self.db = database.DataBase()
 
     def allBtnClick(self):
+        # self.ui.tableWidget.setSortingEnabled(False)
+        # self.ui.tableWidget.resizeColumnsToContents()
         #db = database.DataBase()
+
         column = self.db.getColumns()
         theColumn = [x['COLUMN_NAME'] for x in column]
-
         self.ui.tableWidget.setColumnCount(len(theColumn))
         self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
 
         theRows = self.db.getAllRows()
-
         self.ui.tableWidget.setRowCount(len(theRows))
 
         row = 0
@@ -54,6 +55,12 @@ class myWindow():
                 self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
                 col +=1
             row +=1
+
+        self.ui.tableWidget.resizeColumnsToContents()
+        # self.ui.tableWidget.setSortingEnabled(True)
+
+
+
 
     def search(self):
         column = self.db.getColumns()
@@ -87,23 +94,28 @@ class myWindow():
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
 
-        else:
-            self.message()
+        # else:
+        #     self.message()
 
     def fillTable(self):
-            row = 0
-            self.db.getValues(self.query,init=True)
-            while True:
-                primaryResult = self.db.getValues(self.query)
-                # print primaryResult
-                if (not primaryResult):
-                    break
-                col = 0
-                for n in self.theColumn:
-                    result = primaryResult[n]
-                    self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
-                    col +=1
-                row +=1
+        row = 0
+        self.db.getValues(self.query,init=True)
+        while True:
+            primaryResult = self.db.getValues(self.query)
+            # print primaryResult
+            if (not primaryResult):
+                break
+            col = 0
+            for n in self.theColumn:
+                result = primaryResult[n]
+                self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
+                col +=1
+            row +=1
+
+        self.ui.tableWidget.resizeColumnsToContents()
+
+
+
 
     def slNoBtnClick(self):
         theList = self.db.Completer()
@@ -139,8 +151,8 @@ class myWindow():
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.ui.lineEdit.setCompleter(completer)
 
-    def message(self):
-        QtWidgets.QMessageBox.about(QtWidgets.QMessageBox(),"Error!","Please Check Input.")
+    # def message(self):
+    #     QtWidgets.QMessageBox.about(QtWidgets.QMessageBox(),"Error!","Please Check Input.")
 
 
 if __name__ == '__main__':
