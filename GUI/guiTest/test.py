@@ -11,11 +11,11 @@ progPath = os.sep.join(filePath.split(os.sep)[:-3])
 uiFilePath = os.path.join(progPath,"GUI","guiTest","uiFiles")
 sys.path.append(uiFilePath)
 
-class myWindow():
+class mainWindow():
     def __init__(self):
         # super(myWindow, self).__init__()
         self.ui = uic.loadUi(os.path.join(uiFilePath, 'test.ui'))
-        self.ui.show()
+        # self.ui.show()
 
         self.ui.allButton.pressed.connect(self.allBtnClick)
         self.ui.serialNoButton.pressed.connect(self.slNoBtnClick)
@@ -26,6 +26,8 @@ class myWindow():
         self.ui.searchButton.clicked.connect(self.search)
 
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
+
+        self.ui.show()
 
         self.db = database.DataBase()
 
@@ -157,6 +159,6 @@ class myWindow():
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    window = myWindow()
+    window = mainWindow()
     sys.exit(app.exec_())
 
