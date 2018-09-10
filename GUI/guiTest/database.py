@@ -13,6 +13,12 @@ class DataBase:
 
     comp = "SELECT serial_no,item_type,location,user FROM ITEMS"
 
+    getIT = "SELECT * FROM ITEM_TYPE"
+
+    getLOC = "SELECT location FROM LOCATION"
+
+    getUSR = "SELECT * FROM USER"
+
     def __init__(self):
         self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
         self.cursor = self.database.cursor(MySQLdb.cursors.DictCursor)
@@ -37,7 +43,6 @@ class DataBase:
             self.cursor.execute(DataBase.all)
             rows = self.cursor.fetchall()
             return rows
-
         except:
             print ("Error: unable to fetch data : "+ str(sys.exc_info()))
 
@@ -48,7 +53,6 @@ class DataBase:
                 return result
             else:
                 self.cursor.execute(DataBase.all)
-
         except:
             print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
 
@@ -57,7 +61,6 @@ class DataBase:
             self.cursor.execute(DataBase.comp)
             slList = self.cursor.fetchall()
             return slList
-
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
@@ -66,7 +69,6 @@ class DataBase:
             self.cursor.execute(query)
             slSearch = self.cursor.fetchall()
             return slSearch
-
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
@@ -77,9 +79,32 @@ class DataBase:
                 return result
             else:
                 self.cursor.execute(query)
-
         except:
             print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
+
+    def listOfItemType(self):
+        try:
+            self.cursor.execute(DataBase.getIT)
+            iT = self.cursor.fetchall()
+            return iT
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def listOfLocation(self):
+        try:
+            self.cursor.execute(DataBase.getLOC)
+            loc = self.cursor.fetchall()
+            return loc
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def listOfUser(self):
+        try:
+            self.cursor.execute(DataBase.getUSR)
+            usr = self.cursor.fetchall()
+            return usr
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
 
 
 if __name__ == '__main__':
