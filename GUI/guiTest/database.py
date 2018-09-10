@@ -19,6 +19,12 @@ class DataBase:
 
     getUSR = "SELECT * FROM USER"
 
+    getDESC = "SELECT * FROM DESCRIPTION"
+
+    getMK = "SELECT * FROM MAKE"
+
+    getMDL = "SELECT * FROM MODEL"
+
     def __init__(self):
         self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
         self.cursor = self.database.cursor(MySQLdb.cursors.DictCursor)
@@ -32,9 +38,7 @@ class DataBase:
         try:
             self.cursor.execute(DataBase.col)
             column = self.cursor.fetchall()
-            # columnNames =  [x['COLUMN_NAME'] for x in column]
             return column
-            # print columnNames
         except:
             print ("Error: unable to fetch data : "+ str(sys.exc_info()))
 
@@ -103,6 +107,30 @@ class DataBase:
             self.cursor.execute(DataBase.getUSR)
             usr = self.cursor.fetchall()
             return usr
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def listOfDescription(self):
+        try:
+            self.cursor.execute(DataBase.getDESC)
+            desc = self.cursor.fetchall()
+            return desc
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def listOfMake(self):
+        try:
+            self.cursor.execute(DataBase.getMK)
+            mk = self.cursor.fetchall()
+            return mk
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def listOfModel(self):
+        try:
+            self.cursor.execute(DataBase.getMDL)
+            mdl = self.cursor.fetchall()
+            return mdl
         except:
             print ("Error: unable to fetch data : "+ str(sys.exc_info()))
 
