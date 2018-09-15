@@ -27,7 +27,7 @@ class mainWindow():
 
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
 
-        self.ui.show()
+        self.ui.showMaximized()
 
         self.db = database.DataBase()
 
