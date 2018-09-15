@@ -120,42 +120,50 @@ class mainWindow():
 
 
     def slNoBtnClick(self):
+        self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
         theList = self.db.Completer()
         slList = [x['serial_no'] for x in theList]
-        self.model = QtCore.QStringListModel()
-        self.model.setStringList(slList)
-        self.completer()
+        self.ui.comboBox.addItems(slList)
+        # self.model = QtCore.QStringListModel()
+        # self.model.setStringList(slList)
+        # self.completer()
 
     def itBtnClick(self):
+        self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
         theList = self.db.Completer()
         itList = list(set([x['item_type'] for x in theList]))
-        self.model = QtCore.QStringListModel()
-        self.model.setStringList(itList)
-        self.completer()
+        self.ui.comboBox.addItems(itList)
+        # self.model = QtCore.QStringListModel()
+        # self.model.setStringList(itList)
+        # self.completer()
 
     def locBtnClick(self):
+        self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
         theList = self.db.Completer()
         locList = list(set([x['location'] for x in theList]))
-        self.model = QtCore.QStringListModel()
-        self.model.setStringList(locList)
-        self.completer()
+        self.ui.comboBox.addItems(locList)
+        # self.model = QtCore.QStringListModel()
+        # self.model.setStringList(locList)
+        # self.completer()
 
     def usrBtnClick(self):
+        self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
         theList = self.db.Completer()
         usrList = list(set([x['user'] for x in theList]))
-        self.model = QtCore.QStringListModel()
-        self.model.setStringList(usrList)
-        self.completer()
+        self.ui.comboBox.addItems(usrList)
+        # self.model = QtCore.QStringListModel()
+        # self.model.setStringList(usrList)
+        # self.completer()
 
-    def completer(self):
-        completer = QtWidgets.QCompleter()
-        completer.setModel(self.model)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.ui.comboBox.setCompleter(completer)
+    # def completer(self):
+    #     completer = QtWidgets.QCompleter()
+    #     completer.setModel(self.model)
+    #     completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+    #     self.ui.comboBox.setCompleter(completer)
 
     # def message(self):
     #     QtWidgets.QMessageBox.about(QtWidgets.QMessageBox(),"Error!","Please Check Input.")
