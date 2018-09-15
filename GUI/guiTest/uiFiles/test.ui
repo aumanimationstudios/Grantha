@@ -30,67 +30,6 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>583</x>
-      <y>10</y>
-      <width>691</width>
-      <height>38</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QRadioButton" name="allButton">
-       <property name="text">
-        <string>A&amp;ll</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="serialNoButton">
-       <property name="text">
-        <string>Seria&amp;l No</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="itemTypeButton">
-       <property name="text">
-        <string>Item T&amp;ype</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="locationButton">
-       <property name="text">
-        <string>loca&amp;tion</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="userButton">
-       <property name="text">
-        <string>&amp;User</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit">
-       <property name="maxLength">
-        <number>30</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="searchButton">
-       <property name="text">
-        <string>Search</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
       <x>10</x>
       <y>10</y>
       <width>534</width>
@@ -162,6 +101,79 @@
       <widget class="QPushButton" name="logButton">
        <property name="text">
         <string>LOG</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>584</x>
+      <y>15</y>
+      <width>771</width>
+      <height>29</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QRadioButton" name="allButton">
+       <property name="text">
+        <string>A&amp;ll</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="serialNoButton">
+       <property name="text">
+        <string>Seria&amp;l No</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="itemTypeButton">
+       <property name="text">
+        <string>Item T&amp;ype</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="locationButton">
+       <property name="text">
+        <string>loca&amp;tion</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="userButton">
+       <property name="text">
+        <string>&amp;User</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBox">
+       <property name="minimumSize">
+        <size>
+         <width>251</width>
+         <height>27</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>251</width>
+         <height>27</height>
+        </size>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="searchButton">
+       <property name="text">
+        <string>Search</string>
        </property>
       </widget>
      </item>

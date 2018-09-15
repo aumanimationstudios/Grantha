@@ -35,7 +35,7 @@ class mainWindow():
         # self.ui.tableWidget.setSortingEnabled(False)
         # self.ui.tableWidget.resizeColumnsToContents()
         #db = database.DataBase()
-
+        self.ui.comboBox.clearEditText()
         column = self.db.getColumns()
         theColumn = [x['COLUMN_NAME'] for x in column]
         self.ui.tableWidget.setColumnCount(len(theColumn))
@@ -72,26 +72,26 @@ class mainWindow():
         self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
         if self.ui.serialNoButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(self.ui.lineEdit.text())
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(self.ui.comboBox.currentText())
             rows = self.db.getRows(self.query)
             # print rows
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
 
         if self.ui.itemTypeButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE item_type='%s' " %(self.ui.lineEdit.text())
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE item_type='%s' " %(self.ui.comboBox.currentText())
             rows = self.db.getRows(self.query)
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
 
         if self.ui.locationButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE location='%s' " %(self.ui.lineEdit.text())
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE location='%s' " %(self.ui.comboBox.currentText())
             rows = self.db.getRows(self.query)
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
 
         if self.ui.userButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE user='%s' " %(self.ui.lineEdit.text())
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE user='%s' " %(self.ui.comboBox.currentText())
             rows = self.db.getRows(self.query)
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
@@ -120,6 +120,7 @@ class mainWindow():
 
 
     def slNoBtnClick(self):
+        self.ui.comboBox.clearEditText()
         theList = self.db.Completer()
         slList = [x['serial_no'] for x in theList]
         self.model = QtCore.QStringListModel()
@@ -127,6 +128,7 @@ class mainWindow():
         self.completer()
 
     def itBtnClick(self):
+        self.ui.comboBox.clearEditText()
         theList = self.db.Completer()
         itList = list(set([x['item_type'] for x in theList]))
         self.model = QtCore.QStringListModel()
@@ -134,6 +136,7 @@ class mainWindow():
         self.completer()
 
     def locBtnClick(self):
+        self.ui.comboBox.clearEditText()
         theList = self.db.Completer()
         locList = list(set([x['location'] for x in theList]))
         self.model = QtCore.QStringListModel()
@@ -141,6 +144,7 @@ class mainWindow():
         self.completer()
 
     def usrBtnClick(self):
+        self.ui.comboBox.clearEditText()
         theList = self.db.Completer()
         usrList = list(set([x['user'] for x in theList]))
         self.model = QtCore.QStringListModel()
@@ -151,7 +155,7 @@ class mainWindow():
         completer = QtWidgets.QCompleter()
         completer.setModel(self.model)
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.ui.lineEdit.setCompleter(completer)
+        self.ui.comboBox.setCompleter(completer)
 
     # def message(self):
     #     QtWidgets.QMessageBox.about(QtWidgets.QMessageBox(),"Error!","Please Check Input.")

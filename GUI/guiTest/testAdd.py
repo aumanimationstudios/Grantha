@@ -46,7 +46,10 @@ class addWidget():
 
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
         self.ui.show()
+        self.ui.cancelButton.clicked.connect(self.closeEvent)
 
+    def closeEvent(self):
+        self.ui.close()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
