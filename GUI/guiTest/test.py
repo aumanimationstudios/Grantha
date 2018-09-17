@@ -11,6 +11,8 @@ progPath = os.sep.join(filePath.split(os.sep)[:-3])
 uiFilePath = os.path.join(progPath,"GUI","guiTest","uiFiles")
 sys.path.append(uiFilePath)
 
+testAdd = "testAdd.py"
+
 class mainWindow():
     def __init__(self):
         # super(myWindow, self).__init__()
@@ -24,6 +26,7 @@ class mainWindow():
         self.ui.userButton.pressed.connect(self.usrBtnClick)
 
         self.ui.searchButton.clicked.connect(self.search)
+        self.ui.addButton.clicked.connect(self.add)
 
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
 
@@ -167,6 +170,11 @@ class mainWindow():
 
     # def message(self):
     #     QtWidgets.QMessageBox.about(QtWidgets.QMessageBox(),"Error!","Please Check Input.")
+
+    def add(self):
+        p = QtCore.QProcess(parent=self.ui)
+        p.start(sys.executable, testAdd.split())
+
 
 
 if __name__ == '__main__':
