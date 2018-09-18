@@ -27,6 +27,7 @@ class DataBase:
 
     def __init__(self):
         self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
+        self.database.autocommit(1)
         self.cursor = self.database.cursor(MySQLdb.cursors.DictCursor)
 
         # self.col = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
@@ -133,6 +134,13 @@ class DataBase:
             return mdl
         except:
             print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def insertItem(self,query):
+        try:
+            self.cursor.execute(query)
+            print "Item Added"
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
 
 if __name__ == '__main__':
