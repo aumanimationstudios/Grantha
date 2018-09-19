@@ -17,7 +17,7 @@ sys.path.append(uiFilePath)
 
 class addWidget():
     def __init__(self):
-        self.ui = uic.loadUi(os.path.join(uiFilePath, 'testAdd.ui'))
+        self.ui = uic.loadUi(os.path.join(uiFilePath, 'testAdd01.ui'))
 
         self.db = database.DataBase()
 
@@ -127,17 +127,34 @@ class addWidget():
 
         print values
 
-        # column = self.db.getColumns()
-        # self.theColumn = [x['COLUMN_NAME'] for x in column]
-        #
-        # self.query = "INSERT INTO ITEMS (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
-        # self.db.insertItem(self.query)
-        # self.message()
 
-    def message(self):
-        msgBox = QtWidgets.QMessageBox()
-        msgBox.resize(0,0)
-        msgBox.about(msgBox,"Confirmation","Item Added. \nSl.No: "+ self.ui.serialNoBox.text())
+        column = self.db.getColumns()
+        self.theColumn = [x['COLUMN_NAME'] for x in column]
+
+        self.query = "INSERT INTO ITEMS (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
+        self.insert = self.db.insertItem(self.query)
+
+        print self.insert
+
+        self.insertMessage()
+
+    def insertMessage(self):
+        msg = QtWidgets.QMessageBox()
+        msg.resize(0,0)
+        msg.about(msg,"Message", self.insert)
+
+    #     self.okMessage()
+    #
+    # def errorMessage(self):
+    #     errMsg = self.db.insertItem()
+    #     errBox = QtWidgets.QMessageBox()
+    #     errBox.resize(0,0)
+    #     errBox.about(errBox,"Error","Unable to add Item")
+    #
+    # def okMessage(self):
+    #     msgBox = QtWidgets.QMessageBox()
+    #     msgBox.resize(0,0)
+    #     msgBox.about(msgBox,"Confirmation","Item Added. \nSl.No: "+ self.ui.serialNoBox.text())
 
 
     def closeEvent(self):

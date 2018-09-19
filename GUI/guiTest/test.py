@@ -32,7 +32,7 @@ class mainWindow():
 
         # self.ui.showMaximized()
 
-        self.ui.move(170, 80)
+        self.ui.move(330, 80)
         self.ui.show()
 
         self.db = database.DataBase()

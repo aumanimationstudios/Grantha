@@ -149,10 +149,13 @@ class DataBase:
     def insertItem(self,query):
         try:
             self.cursor.execute(query)
-            print "Item Added"
+            okMsg = "Item Added Successfully"
+            return okMsg
+            # print "Item Added"
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
-
+            errMsg = str(sys.exc_info())
+            return errMsg
 
 if __name__ == '__main__':
     # database = MySQLdb.connect("localhost","test","test123","INVENTORY")
