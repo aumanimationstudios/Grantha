@@ -13,6 +13,8 @@ class DataBase:
 
     comp = "SELECT serial_no,item_type,location,user FROM ITEMS"
 
+    getSN = "SELECT * FROM SERIAL_NO"
+
     getIT = "SELECT * FROM ITEM_TYPE"
 
     getLOC = "SELECT location FROM LOCATION"
@@ -87,11 +89,20 @@ class DataBase:
         except:
             print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
 
+
+    def listOfSerialNo(self):
+        try:
+            self.cursor.execute(DataBase.getSN)
+            sn = self.cursor.fetchall()
+            return sn
+        except:
+            print("Error: unable to fetch data : "+ str(sys.exc_info()))
+
     def listOfItemType(self):
         try:
             self.cursor.execute(DataBase.getIT)
-            iT = self.cursor.fetchall()
-            return iT
+            it = self.cursor.fetchall()
+            return it
         except:
             print ("Error: unable to fetch data : "+ str(sys.exc_info()))
 
