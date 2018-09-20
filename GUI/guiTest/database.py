@@ -175,6 +175,11 @@ class DataBase:
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
+    def insertSerialNo(self, query):
+        try:
+            self.cursor.execute(query)
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
 
 

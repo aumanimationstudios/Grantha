@@ -181,9 +181,12 @@ class addWidget():
         column = self.db.getColumns()
         self.theColumn = [x['COLUMN_NAME'] for x in column]
 
-        query = "INSERT INTO ITEMS (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
-        self.insert = self.db.insertItem(query)
-        # print self.insert
+        queryAddItem = "INSERT INTO ITEMS (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
+        queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no) VALUES ('%s') " %(userInput["sN"])
+
+        self.addItem = self.db.insertItem(queryAddItem)
+        self.db.insertSerialNo(queryAddSlNo)
+        # print self.addItem
 
         self.insertMessage()
         self.load()
@@ -191,14 +194,12 @@ class addWidget():
     def insertMessage(self):
         msg = QtWidgets.QMessageBox()
         msg.resize(0,0)
-        msg.about(msg,"Message", self.insert)
-
+        msg.about(msg,"Message", self.addItem)
 
     # def okMessage(self):
     #     msgBox = QtWidgets.QMessageBox()
     #     msgBox.resize(0,0)
     #     msgBox.about(msgBox,"Confirmation","Item Added. \nSl.No: "+ self.ui.serialNoBox.text())
-
 
     def closeEvent(self):
         self.ui.close()
