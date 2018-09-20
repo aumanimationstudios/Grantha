@@ -181,6 +181,14 @@ class DataBase:
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
+    def getLocnUsr(self, query):
+        try:
+            self.cursor.execute(query)
+            locnusr = self.cursor.fetchall()
+            return locnusr
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
 
 
 if __name__ == '__main__':

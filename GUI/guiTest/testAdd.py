@@ -21,30 +21,6 @@ class addWidget():
 
         self.db = database.DataBase()
 
-        # it = self.db.listOfItemType()
-        # IT = [x['item_type'] for x in it]
-        # self.ui.itemTypeBox.addItems(IT)
-        #
-        # desc = self.db.listOfDescription()
-        # self.DESC = [x['description'] for x in desc]
-        # self.ui.descriptionBox.addItems(self.DESC)
-        #
-        # mk = self.db.listOfMake()
-        # self.MK = [x['make'] for x in mk]
-        # self.ui.makeBox.addItems(self.MK)
-        #
-        # mdl = self.db.listOfModel()
-        # self.MDL = [x['model'] for x in mdl]
-        # self.ui.modelBox.addItems(self.MDL)
-        #
-        # loc = self.db.listOfLocation()
-        # LOC = [x['location'] for x in loc]
-        # self.ui.locationBox.addItems(LOC)
-        #
-        # usr = self.db.listOfUser()
-        # USR = [x['user'] for x in usr]
-        # self.ui.userBox.addItems(USR)
-        #
         self.load()
         self.ui.priceBox.setText('0.00')
 
