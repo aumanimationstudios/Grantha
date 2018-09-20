@@ -56,6 +56,7 @@ class addWidget():
         self.ui.clearButton.clicked.connect(self.clearAll)
         self.ui.saveButton.clicked.connect(self.addNew)
 
+        self.ui.setWindowTitle('Add Item')
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
         self.ui.show()
         self.ui.cancelButton.clicked.connect(self.closeEvent)

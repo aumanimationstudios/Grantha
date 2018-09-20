@@ -28,6 +28,7 @@ class mainWindow():
         self.ui.searchButton.clicked.connect(self.search)
         self.ui.addButton.clicked.connect(self.add)
 
+        self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
 
         # self.ui.showMaximized()
