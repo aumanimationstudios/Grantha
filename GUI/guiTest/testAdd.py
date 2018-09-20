@@ -21,30 +21,31 @@ class addWidget():
 
         self.db = database.DataBase()
 
-        it = self.db.listOfItemType()
-        IT = [x['item_type'] for x in it]
-        self.ui.itemTypeBox.addItems(IT)
-
-        desc = self.db.listOfDescription()
-        DESC = [x['description'] for x in desc]
-        self.ui.descriptionBox.addItems(DESC)
-
-        mk = self.db.listOfMake()
-        MK = [x['make'] for x in mk]
-        self.ui.makeBox.addItems(MK)
-
-        mdl = self.db.listOfModel()
-        MDL = [x['model'] for x in mdl]
-        self.ui.modelBox.addItems(MDL)
-
-        loc = self.db.listOfLocation()
-        LOC = [x['location'] for x in loc]
-        self.ui.locationBox.addItems(LOC)
-
-        usr = self.db.listOfUser()
-        USR = [x['user'] for x in usr]
-        self.ui.userBox.addItems(USR)
-
+        # it = self.db.listOfItemType()
+        # IT = [x['item_type'] for x in it]
+        # self.ui.itemTypeBox.addItems(IT)
+        #
+        # desc = self.db.listOfDescription()
+        # self.DESC = [x['description'] for x in desc]
+        # self.ui.descriptionBox.addItems(self.DESC)
+        #
+        # mk = self.db.listOfMake()
+        # self.MK = [x['make'] for x in mk]
+        # self.ui.makeBox.addItems(self.MK)
+        #
+        # mdl = self.db.listOfModel()
+        # self.MDL = [x['model'] for x in mdl]
+        # self.ui.modelBox.addItems(self.MDL)
+        #
+        # loc = self.db.listOfLocation()
+        # LOC = [x['location'] for x in loc]
+        # self.ui.locationBox.addItems(LOC)
+        #
+        # usr = self.db.listOfUser()
+        # USR = [x['user'] for x in usr]
+        # self.ui.userBox.addItems(USR)
+        #
+        self.load()
         self.ui.priceBox.setText('0.00')
 
         self.ui.randomButton.clicked.connect(self.slNoGen)
@@ -58,6 +59,40 @@ class addWidget():
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
         self.ui.show()
         self.ui.cancelButton.clicked.connect(self.closeEvent)
+
+    def load(self):
+        it = self.db.listOfItemType()
+        IT = [x['item_type'] for x in it]
+        self.ui.itemTypeBox.clear()
+        self.ui.itemTypeBox.addItems(IT)
+
+        desc = self.db.listOfDescription()
+        self.DESC = [x['description'] for x in desc]
+        self.ui.descriptionBox.clear()
+        self.ui.descriptionBox.addItems(self.DESC)
+
+        mk = self.db.listOfMake()
+        self.MK = [x['make'] for x in mk]
+        self.ui.makeBox.clear()
+        self.ui.makeBox.addItems(self.MK)
+
+        mdl = self.db.listOfModel()
+        self.MDL = [x['model'] for x in mdl]
+        self.ui.modelBox.clear()
+        self.ui.modelBox.addItems(self.MDL)
+
+        loc = self.db.listOfLocation()
+        LOC = [x['location'] for x in loc]
+        self.ui.locationBox.clear()
+        self.ui.locationBox.addItems(LOC)
+
+        usr = self.db.listOfUser()
+        USR = [x['user'] for x in usr]
+        self.ui.userBox.clear()
+        self.ui.userBox.addItems(USR)
+
+        self.ui.priceBox.setText('0.00')
+
 
     def slNoGen(self):
         slNo = self.slNoGenerator()
@@ -92,6 +127,7 @@ class addWidget():
 
     def clearAll(self):
         self.ui.serialNoBox.clear()
+        self.ui.itemTypeBox.setCurrentIndex(0)
         self.ui.descriptionBox.clearEditText()
         self.ui.makeBox.clearEditText()
         self.ui.modelBox.clearEditText()
@@ -124,19 +160,32 @@ class addWidget():
         values = []
         for key in userInput.keys():
             values.append(userInput[key])
-
         print values
 
+        if userInput["dSC"] not in self.DESC:
+            query = "INSERT INTO DESCRIPTION (description) VALUES (%r)" %(userInput["dSC"])
+            self.db.insertDescription(query)
+            print "description added"
+
+        if userInput["mK"] not in self.MK:
+            query = "INSERT INTO MAKE (make) VALUES (%r)" %(userInput["mK"])
+            self.db.insertMake(query)
+            print "make added"
+
+        if userInput["mDL"] not in self.MDL:
+            query = "INSERT INTO MODEL (model) VALUES (%r)" %(userInput["mDL"])
+            self.db.insertModel(query)
+            print "model added"
 
         column = self.db.getColumns()
         self.theColumn = [x['COLUMN_NAME'] for x in column]
 
-        self.query = "INSERT INTO ITEMS (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
-        self.insert = self.db.insertItem(self.query)
-
+        query = "INSERT INTO ITEMS (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
+        self.insert = self.db.insertItem(query)
         print self.insert
 
         self.insertMessage()
+        self.load()
 
     def insertMessage(self):
         msg = QtWidgets.QMessageBox()

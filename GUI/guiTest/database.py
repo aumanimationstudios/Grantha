@@ -157,6 +157,27 @@ class DataBase:
             errMsg = str(sys.exc_info())
             return errMsg
 
+    def insertDescription(self, query):
+        try:
+            self.cursor.execute(query)
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
+    def insertMake(self, query):
+        try:
+            self.cursor.execute(query)
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
+    def insertModel(self, query):
+        try:
+            self.cursor.execute(query)
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
+
+
+
 if __name__ == '__main__':
     # database = MySQLdb.connect("localhost","test","test123","INVENTORY")
     # cursor = database.cursor(MySQLdb.cursors.DictCursor)
