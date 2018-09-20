@@ -12,6 +12,7 @@ uiFilePath = os.path.join(progPath,"GUI","guiTest","uiFiles")
 sys.path.append(uiFilePath)
 
 testAdd = "testAdd.py"
+testUpdate = "testUpdate.py"
 
 class mainWindow():
     def __init__(self):
@@ -27,6 +28,7 @@ class mainWindow():
 
         self.ui.searchButton.clicked.connect(self.search)
         self.ui.addButton.clicked.connect(self.add)
+        self.ui.updateButton.clicked.connect(self.update)
 
         self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
@@ -182,6 +184,10 @@ class mainWindow():
     def add(self):
         p = QtCore.QProcess(parent=self.ui)
         p.start(sys.executable, testAdd.split())
+
+    def update(self):
+        p = QtCore.QProcess(parent=self.ui)
+        p.start(sys.executable, testUpdate.split())
 
 
 
