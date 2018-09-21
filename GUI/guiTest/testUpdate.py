@@ -5,7 +5,8 @@ import os
 import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
 import database
-
+from collections import OrderedDict
+import time
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-3])
@@ -22,6 +23,7 @@ class updateWidget():
 
         self.ui.serialNoBox.currentIndexChanged.connect(self.loadDetails)
         self.ui.clearButton.clicked.connect(self.clearAll)
+        self.ui.saveButton.clicked.connect(self.confirmation)
 
         self.ui.setWindowTitle('Update Item Information')
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
@@ -48,11 +50,10 @@ class updateWidget():
     def loadDetails(self):
         slNo = self.ui.serialNoBox.currentText()
         # print slNo
-
-        query = "SELECT * FROM ITEMS WHERE serial_no='%s' " %(slNo)
-        details = self.db.getDetails(query)
-        # print details
         if slNo in self.SN:
+            query = "SELECT * FROM ITEMS WHERE serial_no='%s' " %(slNo)
+            details = self.db.getDetails(query)
+            # print details
             iT = details["item_type"]
             dSC = details["description"]
             mK = details["make"]
@@ -80,6 +81,29 @@ class updateWidget():
         self.ui.newLocationBox.setCurrentIndex(0)
         self.ui.newUserBox.setCurrentIndex(0)
         # self.load()
+
+    def confirmation(self):
+        confirm = QtWidgets.QMessageBox()
+        confirm.setIcon(QtWidgets.QMessageBox.Question)
+        confirm.setWindowTitle("Confirmation")
+        confirm.setInformativeText("Are you sure you want to save?")
+        confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        ret = confirm.exec_()
+        if ret == QtWidgets.QMessageBox.Ok:
+            self.update()
+        else:
+            pass
+
+    def update(self):
+        userInput = OrderedDict()
+
+        userInput["dateTime"] = time.strftime('%Y-%m-%d %H:%M:%S')
+        userInput["slNo"] = str(self.ui.serialNoBox.currentText())
+
+        userInput["newLocation"] = str(self.ui.newLocationBox.currentText())
+        userInput["newUser"] = str(self.ui.newUserBox.currentText())
+        userInput["updatedBy"] = os.environ['USER']
+
 
     def closeEvent(self):
         self.ui.close()
