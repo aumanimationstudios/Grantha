@@ -113,6 +113,7 @@ class addWidget():
         self.validNone()
         self.locationNone()
         self.userNone()
+        self.load()
 
     def addNew(self):
         userInput = OrderedDict()

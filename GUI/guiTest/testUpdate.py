@@ -18,35 +18,68 @@ class updateWidget():
 
         self.db = database.DataBase()
 
-        sn = self.db.listOfSerialNo()
-        SN = [x['serial_no'] for x in sn]
-        self.ui.serialNoBox.clear()
-        self.ui.serialNoBox.addItems(SN)
+        self.load()
 
-
-        self.ui.serialNoBox.currentIndexChanged.connect(self.loadLocnUsr)
+        self.ui.serialNoBox.currentIndexChanged.connect(self.loadDetails)
+        self.ui.clearButton.clicked.connect(self.clearAll)
 
         self.ui.setWindowTitle('Update Item Information')
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
         self.ui.show()
         self.ui.cancelButton.clicked.connect(self.closeEvent)
 
+    def load(self):
+        sn = self.db.listOfSerialNo()
+        self.SN = [x['serial_no'] for x in sn]
+        self.ui.serialNoBox.clear()
+        self.ui.serialNoBox.addItems(self.SN)
 
-    def loadLocnUsr(self):
+        loc = self.db.listOfLocation()
+        LOC = [x['location'] for x in loc]
+        self.ui.newLocationBox.clear()
+        self.ui.newLocationBox.addItems(LOC)
+
+        usr = self.db.listOfUser()
+        USR = [x['user'] for x in usr]
+        self.ui.newUserBox.clear()
+        self.ui.newUserBox.addItems(USR)
+
+
+    def loadDetails(self):
         slNo = self.ui.serialNoBox.currentText()
         # print slNo
 
-        query = "SELECT location, user FROM ITEMS WHERE serial_no='%s' " %(slNo)
-        locnusr = self.db.getLocnUsr(query)
-        print locnusr
-        lOC = locnusr('location')
-        iT = locnusr('user')
-        print lOC
-        print iT
+        query = "SELECT * FROM ITEMS WHERE serial_no='%s' " %(slNo)
+        details = self.db.getDetails(query)
+        # print details
+        if slNo in self.SN:
+            iT = details["item_type"]
+            dSC = details["description"]
+            mK = details["make"]
+            mDL = details["model"]
+            lOC = details["location"]
+            uSR = details["user"]
 
+            self.ui.itemTypeBox.setText(iT)
+            self.ui.descriptionBox.setText(dSC)
+            self.ui.makeBox.setText(mK)
+            self.ui.modelBox.setText(mDL)
+            self.ui.currentLocationBox.setText(lOC)
+            self.ui.currentUserBox.setText(uSR)
+        else:
+            self.clearAll()
 
-        # self.ui.currentLocationBox.setText(lOC)
-        # self.ui.cujrrentUserBox.setText(iT)
+    def clearAll(self):
+        self.ui.serialNoBox.clearEditText()
+        self.ui.itemTypeBox.clear()
+        self.ui.descriptionBox.clear()
+        self.ui.makeBox.clear()
+        self.ui.modelBox.clear()
+        self.ui.currentLocationBox.clear()
+        self.ui.currentUserBox.clear()
+        self.ui.newLocationBox.setCurrentIndex(0)
+        self.ui.newUserBox.setCurrentIndex(0)
+        # self.load()
 
     def closeEvent(self):
         self.ui.close()
