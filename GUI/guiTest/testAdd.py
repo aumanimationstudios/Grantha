@@ -30,7 +30,7 @@ class addWidget():
         self.ui.locationNoneButton.clicked.connect(self.locationNone)
         self.ui.userNoneButton.clicked.connect(self.userNone)
         self.ui.clearButton.clicked.connect(self.clearAll)
-        self.ui.saveButton.clicked.connect(self.addNew)
+        self.ui.saveButton.clicked.connect(self.confirmation)
 
         self.ui.setWindowTitle('Add Item')
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
@@ -115,6 +115,19 @@ class addWidget():
         self.userNone()
         self.load()
 
+    def confirmation(self):
+        confirm = QtWidgets.QMessageBox()
+        confirm.setIcon(QtWidgets.QMessageBox.Question)
+        confirm.setWindowTitle("Confirmation")
+        confirm.setInformativeText("Are you sure you want to save?")
+        confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        # confirm.question(confirm,"Confirmation","Are you sure you want to save?", QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel, QtWidgets.QMessageBox.Cancel)
+        ret = confirm.exec_()
+        if ret == QtWidgets.QMessageBox.Ok:
+            self.addNew()
+        else:
+            pass
+
     def addNew(self):
         userInput = OrderedDict()
 
@@ -138,7 +151,7 @@ class addWidget():
         values = []
         for key in userInput.keys():
             values.append(userInput[key])
-        # print values
+        print values
 
         if userInput["dSC"] not in self.DESC:
             query = "INSERT INTO DESCRIPTION (description) VALUES (%r)" %(userInput["dSC"])
@@ -170,8 +183,11 @@ class addWidget():
 
     def insertMessage(self):
         msg = QtWidgets.QMessageBox()
-        msg.resize(0,0)
-        msg.about(msg,"Message", self.addItem)
+        msg.setWindowTitle("Message")
+        msg.setText(self.addItem)
+        msg.exec_()
+        # msg.resize(0,0)
+        # msg.about(msg,"Message", self.addItem)
 
     # def okMessage(self):
     #     msgBox = QtWidgets.QMessageBox()
