@@ -183,6 +183,7 @@ class addWidget():
 
     def insertMessage(self):
         msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setWindowTitle("Message")
         msg.setText(self.addItem)
         msg.exec_()
