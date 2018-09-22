@@ -151,22 +151,22 @@ class addWidget():
         values = []
         for key in userInput.keys():
             values.append(userInput[key])
-        print values
+        # print values
 
-        if userInput["dSC"] not in self.DESC:
-            query = "INSERT INTO DESCRIPTION (description) VALUES (%r)" %(userInput["dSC"])
-            self.db.insertDescription(query)
-            # print "description added"
-
-        if userInput["mK"] not in self.MK:
-            query = "INSERT INTO MAKE (make) VALUES (%r)" %(userInput["mK"])
-            self.db.insertMake(query)
-            # print "make added"
-
-        if userInput["mDL"] not in self.MDL:
-            query = "INSERT INTO MODEL (model) VALUES (%r)" %(userInput["mDL"])
-            self.db.insertModel(query)
-            # print "model added"
+        # if userInput["dSC"] not in self.DESC:
+        #     query = "INSERT INTO DESCRIPTION (description) VALUES (%r)" %(userInput["dSC"])
+        #     self.db.insertDescription(query)
+        #     # print "description added"
+        #
+        # if userInput["mK"] not in self.MK:
+        #     query = "INSERT INTO MAKE (make) VALUES (%r)" %(userInput["mK"])
+        #     self.db.insertMake(query)
+        #     # print "make added"
+        #
+        # if userInput["mDL"] not in self.MDL:
+        #     query = "INSERT INTO MODEL (model) VALUES (%r)" %(userInput["mDL"])
+        #     self.db.insertModel(query)
+        #     # print "model added"
 
         column = self.db.getColumns()
         self.theColumn = [x['COLUMN_NAME'] for x in column]

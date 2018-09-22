@@ -27,6 +27,9 @@ class DataBase:
 
     getMDL = "SELECT * FROM MODEL"
 
+    colOfLog = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'UPDATE_LOG' \
+                    AND COLUMN_NAME NOT IN ('no')"
+
     def __init__(self):
         self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
         self.database.autocommit(1)
@@ -189,6 +192,29 @@ class DataBase:
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
+    def getColumnsOfLog(self):
+        try:
+            self.cursor.execute(DataBase.colOfLog)
+            column = self.cursor.fetchall()
+            return column
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def update(self,query):
+        try:
+            self.cursor.execute(query)
+            okMsg = "Item Added Successfully"
+            return okMsg
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+            errMsg = str(sys.exc_info())
+            return errMsg
+
+    def updateLog(self, query):
+        try:
+            self.cursor.execute(query)
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
 
 if __name__ == '__main__':

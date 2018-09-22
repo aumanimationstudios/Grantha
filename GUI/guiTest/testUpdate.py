@@ -99,11 +99,34 @@ class updateWidget():
 
         userInput["dateTime"] = time.strftime('%Y-%m-%d %H:%M:%S')
         userInput["slNo"] = str(self.ui.serialNoBox.currentText())
+        userInput["oldLocation"] = str(self.ui.currentLocationBox.text())
+        # userInput["oldUser"] = str(self.ui.currentUserBox.text())
+        if userInput["slNo"] in self.SN:
+            userInput["newLocation"] = str(self.ui.newLocationBox.currentText())
+            # userInput["newUser"] = str(self.ui.newUserBox.currentText())
+            userInput["updatedBy"] = os.environ['USER']
 
-        userInput["newLocation"] = str(self.ui.newLocationBox.currentText())
-        userInput["newUser"] = str(self.ui.newUserBox.currentText())
-        userInput["updatedBy"] = os.environ['USER']
+            query = "UPDATE ITEMS SET location = '%s' WHERE serial_no = '%s' " %(userInput["newLocation"], userInput["slNo"])
+            self.updated = self.db.update(query)
 
+            values = []
+            for key in userInput.keys():
+                values.append(userInput[key])
+            # print values
+            column = self.db.getColumnsOfLog()
+            self.theColumn = [x['COLUMN_NAME'] for x in column]
+
+            queryLog = "INSERT INTO UPDATE_LOG (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
+            self.db.updateLog(queryLog)
+
+            self.updateMessage()
+
+    def updateMessage(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setWindowTitle("Message")
+        msg.setText(self.updated)
+        msg.exec_()
 
     def closeEvent(self):
         self.ui.close()
