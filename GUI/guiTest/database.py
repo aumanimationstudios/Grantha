@@ -216,6 +216,24 @@ class DataBase:
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
+    def getRowsOfLog(self,query):
+        try:
+            self.cursor.execute(query)
+            result = self.cursor.fetchall()
+            return result
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
+    def getValuesOfLog(self,query,init=False):
+        try:
+            if(init == False):
+                result = self.cursor.fetchone()
+                return result
+            else:
+                self.cursor.execute(query)
+        except:
+            print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
+
 
 if __name__ == '__main__':
     # database = MySQLdb.connect("localhost","test","test123","INVENTORY")

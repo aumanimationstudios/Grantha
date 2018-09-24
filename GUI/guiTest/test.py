@@ -4,6 +4,7 @@
 import os
 import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
+from PyQt5.QtWidgets import QDesktopWidget
 import database
 
 filePath = os.path.abspath(__file__)
@@ -13,6 +14,7 @@ sys.path.append(uiFilePath)
 
 testAdd = "testAdd.py"
 testUpdate = "testUpdate.py"
+testLog = "testLog.py"
 
 class mainWindow():
     def __init__(self):
@@ -29,16 +31,24 @@ class mainWindow():
         self.ui.searchButton.clicked.connect(self.search)
         self.ui.addButton.clicked.connect(self.add)
         self.ui.updateButton.clicked.connect(self.update)
+        self.ui.logButton.clicked.connect(self.log)
 
         self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
 
         # self.ui.showMaximized()
-
-        self.ui.move(330, 80)
+        # self.ui.move(360, 80)
+        self.center()
         self.ui.show()
 
         self.db = database.DataBase()
+
+    def center(self):
+        qr = self.ui.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.ui.move(qr.topLeft())
+
 
     def allBtnClick(self):
         # self.ui.tableWidget.setSortingEnabled(False)
@@ -189,6 +199,9 @@ class mainWindow():
         p = QtCore.QProcess(parent=self.ui)
         p.start(sys.executable, testUpdate.split())
 
+    def log(self):
+        p = QtCore.QProcess(parent=self.ui)
+        p.start(sys.executable, testLog.split())
 
 
 if __name__ == '__main__':

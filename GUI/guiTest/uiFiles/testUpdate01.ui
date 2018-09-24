@@ -160,6 +160,9 @@
    </item>
    <item row="0" column="1">
     <widget class="QComboBox" name="serialNoBox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -167,7 +170,7 @@
       </sizepolicy>
      </property>
      <property name="editable">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="maxVisibleItems">
       <number>20</number>
@@ -202,6 +205,9 @@
    </item>
    <item row="9" column="1">
     <widget class="QComboBox" name="newUserBox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -209,7 +215,7 @@
       </sizepolicy>
      </property>
      <property name="editable">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="maxVisibleItems">
       <number>20</number>
@@ -260,6 +266,9 @@
    </item>
    <item row="8" column="1">
     <widget class="QComboBox" name="newLocationBox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -267,7 +276,7 @@
       </sizepolicy>
      </property>
      <property name="editable">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="maxVisibleItems">
       <number>20</number>
