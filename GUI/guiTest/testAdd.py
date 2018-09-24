@@ -70,6 +70,36 @@ class addWidget():
 
         self.ui.priceBox.setText('0.00')
 
+        years = []
+        years.extend(["YYYY","0000"])
+        for i in range(2005, 2031):
+            years.append(str(i))
+
+        months = []
+        months.extend(["MM",'00'])
+        for i in range(01,13):
+            months.append(str(i))
+
+        days = []
+        days.extend(["DD",'00'])
+        for i in range(01,32):
+            days.append(str(i))
+
+        self.ui.purchaseYYYY.clear()
+        self.ui.purchaseMM.clear()
+        self.ui.purchaseDD.clear()
+
+        self.ui.purchaseYYYY.addItems(years)
+        self.ui.purchaseMM.addItems(months)
+        self.ui.purchaseDD.addItems(days)
+
+        self.ui.validYYYY.clear()
+        self.ui.validMM.clear()
+        self.ui.validDD.clear()
+
+        self.ui.validYYYY.addItems(years)
+        self.ui.validMM.addItems(months)
+        self.ui.validDD.addItems(days)
 
     def slNoGen(self):
         slNo = self.slNoGenerator()
