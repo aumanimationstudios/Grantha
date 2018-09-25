@@ -17,7 +17,7 @@ sys.path.append(uiFilePath)
 
 class addWidget():
     def __init__(self):
-        self.ui = uic.loadUi(os.path.join(uiFilePath, 'testAdd01.ui'))
+        self.ui = uic.loadUi(os.path.join(uiFilePath, 'testAdd02.ui'))
 
         self.db = database.DataBase()
 
@@ -25,6 +25,8 @@ class addWidget():
         self.ui.priceBox.setText('0.00')
 
         self.ui.randomButton.clicked.connect(self.slNoGen)
+        self.ui.purchaseCal.clicked.connect(self.showPurchaseCal)
+        self.ui.validCal.clicked.connect(self.showValidCal)
         self.ui.purchaseNoneButton.clicked.connect(self.purchaseNone)
         self.ui.validNoneButton.clicked.connect(self.validNone)
         self.ui.locationNoneButton.clicked.connect(self.locationNone)
@@ -33,6 +35,8 @@ class addWidget():
         self.ui.saveButton.clicked.connect(self.confirmation)
 
         self.ui.setWindowTitle('Add Item')
+        self.ui.purchaseCal.setIcon(QtGui.QIcon('cal.png'))
+        self.ui.validCal.setIcon(QtGui.QIcon('cal.png'))
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
         self.ui.show()
         self.ui.cancelButton.clicked.connect(self.closeEvent)
@@ -70,36 +74,36 @@ class addWidget():
 
         self.ui.priceBox.setText('0.00')
 
-        years = []
-        years.extend(["YYYY","0000"])
-        for i in range(2005, 2031):
-            years.append(str(i))
-
-        months = []
-        months.extend(["MM",'00'])
-        for i in range(01,13):
-            months.append(str(i))
-
-        days = []
-        days.extend(["DD",'00'])
-        for i in range(01,32):
-            days.append(str(i))
-
-        self.ui.purchaseYYYY.clear()
-        self.ui.purchaseMM.clear()
-        self.ui.purchaseDD.clear()
-
-        self.ui.purchaseYYYY.addItems(years)
-        self.ui.purchaseMM.addItems(months)
-        self.ui.purchaseDD.addItems(days)
-
-        self.ui.validYYYY.clear()
-        self.ui.validMM.clear()
-        self.ui.validDD.clear()
-
-        self.ui.validYYYY.addItems(years)
-        self.ui.validMM.addItems(months)
-        self.ui.validDD.addItems(days)
+        # years = []
+        # years.extend(["YYYY","0000"])
+        # for i in range(2005, 2031):
+        #     years.append(str(i))
+        #
+        # months = []
+        # months.extend(["MM",'00'])
+        # for i in range(01,13):
+        #     months.append(str(i))
+        #
+        # days = []
+        # days.extend(["DD",'00'])
+        # for i in range(01,32):
+        #     days.append(str(i))
+        #
+        # self.ui.purchaseYYYY.clear()
+        # self.ui.purchaseMM.clear()
+        # self.ui.purchaseDD.clear()
+        #
+        # self.ui.purchaseYYYY.addItems(years)
+        # self.ui.purchaseMM.addItems(months)
+        # self.ui.purchaseDD.addItems(days)
+        #
+        # self.ui.validYYYY.clear()
+        # self.ui.validMM.clear()
+        # self.ui.validDD.clear()
+        #
+        # self.ui.validYYYY.addItems(years)
+        # self.ui.validMM.addItems(months)
+        # self.ui.validDD.addItems(days)
 
     def slNoGen(self):
         slNo = self.slNoGenerator()
@@ -117,14 +121,10 @@ class addWidget():
         return slNo
 
     def purchaseNone(self):
-        self.ui.purchaseYYYY.setCurrentIndex(1)
-        self.ui.purchaseMM.setCurrentIndex(1)
-        self.ui.purchaseDD.setCurrentIndex(1)
+        self.ui.purchaseBox.setText("0000-00-00")
 
     def validNone(self):
-        self.ui.validYYYY.setCurrentIndex(1)
-        self.ui.validMM.setCurrentIndex(1)
-        self.ui.validDD.setCurrentIndex(1)
+        self.ui.validBox.setText("0000-00-00")
 
     def locationNone(self):
         self.ui.locationBox.setCurrentIndex(0)
@@ -144,6 +144,26 @@ class addWidget():
         self.locationNone()
         self.userNone()
         self.load()
+
+    def showPurchaseCal(self):
+        self.cal = QtWidgets.QCalendarWidget()
+        self.cal.clicked.connect(self.updatePurchaseDate)
+        self.cal.show()
+
+    def showValidCal(self):
+        self.cal = QtWidgets.QCalendarWidget()
+        self.cal.clicked.connect(self.updateValidDate)
+        self.cal.show()
+
+    def updatePurchaseDate(self):
+        date = self.cal.selectedDate().toString(QtCore.Qt.ISODate)
+        self.ui.purchaseBox.setText(date)
+        self.cal.close()
+
+    def updateValidDate(self):
+        date = self.cal.selectedDate().toString(QtCore.Qt.ISODate)
+        self.ui.validBox.setText(date)
+        self.cal.close()
 
     def confirmation(self):
         confirm = QtWidgets.QMessageBox()
@@ -167,14 +187,8 @@ class addWidget():
         userInput["mK"] = str(self.ui.makeBox.currentText())
         userInput["mDL"] = str(self.ui.modelBox.currentText())
         userInput["pRC"] = str(self.ui.priceBox.text())
-        pY = str(self.ui.purchaseYYYY.currentText())
-        pM = str(self.ui.purchaseMM.currentText())
-        pD = str(self.ui.purchaseDD.currentText())
-        userInput["pDT"] = pY+'-'+pM+'-'+pD
-        vY = str(self.ui.validYYYY.currentText())
-        vM = str(self.ui.validMM.currentText())
-        vD = str(self.ui.validDD.currentText())
-        userInput["vDT"] = vY+'-'+vM+'-'+vD
+        userInput["pDT"] = str(self.ui.purchaseBox.text())
+        userInput["vDT"] = str(self.ui.validBox.text())
         userInput["lC"] = str(self.ui.locationBox.currentText())
         userInput["uSR"] = str(self.ui.userBox.currentText())
 
