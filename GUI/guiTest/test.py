@@ -28,7 +28,8 @@ class mainWindow():
         self.ui.locationButton.pressed.connect(self.locBtnClick)
         self.ui.userButton.pressed.connect(self.usrBtnClick)
 
-        self.ui.searchButton.clicked.connect(self.search)
+        # self.ui.searchButton.clicked.connect(self.search)
+        self.ui.comboBox.currentIndexChanged.connect(self.search)
         self.ui.addButton.clicked.connect(self.add)
         self.ui.updateButton.clicked.connect(self.update)
         self.ui.logButton.clicked.connect(self.log)
