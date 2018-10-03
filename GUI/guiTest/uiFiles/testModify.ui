@@ -61,11 +61,6 @@
         <property name="editable">
          <bool>true</bool>
         </property>
-        <item>
-         <property name="text">
-          <string>Select</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item>

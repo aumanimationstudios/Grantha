@@ -30,6 +30,8 @@ class DataBase:
     colOfLog = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'UPDATE_LOG' \
                     AND COLUMN_NAME NOT IN ('no')"
 
+    authUsers = "SELECT * FROM AUTH_USERS"
+
     def __init__(self):
         self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
         self.database.autocommit(1)
@@ -234,6 +236,21 @@ class DataBase:
         except:
             print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
 
+    def getParentLocation(self,query):
+        try:
+            self.cursor.execute(query)
+            parentLocation = self.cursor.fetchone()
+            return parentLocation
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
+    def getAuthUsers(self):
+        try:
+            self.cursor.execute(DataBase.authUsers)
+            aU = self.cursor.fetchall()
+            return aU
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
 
 if __name__ == '__main__':
     # database = MySQLdb.connect("localhost","test","test123","INVENTORY")

@@ -16,11 +16,15 @@ testAdd = "testAdd.py"
 testUpdate = "testUpdate.py"
 testLog = "testLog.py"
 
+aU = database.DataBase().getAuthUsers()
+authUsers = [x['auth_users'] for x in aU]
+
+user = os.environ['USER']
+
 class mainWindow():
     def __init__(self):
         # super(myWindow, self).__init__()
         self.ui = uic.loadUi(os.path.join(uiFilePath, 'test.ui'))
-        # self.ui.show()
 
         self.ui.allButton.pressed.connect(self.allBtnClick)
         self.ui.serialNoButton.pressed.connect(self.slNoBtnClick)
@@ -30,19 +34,89 @@ class mainWindow():
 
         # self.ui.searchButton.clicked.connect(self.search)
         self.ui.comboBox.currentIndexChanged.connect(self.search)
-        self.ui.addButton.clicked.connect(self.add)
-        self.ui.updateButton.clicked.connect(self.update)
-        self.ui.logButton.clicked.connect(self.log)
+
+        if user in authUsers:
+            self.ui.addButton.clicked.connect(self.add)
+            self.ui.updateButton.clicked.connect(self.update)
+            self.ui.logButton.clicked.connect(self.log)
 
         self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon('granthaLogo.png'))
 
-        # self.ui.showMaximized()
-        # self.ui.move(360, 80)
+        self.ui.tableWidget.customContextMenuRequested.connect(self.viewParentPopUp)
+
         self.center()
         self.ui.show()
 
         self.db = database.DataBase()
+
+    def viewParentPopUp(self,pos):
+        # a = self.ui.tableWidget.horizontalHeaderItem(8).text()
+        #
+        # print a
+
+        selectedCellIndex = self.ui.tableWidget.selectedIndexes()
+        for index in selectedCellIndex:
+            self.selectedColumnIndex = index.column()
+
+        selectedColumnLabel = self.ui.tableWidget.horizontalHeaderItem(self.selectedColumnIndex).text()
+        # print selectedColumnLabel
+
+        if (selectedColumnLabel == "location"):
+            menu = QtWidgets.QMenu()
+            # view = QtWidgets.QMenu()
+            # view.setTitle("view parent location")
+            # menu.addMenu(view)
+            try:
+                selected = self.ui.tableWidget.selectedItems()
+            except:
+                selected = None
+
+            if(selected):
+                viewParentAction = menu.addAction("View Parent Location")
+                if user in authUsers:
+                    modifyLocationAction = menu.addAction("Modify Location")
+
+            action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
+
+            if(selected):
+                if (action == viewParentAction):
+                    self.viewParent()
+                try:
+                    if (action == modifyLocationAction):
+                        print "yes"
+                except:
+                    pass
+        else:
+            pass
+
+
+    def viewParent(self):
+        selectedText = self.ui.tableWidget.currentItem().text()
+        # print selectedText
+        loc = self.db.listOfLocation()
+        LOC = [x['location'] for x in loc]
+        # print LOC
+        if selectedText in LOC:
+            query = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(selectedText)
+            pL = self.db.getParentLocation(query)
+            self.parentLocation = pL['parent_location']
+            # print self.parentLocation
+            if self.parentLocation == None:
+                self.parentMessage = "No Parent Location"
+            else:
+                self.parentMessage = self.parentLocation
+
+            self.viewParentMessage()
+        else:
+            print "not valid location"
+
+    def viewParentMessage(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setWindowTitle("Message")
+        msg.setText(self.parentMessage)
+        msg.exec_()
 
     def center(self):
         qr = self.ui.frameGeometry()
