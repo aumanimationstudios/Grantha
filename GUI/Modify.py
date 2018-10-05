@@ -18,10 +18,26 @@ class modifyWidget():
     def __init__(self):
         self.ui = uic.loadUi(os.path.join(uiFilePath, 'Modify.ui'))
 
+        self.db = database.DataBase()
+
+        self.load()
+
+        # self.ui.locationBox.currentIndexChanged.connect(self.loadPrimaryLocation)
+
+
+
         self.ui.setWindowTitle('Modify Parent Location')
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
 
         self.ui.show()
+
+    def load(self):
+        loc = self.db.listOfLocation()
+        LOC = [x['location'] for x in loc]
+        self.ui.locationBox.clear()
+        self.ui.locationBox.addItems(LOC)
+
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
