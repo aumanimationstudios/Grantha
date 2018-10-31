@@ -8,6 +8,7 @@ import database
 import string
 import random
 from collections import OrderedDict
+import zmq
 
 
 filePath = os.path.abspath(__file__)
@@ -224,6 +225,7 @@ class addWidget():
         self.addItem = self.db.insertItem(queryAddItem)
         self.db.insertSerialNo(queryAddSlNo)
         # print self.addItem
+        self.writeToTag = self.rfidScanClient()
 
         self.insertMessage()
         self.load()
@@ -232,7 +234,7 @@ class addWidget():
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setWindowTitle("Message")
-        msg.setText(self.addItem)
+        msg.setText(self.addItem +" \n"+ self.writeToTag)
         msg.exec_()
         # msg.resize(0,0)
         # msg.about(msg,"Message", self.addItem)
@@ -241,6 +243,25 @@ class addWidget():
     #     msgBox = QtWidgets.QMessageBox()
     #     msgBox.resize(0,0)
     #     msgBox.about(msgBox,"Confirmation","Item Added. \nSl.No: "+ self.ui.serialNoBox.text())
+
+    def rfidScanClient(self):
+        self.context = zmq.Context()
+        print("connecting to rfidScanServer...")
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect("tcp://192.168.1.206:4689")
+
+        self.socket.send("WRITE")
+
+        msgFrmServ = self.socket.recv()
+
+        if (msgFrmServ == "INPUT"):
+            text = str(self.ui.serialNoBox.text())
+            self.socket.send(text)
+
+            msgFrmServ = self.socket.recv()
+            return msgFrmServ
+        # print "Message from Server :" + msgFrmServ
+        # self.socket.close()
 
     def closeEvent(self):
         self.ui.close()

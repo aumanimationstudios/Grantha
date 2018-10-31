@@ -60,38 +60,38 @@ class mainWindow():
 
         selectedCellIndex = self.ui.tableWidget.selectedIndexes()
         for index in selectedCellIndex:
-            self.selectedColumnIndex = index.column()
+            selectedColumnIndex = index.column()
 
-        selectedColumnLabel = self.ui.tableWidget.horizontalHeaderItem(self.selectedColumnIndex).text()
-        # print selectedColumnLabel
+            selectedColumnLabel = self.ui.tableWidget.horizontalHeaderItem(selectedColumnIndex).text()
+            # print selectedColumnLabel
 
-        if (selectedColumnLabel == "location"):
-            menu = QtWidgets.QMenu()
-            # view = QtWidgets.QMenu()
-            # view.setTitle("view parent location")
-            # menu.addMenu(view)
-            try:
-                selected = self.ui.tableWidget.selectedItems()
-            except:
-                selected = None
-
-            if(selected):
-                viewParentAction = menu.addAction("View Parent Location")
-                if user in authUsers:
-                    modifyLocationAction = menu.addAction("Modify Location")
-
-            action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
-
-            if(selected):
-                if (action == viewParentAction):
-                    self.viewParent()
+            if (selectedColumnLabel == "location"):
+                menu = QtWidgets.QMenu()
+                # view = QtWidgets.QMenu()
+                # view.setTitle("view parent location")
+                # menu.addMenu(view)
                 try:
-                    if (action == modifyLocationAction):
-                        print "yes"
+                    selected = self.ui.tableWidget.selectedItems()
                 except:
-                    pass
-        else:
-            pass
+                    selected = None
+
+                if(selected):
+                    viewParentAction = menu.addAction("View Parent Location")
+                    if user in authUsers:
+                        modifyLocationAction = menu.addAction("Modify Location")
+
+                action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
+
+                if(selected):
+                    if (action == viewParentAction):
+                        self.viewParent()
+                    try:
+                        if (action == modifyLocationAction):
+                            print "yes"
+                    except:
+                        pass
+            else:
+                pass
 
 
     def viewParent(self):
