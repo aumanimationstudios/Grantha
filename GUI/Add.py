@@ -225,7 +225,7 @@ class addWidget():
         self.addItem = self.db.insertItem(queryAddItem)
         self.db.insertSerialNo(queryAddSlNo)
         # print self.addItem
-        self.writeToTag = self.rfidScanClient()
+        self.writeToTag = self.writeToRfidTag()
 
         self.insertMessage()
         self.load()
@@ -244,7 +244,7 @@ class addWidget():
     #     msgBox.resize(0,0)
     #     msgBox.about(msgBox,"Confirmation","Item Added. \nSl.No: "+ self.ui.serialNoBox.text())
 
-    def rfidScanClient(self):
+    def writeToRfidTag(self):
         self.context = zmq.Context()
         print("connecting to rfidScanServer...")
         self.socket = self.context.socket(zmq.REQ)

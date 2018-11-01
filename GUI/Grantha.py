@@ -6,6 +6,7 @@ import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
 from PyQt5.QtWidgets import QDesktopWidget
 import database
+import zmq
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -42,6 +43,7 @@ class mainWindow():
             self.ui.addButton.clicked.connect(self.add)
             self.ui.updateButton.clicked.connect(self.update)
             self.ui.logButton.clicked.connect(self.log)
+            self.ui.fromTagButton.clicked.connect(self.readFromRfidTag)
 
         self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
@@ -158,7 +160,31 @@ class mainWindow():
         self.ui.tableWidget.resizeColumnsToContents()
         # self.ui.tableWidget.setSortingEnabled(True)
 
+    def readFromRfidTag(self):
+        self.context = zmq.Context()
+        print("connecting to rfidScanServer...")
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect("tcp://192.168.1.206:4689")
 
+        self.socket.send("READ")
+
+        slNo = self.socket.recv()
+
+        # self.ui.serialNoBox.clear()
+        self.ui.comboBox.setEditText(slNo)
+
+        column = self.db.getColumns()
+        self.theColumn = [x['COLUMN_NAME'] for x in column]
+
+        self.ui.tableWidget.setColumnCount(len(self.theColumn))
+        self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+
+        currTxt = self.ui.comboBox.currentText()
+
+        self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
+        rows = self.db.getRows(self.query)
+        self.ui.tableWidget.setRowCount(len(rows))
+        self.fillTable()
 
 
     def search(self):

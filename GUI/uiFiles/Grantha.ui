@@ -77,7 +77,14 @@
          </sizepolicy>
         </property>
         <property name="editable">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="fromTagButton">
+        <property name="text">
+         <string>From Tag</string>
         </property>
        </widget>
       </item>

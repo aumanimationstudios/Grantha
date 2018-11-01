@@ -7,6 +7,7 @@ from PyQt5 import QtGui,QtWidgets,QtCore,uic
 import database
 from collections import OrderedDict
 import time
+import zmq
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -25,6 +26,7 @@ class updateWidget():
         self.load()
 
         self.ui.serialNoBox.currentIndexChanged.connect(self.loadDetails)
+        self.ui.fromTagButton.clicked.connect(self.readFromRfidTag)
         self.ui.clearButton.clicked.connect(self.clearAll)
         self.ui.saveButton.clicked.connect(self.confirmation)
 
@@ -72,6 +74,20 @@ class updateWidget():
             self.ui.currentUserBox.setText(uSR)
         else:
             self.clearAll()
+
+    def readFromRfidTag(self):
+        self.context = zmq.Context()
+        print("connecting to rfidScanServer...")
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect("tcp://192.168.1.206:4689")
+
+        self.socket.send("READ")
+
+        slNo = self.socket.recv()
+
+        # self.ui.serialNoBox.clear()
+        self.ui.serialNoBox.setEditText(slNo)
+        self.loadDetails()
 
     def clearAll(self):
         self.ui.serialNoBox.clearEditText()
