@@ -160,31 +160,31 @@ class mainWindow():
         self.ui.tableWidget.resizeColumnsToContents()
         # self.ui.tableWidget.setSortingEnabled(True)
 
-    def readFromRfidTag(self):
-        self.context = zmq.Context()
-        print("connecting to rfidScanServer...")
-        self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.1.206:4689")
-
-        self.socket.send("READ")
-
-        slNo = self.socket.recv()
-
-        # self.ui.serialNoBox.clear()
-        self.ui.comboBox.setEditText(slNo)
-
-        column = self.db.getColumns()
-        self.theColumn = [x['COLUMN_NAME'] for x in column]
-
-        self.ui.tableWidget.setColumnCount(len(self.theColumn))
-        self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
-
-        currTxt = self.ui.comboBox.currentText()
-
-        self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
-        rows = self.db.getRows(self.query)
-        self.ui.tableWidget.setRowCount(len(rows))
-        self.fillTable()
+    # def readFromRfidTag(self):
+    #     self.context = zmq.Context()
+    #     print("connecting to rfidScanServer...")
+    #     self.socket = self.context.socket(zmq.REQ)
+    #     self.socket.connect("tcp://192.168.1.206:4689")
+    #
+    #     self.socket.send("READ")
+    #
+    #     slNo = self.socket.recv()
+    #
+    #     # self.ui.serialNoBox.clear()
+    #     self.ui.comboBox.setEditText(slNo)
+    #
+    #     column = self.db.getColumns()
+    #     self.theColumn = [x['COLUMN_NAME'] for x in column]
+    #
+    #     self.ui.tableWidget.setColumnCount(len(self.theColumn))
+    #     self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+    #
+    #     currTxt = self.ui.comboBox.currentText()
+    #
+    #     self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
+    #     rows = self.db.getRows(self.query)
+    #     self.ui.tableWidget.setRowCount(len(rows))
+    #     self.fillTable()
 
 
     def search(self):
@@ -306,6 +306,75 @@ class mainWindow():
     def log(self):
         p = QtCore.QProcess(parent=self.ui)
         p.start(sys.executable, Log.split())
+
+    def readFromRfidTag(self):
+        rT = readThread(app)
+        rT.waiting.connect(self.openplaceTagMessage)
+        rT.slNoReceived.connect(self.closePlaceTagMessage)
+        rT.start()
+
+    def openplaceTagMessage(self):
+        self.plcMsg = QtWidgets.QMessageBox()
+        self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
+        self.plcMsg.setWindowTitle("Message")
+        self.plcMsg.setText("Place your Tag...")
+        self.plcMsg.show()
+
+    def closePlaceTagMessage(self, slNo):
+        self.plcMsg.close()
+
+        self.ui.comboBox.setEditText(slNo)
+
+        column = self.db.getColumns()
+        self.theColumn = [x['COLUMN_NAME'] for x in column]
+
+        self.ui.tableWidget.setColumnCount(len(self.theColumn))
+        self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+
+        currTxt = self.ui.comboBox.currentText()
+
+        self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
+        rows = self.db.getRows(self.query)
+        self.ui.tableWidget.setRowCount(len(rows))
+        self.fillTable()
+
+class readThread(QtCore.QThread):
+    waiting = QtCore.pyqtSignal()
+    slNoReceived = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent):
+        super(readThread, self).__init__(parent)
+
+    def run(self):
+        self.waiting.emit()
+
+        self.context = zmq.Context()
+        print("connecting to rfidScanServer...")
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect("tcp://192.168.1.206:4689")
+
+        self.socket.send("READ")
+
+        slNo = self.socket.recv()
+
+        self.slNoReceived.emit(slNo)
+
+        # self.ui.serialNoBox.clear()
+        # self.ui.comboBox.setEditText(slNo)
+
+
+        # column = self.db.getColumns()
+        # self.theColumn = [x['COLUMN_NAME'] for x in column]
+        #
+        # self.ui.tableWidget.setColumnCount(len(self.theColumn))
+        # self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+        #
+        # currTxt = self.ui.comboBox.currentText()
+        #
+        # self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
+        # rows = self.db.getRows(self.query)
+        # self.ui.tableWidget.setRowCount(len(rows))
+        # self.fillTable()
 
 
 if __name__ == '__main__':

@@ -75,19 +75,11 @@ class updateWidget():
         else:
             self.clearAll()
 
-    def readFromRfidTag(self):
-        self.context = zmq.Context()
-        print("connecting to rfidScanServer...")
-        self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.1.206:4689")
-
-        self.socket.send("READ")
-
-        slNo = self.socket.recv()
-
-        # self.ui.serialNoBox.clear()
-        self.ui.serialNoBox.setEditText(slNo)
-        self.loadDetails()
+    # def readFromRfidTag(self):
+    #     rT = readThread(app)
+    #     rT.waiting.connect(self.placeTagMessage)
+    #     rT.finished.connect(self.closePlaceTagMessage)
+    #     rT.start()
 
     def clearAll(self):
         self.ui.serialNoBox.clearEditText()
@@ -149,6 +141,50 @@ class updateWidget():
 
     def closeEvent(self):
         self.ui.close()
+
+    def readFromRfidTag(self):
+        rT = readThread(app)
+        rT.waiting.connect(self.openplaceTagMessage)
+        rT.slNoReceived.connect(self.closePlaceTagMessage)
+        rT.start()
+
+    def openplaceTagMessage(self):
+        self.plcMsg = QtWidgets.QMessageBox()
+        self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
+        self.plcMsg.setWindowTitle("Message")
+        self.plcMsg.setText("Place your Tag...")
+        self.plcMsg.show()
+
+    def closePlaceTagMessage(self, slNo):
+        self.plcMsg.close()
+        self.ui.serialNoBox.setEditText(slNo)
+        self.loadDetails()
+
+class readThread(QtCore.QThread):
+    waiting = QtCore.pyqtSignal()
+    slNoReceived = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent):
+        super(readThread, self).__init__(parent)
+
+    def run(self):
+        self.waiting.emit()
+
+        self.context = zmq.Context()
+        print("connecting to rfidScanServer...")
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect("tcp://192.168.1.206:4689")
+
+        self.socket.send("READ")
+
+        slNo = self.socket.recv()
+        self.slNoReceived.emit(slNo)
+
+        # self.ui.serialNoBox.clear()
+        # self.ui.serialNoBox.setEditText(slNo)
+        # self.loadDetails()
+
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

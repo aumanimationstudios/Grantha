@@ -176,8 +176,8 @@ class addWidget():
         confirm.setInformativeText("Are you sure you want to save?")
         confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         # confirm.question(confirm,"Confirmation","Are you sure you want to save?", QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel, QtWidgets.QMessageBox.Cancel)
-        ret = confirm.exec_()
-        if ret == QtWidgets.QMessageBox.Ok:
+        cnfrm = confirm.exec_()
+        if cnfrm == QtWidgets.QMessageBox.Ok:
             self.addNew()
         else:
             pass
@@ -222,29 +222,67 @@ class addWidget():
         queryAddItem = "INSERT INTO ITEMS (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
         queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no) VALUES ('%s') " %(userInput["sN"])
 
-        self.addItem = self.db.insertItem(queryAddItem)
-        self.db.insertSerialNo(queryAddSlNo)
+        # self.addItem = self.db.insertItem(queryAddItem)
+        # self.db.insertSerialNo(queryAddSlNo)
         # print self.addItem
         self.writeToTag = self.writeToRfidTag()
 
-        self.insertMessage()
-        self.load()
+        self.addItem = self.db.insertItem(queryAddItem)
+        self.db.insertSerialNo(queryAddSlNo)
 
-    def insertMessage(self):
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setWindowTitle("Message")
-        msg.setText(self.addItem +" \n"+ self.writeToTag)
-        msg.exec_()
+        # self.insertMessage()
+        # self.load()
+
+    def writeToRfidTag(self):
+        idText = self.ui.serialNoBox.text()
+        wT = writeThread(app, idText)
+        wT.waiting.connect(self.openplaceTagMessage)
+        wT.confirmation.connect(self.closePlaceTagMessage)
+        wT.start()
+
+    # def insertMessage(self):
+    #     insMsg = QtWidgets.QMessageBox()
+    #     insMsg.setIcon(QtWidgets.QMessageBox.Information)
+    #     insMsg.setWindowTitle("Message")
+    #     insMsg.setText(self.addItem )#+" \n"+ self.writeToTag)
+    #     insMsg.show()
         # msg.resize(0,0)
         # msg.about(msg,"Message", self.addItem)
+    def openplaceTagMessage(self):
+        self.plcMsg = QtWidgets.QMessageBox()
+        # self.plcMsg.setStandardButtons(self, 0)
+        self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
+        self.plcMsg.setWindowTitle("Message")
+        self.plcMsg.setText("Place your Tag...")
+        self.plcMsg.show()
+
+    def closePlaceTagMessage(self, msg):
+        # self.plcMsg.close()
+        # self.insertMessage()
+        self.plcMsg.setText(self.addItem + " \n"+ msg )
+        self.load()
+
+    def closeEvent(self):
+        self.ui.close()
 
     # def okMessage(self):
     #     msgBox = QtWidgets.QMessageBox()
     #     msgBox.resize(0,0)
     #     msgBox.about(msgBox,"Confirmation","Item Added. \nSl.No: "+ self.ui.serialNoBox.text())
 
-    def writeToRfidTag(self):
+
+class writeThread(QtCore.QThread):
+    # initiateWrite = QtCore.pyqtSignal()
+    # inputForWrite = QtCore.pyqtSignal()
+    waiting = QtCore.pyqtSignal()
+    confirmation = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent, idText):
+        super(writeThread, self).__init__(parent)
+        self.idText = idText
+    def run(self):
+        self.waiting.emit()
+
         self.context = zmq.Context()
         print("connecting to rfidScanServer...")
         self.socket = self.context.socket(zmq.REQ)
@@ -255,16 +293,18 @@ class addWidget():
         msgFrmServ = self.socket.recv()
 
         if (msgFrmServ == "INPUT"):
-            text = str(self.ui.serialNoBox.text())
+            text = str(self.idText)
             self.socket.send(text)
 
             msgFrmServ = self.socket.recv()
-            return msgFrmServ
+            print msgFrmServ
+            self.confirmation.emit(msgFrmServ)
+            # return msgFrmServ
         # print "Message from Server :" + msgFrmServ
         # self.socket.close()
 
-    def closeEvent(self):
-        self.ui.close()
+    # def closeEvent(self):
+    #     self.ui.close()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
