@@ -22,7 +22,8 @@ class modifyWidget():
 
         self.load()
 
-        # self.ui.locationBox.currentIndexChanged.connect(self.loadPrimaryLocation)
+        self.ui.locationBox.currentIndexChanged.connect(self.loadPrimaryLocation)
+        self.ui.clearButton.clicked.connect(self.clearAll)
 
 
 
@@ -30,14 +31,31 @@ class modifyWidget():
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
 
         self.ui.show()
+        self.ui.cancelButton.clicked.connect(self.ui.close)
 
     def load(self):
-        loc = self.db.listOfLocation()
+        query01 = "SELECT location FROM LOCATION WHERE location NOT LIKE 'aum%' AND location NOT LIKE 'REPAIR' "
+        loc = self.db.getLocation(query01)
         LOC = [x['location'] for x in loc]
         self.ui.locationBox.clear()
         self.ui.locationBox.addItems(LOC)
 
+        query02 = "SELECT location FROM LOCATION WHERE location NOT LIKE 'blue%' "
+        par = self.db.getLocation(query02)
+        PAR = [x['location'] for x in par]
+        self.ui.newParentLocationBox.clear()
+        self.ui.newParentLocationBox.addItems(PAR)
 
+    def loadPrimaryLocation(self):
+        loc = self.ui.locationBox.currentText()
+        query = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(loc)
+        pL = self.db.getParentLocation(query)
+        parentLoc = pL["parent_location"]
+        self.ui.currentParentLocationBox.setText(parentLoc)
+
+    def clearAll(self):
+        self.ui.locationBox.setCurrentIndex(0)
+        self.ui.newParentLocationBox.setCurrentIndex(0)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

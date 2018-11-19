@@ -19,6 +19,7 @@ sys.path.append(imgFilePath)
 Add = "Add.py"
 Update = "Update.py"
 Log = "Log.py"
+Modify = "Modify.py"
 
 aU = database.DataBase().getAuthUsers()
 authUsers = [x['auth_users'] for x in aU]
@@ -42,6 +43,7 @@ class mainWindow():
         if user in authUsers:
             self.ui.addButton.clicked.connect(self.add)
             self.ui.updateButton.clicked.connect(self.update)
+            self.ui.modifyButton.clicked.connect(self.modify)
             self.ui.logButton.clicked.connect(self.log)
             self.ui.fromTagButton.clicked.connect(self.readFromRfidTag)
 
@@ -302,6 +304,10 @@ class mainWindow():
     def update(self):
         p = QtCore.QProcess(parent=self.ui)
         p.start(sys.executable, Update.split())
+
+    def modify(self):
+        p = QtCore.QProcess(parent=self.ui)
+        p.start(sys.executable, Modify.split())
 
     def log(self):
         p = QtCore.QProcess(parent=self.ui)

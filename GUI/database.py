@@ -236,6 +236,14 @@ class DataBase:
         except:
             print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
 
+    def getLocation(self, query):
+        try:
+            self.cursor.execute(query)
+            location = self.cursor.fetchall()
+            return location
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
     def getParentLocation(self,query):
         try:
             self.cursor.execute(query)
