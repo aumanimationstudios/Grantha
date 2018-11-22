@@ -22,9 +22,9 @@ class modifyWidget():
 
         self.load()
 
-        self.ui.locationBox.currentIndexChanged.connect(self.loadPrimaryLocation)
+        self.ui.locationBox.currentIndexChanged.connect(self.loadParentLocation)
         self.ui.clearButton.clicked.connect(self.clearAll)
-
+        self.ui.saveButton.clicked.connect(self.confirmation)
 
 
         self.ui.setWindowTitle('Modify Parent Location')
@@ -46,12 +46,41 @@ class modifyWidget():
         self.ui.newParentLocationBox.clear()
         self.ui.newParentLocationBox.addItems(PAR)
 
-    def loadPrimaryLocation(self):
+    def loadParentLocation(self):
         loc = self.ui.locationBox.currentText()
         query = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(loc)
         pL = self.db.getParentLocation(query)
         parentLoc = pL["parent_location"]
         self.ui.currentParentLocationBox.setText(parentLoc)
+
+    def confirmation(self):
+        confirm = QtWidgets.QMessageBox()
+        confirm.setIcon(QtWidgets.QMessageBox.Question)
+        confirm.setWindowTitle("Confirmation")
+        confirm.setInformativeText("Are you sure you want to save?")
+        confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        cnfrm = confirm.exec_()
+        if cnfrm == QtWidgets.QMessageBox.Ok:
+            self.update()
+        else:
+            pass
+
+    def update(self):
+        loc = self.ui.locationBox.currentText()
+        newPLoc = self.ui.newParentLocationBox.currentText()
+
+        query = "UPDATE LOCATION SET parent_location = '%s' WHERE location = '%s'" %(newPLoc, loc)
+
+        self.updated = self.db.update(query)
+
+        self.updateMessage()
+
+    def updateMessage(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setWindowTitle("Message")
+        msg.setText(self.updated)
+        msg.exec_()
 
     def clearAll(self):
         self.ui.locationBox.setCurrentIndex(0)

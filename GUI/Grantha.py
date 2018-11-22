@@ -91,7 +91,7 @@ class mainWindow():
                         self.viewParent()
                     try:
                         if (action == modifyLocationAction):
-                            print "yes"
+                            self.modify()
                     except:
                         pass
             else:

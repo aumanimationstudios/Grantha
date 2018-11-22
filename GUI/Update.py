@@ -99,8 +99,8 @@ class updateWidget():
         confirm.setWindowTitle("Confirmation")
         confirm.setInformativeText("Are you sure you want to save?")
         confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-        ret = confirm.exec_()
-        if ret == QtWidgets.QMessageBox.Ok:
+        cnfrm = confirm.exec_()
+        if cnfrm == QtWidgets.QMessageBox.Ok:
             self.update()
         else:
             pass
