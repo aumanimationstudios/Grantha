@@ -112,7 +112,14 @@
       <item>
        <widget class="QPushButton" name="updateButton">
         <property name="text">
-         <string>UPDATE</string>
+         <string>UPDATE INFO</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="updateTagButton">
+        <property name="text">
+         <string>UPDATE TAG</string>
         </property>
        </widget>
       </item>

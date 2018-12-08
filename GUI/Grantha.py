@@ -4,7 +4,7 @@
 import os
 import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
-from PyQt5.QtWidgets import QDesktopWidget
+from PyQt5.QtWidgets import QDesktopWidget, QMessageBox
 import database
 import zmq
 
@@ -18,6 +18,7 @@ sys.path.append(imgFilePath)
 
 Add = "Add.py"
 Update = "Update.py"
+Update_Tag = "Update_Tag.py"
 Log = "Log.py"
 Modify = "Modify.py"
 
@@ -43,6 +44,7 @@ class mainWindow():
         if user in authUsers:
             self.ui.addButton.clicked.connect(self.add)
             self.ui.updateButton.clicked.connect(self.update)
+            self.ui.updateTagButton.clicked.connect(self.updateTag)
             self.ui.modifyButton.clicked.connect(self.modify)
             self.ui.logButton.clicked.connect(self.log)
             self.ui.fromTagButton.clicked.connect(self.readFromRfidTag)
@@ -305,6 +307,10 @@ class mainWindow():
         p = QtCore.QProcess(parent=self.ui)
         p.start(sys.executable, Update.split())
 
+    def updateTag(self):
+        p = QtCore.QProcess(parent=self.ui)
+        p.start(sys.executable, Update_Tag.split())
+
     def modify(self):
         p = QtCore.QProcess(parent=self.ui)
         p.start(sys.executable, Modify.split())
@@ -329,20 +335,34 @@ class mainWindow():
     def closePlaceTagMessage(self, slNo):
         self.plcMsg.close()
 
-        self.ui.comboBox.setEditText(slNo)
+        sn = self.db.listOfSerialNo()
+        SN = [x['serial_no'] for x in sn]
+        if slNo in SN:
+            self.ui.comboBox.setEditText(slNo)
 
-        column = self.db.getColumns()
-        self.theColumn = [x['COLUMN_NAME'] for x in column]
+            column = self.db.getColumns()
+            self.theColumn = [x['COLUMN_NAME'] for x in column]
 
-        self.ui.tableWidget.setColumnCount(len(self.theColumn))
-        self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+            self.ui.tableWidget.setColumnCount(len(self.theColumn))
+            self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
-        currTxt = self.ui.comboBox.currentText()
+            currTxt = self.ui.comboBox.currentText()
 
-        self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
-        rows = self.db.getRows(self.query)
-        self.ui.tableWidget.setRowCount(len(rows))
-        self.fillTable()
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
+            rows = self.db.getRows(self.query)
+            self.ui.tableWidget.setRowCount(len(rows))
+            self.fillTable()
+        else:
+            self.wrongTagMessage()
+
+    def wrongTagMessage(self):
+            self.Msg = QtWidgets.QMessageBox()
+            self.Msg.setIcon(QtWidgets.QMessageBox.Information)
+            self.Msg.setWindowTitle("Wrong Tag")
+            self.Msg.setText("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
+            self.Msg.show()
+            # QMessageBox.about(QMessageBox(), "Wrong Tag", "This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
+
 
 class readThread(QtCore.QThread):
     waiting = QtCore.pyqtSignal()
@@ -365,22 +385,6 @@ class readThread(QtCore.QThread):
 
         self.slNoReceived.emit(slNo)
 
-        # self.ui.serialNoBox.clear()
-        # self.ui.comboBox.setEditText(slNo)
-
-
-        # column = self.db.getColumns()
-        # self.theColumn = [x['COLUMN_NAME'] for x in column]
-        #
-        # self.ui.tableWidget.setColumnCount(len(self.theColumn))
-        # self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
-        #
-        # currTxt = self.ui.comboBox.currentText()
-        #
-        # self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
-        # rows = self.db.getRows(self.query)
-        # self.ui.tableWidget.setRowCount(len(rows))
-        # self.fillTable()
 
 
 if __name__ == '__main__':

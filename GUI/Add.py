@@ -173,7 +173,7 @@ class addWidget():
         confirm = QtWidgets.QMessageBox()
         confirm.setIcon(QtWidgets.QMessageBox.Question)
         confirm.setWindowTitle("Confirmation")
-        confirm.setInformativeText("Are you sure you want to save?")
+        confirm.setInformativeText("<b>Are you sure you want to save?</b>")
         confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         # confirm.question(confirm,"Confirmation","Are you sure you want to save?", QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel, QtWidgets.QMessageBox.Cancel)
         cnfrm = confirm.exec_()
