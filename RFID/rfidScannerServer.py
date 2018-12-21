@@ -10,7 +10,7 @@ class Server:
     def __init__(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REP)
-        self.socket.bind("tcp://192.168.1.206:4689")
+        self.socket.bind("tcp://192.168.1.183:4689")
 
         while True:
             msgFrmCli = self.socket.recv()

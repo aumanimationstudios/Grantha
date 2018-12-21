@@ -377,7 +377,7 @@ class readThread(QtCore.QThread):
         self.context = zmq.Context()
         print("connecting to rfidScanServer...")
         self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.1.206:4689")
+        self.socket.connect("tcp://192.168.1.183:4689")
 
         self.socket.send("READ")
 
