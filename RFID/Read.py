@@ -8,9 +8,10 @@ import sys
 
 try:
     reader = SimpleMFRC522.SimpleMFRC522()
+    print "Place your tag to read"
     id, text = reader.read()
-    print(id)
-    print(text)
+    print "id = %s" %(id)
+    print "data = %s" %(text)
     GPIO.cleanup()
 
 except:

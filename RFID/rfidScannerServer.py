@@ -22,6 +22,9 @@ class Server:
             if (msgFrmCli == "READ"):
                 self.READ()
 
+            if (msgFrmCli == "READ_MULTI"):
+                self.READ_MULTI()
+
             if (msgFrmCli == "WRITE_TAG"):
                 self.WRITE_TAG()
 
@@ -62,6 +65,14 @@ class Server:
         except:
             print("trying hard : " + str(sys.exc_info()))
             GPIO.cleanup()
+
+    def READ_MULTI(self):
+        try:
+            self.socket.send("Acknowledgment")
+
+        except:
+            print("trying hard : " + str(sys.exc_info()))
+
 
     def WRITE_TAG(self):
         print "Sending Reply"

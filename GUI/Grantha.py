@@ -38,7 +38,6 @@ class mainWindow():
         self.ui.locationButton.pressed.connect(self.locBtnClick)
         self.ui.userButton.pressed.connect(self.usrBtnClick)
 
-        # self.ui.searchButton.clicked.connect(self.search)
         self.ui.comboBox.currentIndexChanged.connect(self.search)
 
         if user in authUsers:
@@ -47,7 +46,8 @@ class mainWindow():
             self.ui.updateTagButton.clicked.connect(self.updateTag)
             self.ui.modifyButton.clicked.connect(self.modify)
             self.ui.logButton.clicked.connect(self.log)
-            self.ui.fromTagButton.clicked.connect(self.readFromRfidTag)
+            self.ui.readSingleButton.clicked.connect(self.readFromRfidTag)
+            self.ui.readMultiButton.clicked.connect(self.readMultiFromRfidTag)
 
         self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
@@ -162,6 +162,7 @@ class mainWindow():
             row +=1
 
         self.ui.tableWidget.resizeColumnsToContents()
+        print "Loaded list of all items."
         # self.ui.tableWidget.setSortingEnabled(True)
 
     # def readFromRfidTag(self):
@@ -198,27 +199,30 @@ class mainWindow():
         self.ui.tableWidget.setColumnCount(len(self.theColumn))
         self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
+        currTxt = self.ui.comboBox.currentText()
+        # print currTxt
+
         if self.ui.serialNoButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(self.ui.comboBox.currentText())
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
             rows = self.db.getRows(self.query)
             # print rows
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
 
         if self.ui.itemTypeButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE item_type='%s' " %(self.ui.comboBox.currentText())
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE item_type='%s' " %(currTxt)
             rows = self.db.getRows(self.query)
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
 
         if self.ui.locationButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE location='%s' " %(self.ui.comboBox.currentText())
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE location='%s' " %(currTxt)
             rows = self.db.getRows(self.query)
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
 
         if self.ui.userButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE user='%s' " %(self.ui.comboBox.currentText())
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE user='%s' " %(currTxt)
             rows = self.db.getRows(self.query)
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
@@ -321,11 +325,11 @@ class mainWindow():
 
     def readFromRfidTag(self):
         rT = readThread(app)
-        rT.waiting.connect(self.openplaceTagMessage)
+        rT.waiting.connect(self.openPlaceTagMessage)
         rT.slNoReceived.connect(self.closePlaceTagMessage)
         rT.start()
 
-    def openplaceTagMessage(self):
+    def openPlaceTagMessage(self):
         self.plcMsg = QtWidgets.QMessageBox()
         self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
         self.plcMsg.setWindowTitle("Message")
@@ -354,6 +358,16 @@ class mainWindow():
             self.fillTable()
         else:
             self.wrongTagMessage()
+
+    def readMultiFromRfidTag(self):
+        if self.ui.readMultipleButton.isChecked():
+            print self.ui.spinBox.value()
+        else:
+            pass
+        # rT = readMultiThread(app)
+        # # rT.waiting.connect(self.openPlaceTagMessage)
+        # # rT.slNoReceived.connect(self.closePlaceTagMessage)
+        # rT.start()
 
     def wrongTagMessage(self):
             self.Msg = QtWidgets.QMessageBox()
@@ -385,7 +399,26 @@ class readThread(QtCore.QThread):
 
         self.slNoReceived.emit(slNo)
 
+class readMultiThread(QtCore.QThread):
+    waiting = QtCore.pyqtSignal()
+    ackReceived = QtCore.pyqtSignal(str)
 
+    def __init__(self, parent):
+        super(readMultiThread, self).__init__(parent)
+
+    def run(self):
+        self.waiting.emit()
+
+        self.context = zmq.Context()
+        print("connecting to rfidScanServer...")
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect("tcp://192.168.1.183:4689")
+
+        self.socket.send("READ")
+
+        slNo = self.socket.recv()
+
+        self.slNoReceived.emit(slNo)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

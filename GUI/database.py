@@ -205,7 +205,7 @@ class DataBase:
     def update(self,query):
         try:
             self.cursor.execute(query)
-            okMsg = "Item Added Successfully"
+            okMsg = "Updated Successfully"
             return okMsg
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))

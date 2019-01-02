@@ -82,16 +82,33 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="fromTagButton">
+       <widget class="QPushButton" name="readSingleButton">
         <property name="text">
-         <string>From Tag</string>
+         <string>Read Single</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="searchButton">
+       <widget class="QRadioButton" name="readMultipleButton">
         <property name="text">
-         <string>Search</string>
+         <string>Read Multiple</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinBox"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Sec</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="readMultiButton">
+        <property name="text">
+         <string>Read</string>
         </property>
        </widget>
       </item>
