@@ -5,6 +5,7 @@ import zmq
 import SimpleMFRC522
 import RPi.GPIO as GPIO
 import sys
+import subprocess
 
 class Server:
     def __init__(self):
@@ -68,10 +69,18 @@ class Server:
 
     def READ_MULTI(self):
         try:
-            self.socket.send("Acknowledgment")
+            self.socket.send("GIVE_TIMEOUT")
+
+            timeout = self.socket.recv()
+            subprocess.Popen(["python", "readMultiple02.py", "%s" %(timeout)])
+
+            self.socket.send("ackPass")
+            print "message sent"
 
         except:
             print("trying hard : " + str(sys.exc_info()))
+            self.socket.send("ackFail")
+            print("Failed to run Multi reader")
 
 
     def WRITE_TAG(self):

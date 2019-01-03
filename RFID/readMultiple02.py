@@ -12,14 +12,22 @@ import os
 import signal
 import setproctitle
 from tabulate import tabulate
+import zmq
 
 def readInfi(Q):
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    socket.connect("tcp://192.168.1.39:4690")
 
     def signalHandler(sigNum,frame):
         # print(sigNum,frame)
         global Q
         print("TERMINATING PROCESS : "+ str(os.getpid()))
         Q.put({0:os.getpid()})
+        socket.send("FUCKINGDONE")
+        socket.recv()
+        socket.close()
+
         time.sleep(1)
         # return
         os.kill(os.getpid(),9)
@@ -35,6 +43,12 @@ def readInfi(Q):
             reader = SimpleMFRC522.SimpleMFRC522()
             id, text = reader.read()
             idTxt[id] = text
+
+
+            socket.send(text.strip())
+
+            socket.recv()
+
             os.system("echo 1 | sudo tee /sys/class/leds/led0/brightness")
 
             GPIO.cleanup()
@@ -52,6 +66,7 @@ def storData(Q):
         dictGet = Q.get()
         if(dictGet.has_key(0)):
             print("DONE SCANNING")
+
             print(data)
             print tabulate(data.items(), headers=('id', 'data'))
             sys.exit(0)
@@ -77,7 +92,7 @@ if __name__ == "__main__":
     while(True):
         if((time.time() - timestared) >= args.timeout):
             Reader.terminate()
-            # storer.terminate()
+            storer.terminate()
             break
 
     Reader.join()

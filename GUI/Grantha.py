@@ -7,6 +7,7 @@ from PyQt5 import QtGui,QtWidgets,QtCore,uic
 from PyQt5.QtWidgets import QDesktopWidget, QMessageBox
 import database
 import zmq
+import time
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -323,6 +324,8 @@ class mainWindow():
         p = QtCore.QProcess(parent=self.ui)
         p.start(sys.executable, Log.split())
 
+
+
     def readFromRfidTag(self):
         rT = readThread(app)
         rT.waiting.connect(self.openPlaceTagMessage)
@@ -337,11 +340,15 @@ class mainWindow():
         self.plcMsg.show()
 
     def closePlaceTagMessage(self, slNo):
-        self.plcMsg.close()
+        try:
+            self.plcMsg.close()
+        except:
+            pass
 
         sn = self.db.listOfSerialNo()
         SN = [x['serial_no'] for x in sn]
         if slNo in SN:
+            # print "received sl.no: "+slNo
             self.ui.comboBox.setEditText(slNo)
 
             column = self.db.getColumns()
@@ -359,23 +366,99 @@ class mainWindow():
         else:
             self.wrongTagMessage()
 
-    def readMultiFromRfidTag(self):
-        if self.ui.readMultipleButton.isChecked():
-            print self.ui.spinBox.value()
-        else:
-            pass
-        # rT = readMultiThread(app)
-        # # rT.waiting.connect(self.openPlaceTagMessage)
-        # # rT.slNoReceived.connect(self.closePlaceTagMessage)
-        # rT.start()
-
     def wrongTagMessage(self):
             self.Msg = QtWidgets.QMessageBox()
             self.Msg.setIcon(QtWidgets.QMessageBox.Information)
             self.Msg.setWindowTitle("Wrong Tag")
             self.Msg.setText("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
             self.Msg.show()
-            # QMessageBox.about(QMessageBox(), "Wrong Tag", "This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
+
+
+
+    def readMultiFromRfidTag(self):
+        timeout = str(self.ui.spinBox.value())
+        if self.ui.readMultipleButton.isChecked():
+            # self.ui.readMultiButton.setEnabled(False)
+            rmrT = readMultiReplyThread(app)
+            rmT = readMultiThread(timeout, app)
+
+            rmrT.slNoReceived.connect(self.updateTable)
+            rmT.ackReceived.connect(self.showTimeout)
+
+            rmrT.start()
+            rmT.start()
+
+        else:
+            pass
+
+    def updateTable(self, slNo):
+        sn = self.db.listOfSerialNo()
+        SN = [x['serial_no'] for x in sn]
+
+        if slNo in SN:
+            self.ui.comboBox.setEditText(slNo)
+
+            column = self.db.getColumns()
+            self.theColumn = [x['COLUMN_NAME'] for x in column]
+
+            self.ui.tableWidget.setColumnCount(len(self.theColumn))
+            self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+
+            currTxt = self.ui.comboBox.currentText()
+
+            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
+            rows = self.db.getRows(self.query)
+            self.ui.tableWidget.setRowCount(len(rows))
+
+            row = 0
+            self.db.getValues(self.query, init=True)
+            while True:
+                primaryResult = self.db.getValues(self.query)
+                # print primaryResult
+                if (not primaryResult):
+                    break
+                col = 0
+                for n in self.theColumn:
+                    result = primaryResult[n]
+                    self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                    col += 1
+                row += 1
+
+            self.ui.tableWidget.resizeColumnsToContents()
+
+            # self.ui.readMultiButton.setEnabled(True)
+
+        else:
+            self.wrongTagMessage()
+
+
+    def showTimeout(self):
+        timeout = self.ui.spinBox.value()
+        print "timeout: " + str(timeout) + "sec"
+
+        ui = uic.loadUi(os.path.join(uiFilePath,'timer.ui'))
+
+        ui.progressBar.setMaximum(timeout)
+        ui.progressBar.setMinimum(0)
+
+
+        svT = setValueToTimerThread(timeout, app)
+        svT.sending.connect(lambda n , uiObj=ui: self.setValue(n, uiObj))
+        svT.finished.connect(lambda uiObj=ui: self.closeTimer(uiObj))
+        svT.start()
+
+        ui.show()
+
+    def setValue(self, n, uiObj):
+        uiObj.progressBar.setValue(n)
+        uiObj.progressBar.setFormat(str(n)+' sec')
+
+    def closeTimer(self, uiObj):
+        uiObj.deleteLater()
+
+
+
+
 
 
 class readThread(QtCore.QThread):
@@ -389,36 +472,90 @@ class readThread(QtCore.QThread):
         self.waiting.emit()
 
         self.context = zmq.Context()
-        print("connecting to rfidScanServer...")
+        print("connecting to rfid Scanner Server...")
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.1.183:4689")
 
         self.socket.send("READ")
 
         slNo = self.socket.recv()
+        print "received sl.No: " + slNo
 
         self.slNoReceived.emit(slNo)
+
 
 class readMultiThread(QtCore.QThread):
     waiting = QtCore.pyqtSignal()
     ackReceived = QtCore.pyqtSignal(str)
 
-    def __init__(self, parent):
+    def __init__(self, to, parent):
         super(readMultiThread, self).__init__(parent)
+        self.to = to
 
     def run(self):
         self.waiting.emit()
 
         self.context = zmq.Context()
-        print("connecting to rfidScanServer...")
+        print("connecting to rfid Scanner Server...")
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.1.183:4689")
 
-        self.socket.send("READ")
+        self.socket.send("READ_MULTI")
 
-        slNo = self.socket.recv()
+        rep = self.socket.recv()
 
-        self.slNoReceived.emit(slNo)
+        if (rep == "GIVE_TIMEOUT"):
+            self.socket.send(self.to)
+
+        ack = self.socket.recv()
+
+        if (ack == "ackPass"):
+            self.ackReceived.emit(ack)
+        else:
+            pass
+
+
+class readMultiReplyThread(QtCore.QThread):
+    slNoReceived = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent):
+        super(readMultiReplyThread, self).__init__(parent)
+
+    def run(self):
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REP)
+        self.socket.bind("tcp://192.168.1.39:4690")
+
+        while True:
+            slNo = self.socket.recv()
+            self.socket.send("received")
+            print "received sl.No: " + slNo
+
+            if(slNo == "FUCKINGDONE"):
+                print "exiting"
+                self.socket.close()
+                self.context.term()
+                break
+
+
+            self.slNoReceived.emit(slNo)
+
+
+class setValueToTimerThread(QtCore.QThread):
+    sending = QtCore.pyqtSignal(int)
+
+    def __init__(self, to, parent):
+        QtCore.QThread.__init__(self,parent)
+        self.to = to
+
+    def run(self):
+        for n in range(0, self.to+1):
+            self.sending.emit(n)
+            time.sleep(1)
+
+
+
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
