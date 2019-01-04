@@ -31,6 +31,8 @@ user = os.environ['USER']
 class mainWindow():
     def __init__(self):
         # super(myWindow, self).__init__()
+        self.rfidMultiCount = 0
+        self.rfidMultiUniqSlno = {}
         self.ui = uic.loadUi(os.path.join(uiFilePath, 'Grantha.ui'))
 
         self.ui.allButton.pressed.connect(self.allBtnClick)
@@ -139,6 +141,8 @@ class mainWindow():
         # self.ui.tableWidget.setSortingEnabled(False)
         # self.ui.tableWidget.resizeColumnsToContents()
         #db = database.DataBase()
+        self.ui.tableWidget.setRowCount(0)
+
         self.ui.comboBox.clearEditText()
         column = self.db.getColumns()
         theColumn = [x['COLUMN_NAME'] for x in column]
@@ -194,6 +198,8 @@ class mainWindow():
 
 
     def search(self):
+        self.ui.tableWidget.setRowCount(0)
+
         column = self.db.getColumns()
         self.theColumn = [x['COLUMN_NAME'] for x in column]
 
@@ -376,13 +382,19 @@ class mainWindow():
 
 
     def readMultiFromRfidTag(self):
+        self.ui.tableWidget.setRowCount(0)
         timeout = str(self.ui.spinBox.value())
+
         if self.ui.readMultipleButton.isChecked():
-            # self.ui.readMultiButton.setEnabled(False)
+            self.ui.readMultiButton.setEnabled(False)
+            self.rfidMultiUniqSlno.clear()
+            self.rfidMultiCount = 0
+
             rmrT = readMultiReplyThread(app)
             rmT = readMultiThread(timeout, app)
 
             rmrT.slNoReceived.connect(self.updateTable)
+            rmrT.finished.connect(self.readButtonEnable)
             rmT.ackReceived.connect(self.showTimeout)
 
             rmrT.start()
@@ -396,6 +408,13 @@ class mainWindow():
         SN = [x['serial_no'] for x in sn]
 
         if slNo in SN:
+            if (self.rfidMultiUniqSlno.has_key(slNo)):
+                return
+
+            self.rfidMultiUniqSlno[slNo] = 1
+            print self.rfidMultiUniqSlno
+
+            self.rfidMultiCount += 1
             self.ui.comboBox.setEditText(slNo)
 
             column = self.db.getColumns()
@@ -404,13 +423,19 @@ class mainWindow():
             self.ui.tableWidget.setColumnCount(len(self.theColumn))
             self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
+            self.ui.tableWidget.setRowCount(self.rfidMultiCount)
+
             currTxt = self.ui.comboBox.currentText()
 
             self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
-            rows = self.db.getRows(self.query)
-            self.ui.tableWidget.setRowCount(len(rows))
 
-            row = 0
+            # rows = self.db.getRows(self.query)
+            # self.ui.tableWidget.setRowCount(len(rows))
+
+            rowCount = self.ui.tableWidget.rowCount()
+
+            row = rowCount-1
+
             self.db.getValues(self.query, init=True)
             while True:
                 primaryResult = self.db.getValues(self.query)
@@ -431,6 +456,8 @@ class mainWindow():
         else:
             self.wrongTagMessage()
 
+    def readButtonEnable(self):
+        self.ui.readMultiButton.setEnabled(True)
 
     def showTimeout(self):
         timeout = self.ui.spinBox.value()
