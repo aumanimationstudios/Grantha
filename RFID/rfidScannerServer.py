@@ -29,6 +29,9 @@ class Server:
             if (msgFrmCli == "WRITE_TAG"):
                 self.WRITE_TAG()
 
+            if (msgFrmCli == "FIND_TAG"):
+                self.FIND_TAG()
+
 
     def WRITE(self):
         print "Sending Reply"
@@ -53,6 +56,7 @@ class Server:
 
         self.socket.send("Data Written to Tag")
 
+
     def READ(self):
         print "Now place your tag to read"
         try:
@@ -66,21 +70,6 @@ class Server:
         except:
             print("trying hard : " + str(sys.exc_info()))
             GPIO.cleanup()
-
-    def READ_MULTI(self):
-        try:
-            self.socket.send("GIVE_TIMEOUT")
-
-            timeout = self.socket.recv()
-            subprocess.Popen(["python", "readMultiple02.py", "%s" %(timeout)])
-
-            self.socket.send("ackPass")
-            print "message sent"
-
-        except:
-            print("trying hard : " + str(sys.exc_info()))
-            self.socket.send("ackFail")
-            print("Failed to run Multi reader")
 
 
     def WRITE_TAG(self):
@@ -105,6 +94,40 @@ class Server:
                 GPIO.cleanup()
 
         self.socket.send("Data Written to Tag")
+
+
+    def READ_MULTI(self):
+        try:
+            self.socket.send("GIVE_TIMEOUT")
+
+            timeout = self.socket.recv()
+            subprocess.Popen(["python", "readMultiple02.py", "%s" %(timeout)])
+
+            self.socket.send("ackPass")
+            print "message sent"
+
+        except:
+            print("trying hard : " + str(sys.exc_info()))
+            self.socket.send("ackFail")
+            print("Failed to run Multi reader")
+
+
+    def FIND_TAG(self):
+        try:
+            self.socket.send("GIVE_TIMEOUT")
+
+            timeout = self.socket.recv()
+            subprocess.Popen(["python", "findTag.py", "%s" %(timeout)])
+
+            self.socket.send("ackPass")
+            print "message sent"
+
+        except:
+            print("trying hard : " + str(sys.exc_info()))
+            self.socket.send("ackFail")
+            print("Failed to run Multi reader")
+
+
 
 
 if __name__ == "__main__":

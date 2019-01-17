@@ -96,7 +96,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox"/>
+       <widget class="QSpinBox" name="spinBox">
+        <property name="value">
+         <number>5</number>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label">
@@ -158,6 +162,13 @@
        <widget class="QPushButton" name="logButton">
         <property name="text">
          <string>LOG</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="findTagButton">
+        <property name="text">
+         <string>FIND TAG</string>
         </property>
        </widget>
       </item>

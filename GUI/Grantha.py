@@ -3,8 +3,9 @@
 
 import os
 import sys
-from PyQt5 import QtGui,QtWidgets,QtCore,uic
+from PyQt5 import QtGui, QtWidgets, QtCore, uic
 from PyQt5.QtWidgets import QDesktopWidget, QMessageBox
+from PyQt5.QtCore import QProcess, QThread, pyqtSignal
 import database
 import zmq
 import time
@@ -22,6 +23,7 @@ Update = "Update.py"
 Update_Tag = "Update_Tag.py"
 Log = "Log.py"
 Modify = "Modify.py"
+Find_Tag = "Find_Tag.py"
 
 aU = database.DataBase().getAuthUsers()
 authUsers = [x['auth_users'] for x in aU]
@@ -48,6 +50,7 @@ class mainWindow():
             self.ui.updateButton.clicked.connect(self.update)
             self.ui.updateTagButton.clicked.connect(self.updateTag)
             self.ui.modifyButton.clicked.connect(self.modify)
+            self.ui.findTagButton.clicked.connect(self.findTag)
             self.ui.logButton.clicked.connect(self.log)
             self.ui.readSingleButton.clicked.connect(self.readFromRfidTag)
             self.ui.readMultiButton.clicked.connect(self.readMultiFromRfidTag)
@@ -310,29 +313,38 @@ class mainWindow():
     # def message(self):
     #     QtWidgets.QMessageBox.about(QtWidgets.QMessageBox(),"Error!","Please Check Input.")
 
+
+    # Processes to start when respective buttons are clicked
+
     def add(self):
-        p = QtCore.QProcess(parent=self.ui)
+        p = QProcess(parent=self.ui)
         p.start(sys.executable, Add.split())
 
     def update(self):
-        p = QtCore.QProcess(parent=self.ui)
+        p = QProcess(parent=self.ui)
         p.start(sys.executable, Update.split())
 
     def updateTag(self):
-        p = QtCore.QProcess(parent=self.ui)
+        p = QProcess(parent=self.ui)
         p.start(sys.executable, Update_Tag.split())
 
     def modify(self):
-        p = QtCore.QProcess(parent=self.ui)
+        p = QProcess(parent=self.ui)
         p.start(sys.executable, Modify.split())
 
     def log(self):
-        p = QtCore.QProcess(parent=self.ui)
+        p = QProcess(parent=self.ui)
         p.start(sys.executable, Log.split())
+
+    def findTag(self):
+        p = QProcess(parent=self.ui)
+        p.start(sys.executable, Find_Tag.split())
+
 
 
 
     def readFromRfidTag(self):
+        self.ui.tableWidget.setRowCount(0)
         rT = readThread(app)
         rT.waiting.connect(self.openPlaceTagMessage)
         rT.slNoReceived.connect(self.closePlaceTagMessage)
@@ -463,7 +475,7 @@ class mainWindow():
         timeout = self.ui.spinBox.value()
         print "timeout: " + str(timeout) + "sec"
 
-        ui = uic.loadUi(os.path.join(uiFilePath,'timer.ui'))
+        ui = uic.loadUi(os.path.join(uiFilePath,'Timer.ui'))
 
         ui.progressBar.setMaximum(timeout)
         ui.progressBar.setMinimum(0)
@@ -488,9 +500,9 @@ class mainWindow():
 
 
 
-class readThread(QtCore.QThread):
-    waiting = QtCore.pyqtSignal()
-    slNoReceived = QtCore.pyqtSignal(str)
+class readThread(QThread):
+    waiting = pyqtSignal()
+    slNoReceived = pyqtSignal(str)
 
     def __init__(self, parent):
         super(readThread, self).__init__(parent)
@@ -511,9 +523,9 @@ class readThread(QtCore.QThread):
         self.slNoReceived.emit(slNo)
 
 
-class readMultiThread(QtCore.QThread):
-    waiting = QtCore.pyqtSignal()
-    ackReceived = QtCore.pyqtSignal(str)
+class readMultiThread(QThread):
+    waiting = pyqtSignal()
+    ackReceived = pyqtSignal(str)
 
     def __init__(self, to, parent):
         super(readMultiThread, self).__init__(parent)
@@ -542,8 +554,8 @@ class readMultiThread(QtCore.QThread):
             pass
 
 
-class readMultiReplyThread(QtCore.QThread):
-    slNoReceived = QtCore.pyqtSignal(str)
+class readMultiReplyThread(QThread):
+    slNoReceived = pyqtSignal(str)
 
     def __init__(self, parent):
         super(readMultiReplyThread, self).__init__(parent)
@@ -568,11 +580,11 @@ class readMultiReplyThread(QtCore.QThread):
             self.slNoReceived.emit(slNo)
 
 
-class setValueToTimerThread(QtCore.QThread):
-    sending = QtCore.pyqtSignal(int)
+class setValueToTimerThread(QThread):
+    sending = pyqtSignal(int)
 
     def __init__(self, to, parent):
-        QtCore.QThread.__init__(self,parent)
+        QThread.__init__(self,parent)
         self.to = to
 
     def run(self):
