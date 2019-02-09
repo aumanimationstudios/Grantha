@@ -103,7 +103,7 @@ def closeEventDisable(event):
     event.ignore()
 
 def closeEventEnable(event):
-    debug.debug("QUITTING ENABLED")
+    debug.info("QUITTING ENABLED")
     event.accept()
 
 
