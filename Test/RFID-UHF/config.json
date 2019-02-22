@@ -1,0 +1,17 @@
+{
+    "card_data_prefix": "02220011",
+    "controller_id": 12,
+    "readers": [
+        {
+            "host": "192.168.1.39",
+            "port": 80
+        }
+    ],
+    "length_of_card_raw_data": 30,
+    "reader_ping_timestamp": 30,
+    "reconnect_socket_timestamp": 30,
+    "school_id": 101,
+    "upload_url":"http://sample-env-1.ugkm4wwqpe.us-west-2.elasticbeanstalk.com/RFIDCardListenerServlet",
+    "server_sync_time":5,
+    "read_time_interval":15
+}
