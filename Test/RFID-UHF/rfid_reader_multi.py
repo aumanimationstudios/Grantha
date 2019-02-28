@@ -25,16 +25,17 @@ print >>sys.stderr, 'waiting for a connection'
 connection, client_address = sock.accept()
 
 print >>sys.stderr, 'connection from', client_address
-pollingTime = 10
+pollingTime = 1000
 # readStr = 'BB00270003222710837E'
 readStr = severalTimesPollingCommandGen(pollingTime)
 
 read = readStr.decode('hex')
-print readStr
+# print readStr
 connection.send(read)
 
 time.sleep(1)
 # print("sending : "+ readStr)
+
 data = connection.recv(10240)
 # data01 = data.encode('hex')
 # if(data = )

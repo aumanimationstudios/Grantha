@@ -2,6 +2,9 @@
 # *-* coding: utf-8 *-*
 
 from binascii import hexlify, unhexlify
+import collections
+
+
 
 def severalTimesPollingCommandGen(pollingtime):
     """
@@ -18,6 +21,65 @@ def severalTimesPollingCommandGen(pollingtime):
     pollingCommandFinal = "BB"+pollingCommand+checksum+"7E"
 
     return (pollingCommandFinal)
+
+
+def readVerifier(dataHex):
+    """
+    Verifier for single and Multi Polling Command Response Frames.
+    :param dataHex:
+    :return dataDict:
+    """
+    dataArray = dataHex.split("7EBB")
+
+    cleanDataArray = []
+
+    for x in dataArray:
+        if x.startswith("BB"):
+            if(x.endswith("7E")):
+                y = x[2:-2]
+                cleanDataArray.append(y)
+            else:
+                y = x[2:]
+                cleanDataArray.append(y)
+
+        elif x.endswith("7E"):
+            z = x[:-2]
+            cleanDataArray.append(z)
+
+        else:
+            cleanDataArray.append(x)
+
+    dataDict = collections.OrderedDict()
+    # print (cleanDataArray)
+
+    for x in cleanDataArray:
+        Type = x[0:2]
+
+        Command = x[2:4]
+
+        if len(x) == 44:
+            if Type == '02' and Command == '22':
+                EPC = x[14:38]
+                dataDict[EPC] = 1
+                # print (dataDict)
+
+            # elif Type == '01' and Command == 'FF':
+            #     # print "No Cards Detected!"
+            #     # self.ui.textEdit01.setTextColor(self.redColor)
+            #     # msg = "NO CARDS DETECTED!"
+            #     return (dataDict)
+
+    # if not dataDict:
+    #     # print "No Cards Detected!"
+    #     # self.ui.textEdit01.setTextColor(self.redColor)
+    #     msg = "NO CARDS DETECTED!"
+    #     return (msg)
+    #
+    # else:
+    return (dataDict)
+            # return (x)
+            # self.ui.textEdit01.setTextColor(self.blueColor)
+            # self.ui.textEdit01.append(x)
 
 
 
@@ -50,7 +112,7 @@ def checksumCalculator(hexStr):
         checksum += ord(ch)
 
     checksumHex = hex(checksum)
-    return (checksumHex[-2:])
+    return (checksumHex[-2:].upper())
 
 #-------------------------------------------------------------------------------
 
