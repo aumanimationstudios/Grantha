@@ -5,6 +5,9 @@ from binascii import hexlify, unhexlify
 import collections
 
 
+# class returnData:
+#     01_22 = "REQUEST_FAIL"
+
 
 def severalTimesPollingCommandGen(pollingtime):
     """
@@ -60,7 +63,11 @@ def readVerifier(dataHex):
         if len(x) == 44:
             if Type == '02' and Command == '22':
                 EPC = x[14:38]
-                dataDict[EPC] = 1
+                RSSI = x[8:10]
+                returnDict = {}
+                returnDict["EPC"] = EPC
+                returnDict["RSSI"] = RSSI
+                dataDict[EPC] = returnDict
                 # print (dataDict)
 
             # elif Type == '01' and Command == 'FF':

@@ -9,7 +9,10 @@ import collections
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon, QColor
+from PyQt5.QtCore import QThread,pyqtSignal
 from utils_uhf import *
+
+threads = []
 
 class ReaderWiter():
     def __init__(self):
@@ -83,7 +86,6 @@ class ReaderWiter():
         self.ui.stopReadButton.setEnabled(False)
 
     def readSingle(self):
-
         readStr = 'BB00220000227E'
         read = readStr.decode('hex')
         self.connection.send(read)
@@ -96,6 +98,31 @@ class ReaderWiter():
         dataDict = readVerifier(dataHex)
         print (dataDict)
 
+        if not dataDict:
+            print "No Cards Detected!"
+            self.ui.textEdit01.setTextColor(self.redColor)
+            self.ui.textEdit01.append("NO CARDS DETECTED!")
+        else:
+            nearestRssi = None
+            nearRestEpc = None
+            for x in dataDict:
+                if(not nearestRssi):
+                    nearestRssi = int(dataDict[x]["RSSI"],16)
+                    nearRestEpc = x
+                else:
+                    if(int(dataDict[x]["RSSI"],16) >= nearestRssi):
+                        nearestRssi = int(dataDict[x]["RSSI"],16)
+                        nearRestEpc = x
+
+                # print type(dataDict)
+            self.ui.textEdit01.setTextColor(self.blueColor)
+            self.ui.textEdit01.append(nearRestEpc)
+            self.ui.maskLine.setEnabled(True)
+            self.ui.maskLine.setText(nearRestEpc)
+            self.ui.setSelectButton.setEnabled(True)
+
+        #     RSSI = x[8:10]
+        #     print (RSSI)
 
 
         # print (dataHex)
@@ -122,24 +149,48 @@ class ReaderWiter():
         readStr = severalTimesPollingCommandGen(pollingTime)
         # print readStr
         read = readStr.decode('hex')
-        self.connection.send(read)
 
-        time.sleep(1)
+        global threads
+        rT = recieveThread(self.connection, read, app)
+        rT.dataReceived.connect(self.readMultiOutput)
+        threads.append(rT)
+        rT.start()
 
-        data = self.connection.recv(1024)
-        dataHex = bytes_to_hex(data)
+    def readMultiOutput(self, dataHex):
+        # print dataHex
+        # dataHex = bytes_to_hex(data)
 
         dataDict = readVerifier(dataHex)
-        print (dataDict)
+        # print (dataDict)
 
         if not dataDict:
             print "No Cards Detected!"
-            self.ui.textEdit01.setTextColor(self.redColor)
-            self.ui.textEdit01.append("NO CARDS DETECTED!")
+            # self.ui.textEdit01.setTextColor(self.redColor)
+            # self.ui.textEdit01.append("NO CARDS DETECTED!")
         else:
             for x in dataDict:
+                print (x)
                 self.ui.textEdit01.setTextColor(self.blueColor)
                 self.ui.textEdit01.append(x)
+
+        # self.connection.send(read)
+        #
+        # time.sleep(1)
+        #
+        # data = self.connection.recv(1024)
+        # dataHex = bytes_to_hex(data)
+        #
+        # dataDict = readVerifier(dataHex)
+        # print (dataDict)
+        #
+        # if not dataDict:
+        #     print "No Cards Detected!"
+        #     self.ui.textEdit01.setTextColor(self.redColor)
+        #     self.ui.textEdit01.append("NO CARDS DETECTED!")
+        # else:
+        #     for x in dataDict:
+        #         self.ui.textEdit01.setTextColor(self.blueColor)
+        #         self.ui.textEdit01.append(x)
 
         # dataArray = dataHex.split("7EBB")
         #
@@ -189,16 +240,33 @@ class ReaderWiter():
 
 
     def stopRead(self):
+        global threads
+        if threads:
+            for runningThread in threads:
+                runningThread.exit()
+
 
         stopStr = 'BB00280000287E'
         stop = stopStr.decode('hex')
-        self.connection.send(stop)
-        data = self.connection.recv(4096)
-        # dataHex = bytes_to_hex(data)
+        while True:
+            try:
+                self.connection.send(stop)
+                # time.sleep(0.2)
+                data = self.connection.recv(4096)
+                dataHex = bytes_to_hex(data)
+
+                if dataHex == "BB01280001002A7E":
+                    print ("Reading stopped.")
+                    self.ui.textEdit01.setTextColor(self.greenColor)
+                    self.ui.textEdit01.append("READING STOPPED!")
+                    break
+                else:
+                    raise ValueError('Unable to stop')
+            except:
+                print ("Trying Again!" + str(sys.exc_info()))
+                # self.ui.textEdit01.append("TRYING AGAIN!")
         # print(dataHex)
-        print ("Reading stopped.")
-        self.ui.textEdit01.setTextColor(self.greenColor)
-        self.ui.textEdit01.append("READING STOPPED!")
+
 
     def clearText(self):
         self.ui.textEdit01.clear()
@@ -294,13 +362,42 @@ class ReaderWiter():
             print ("Trying Again!" + str(sys.exc_info()))
             self.ui.textEdit02.append("TRYING AGAIN!")
 
-
-
-
-
-
     def cancel(self):
         self.ui.dataLine.clear()
+
+
+
+class recieveThread(QThread):
+    # starting = pyqtSignal()
+    dataReceived = pyqtSignal(str)
+
+    def __init__(self, connection, readStr, parent):
+        super(recieveThread, self).__init__(parent)
+        self.connection = connection
+        self.readStr = readStr
+        self.stop = False
+
+    def exit(self):
+        self.stop = True
+
+    def run(self):
+        # self.starting.emit()
+        while True:
+            if (self.stop == False):
+                self.connection.send(self.readStr)
+
+                data = self.connection.recv(1024)
+                dataHex = bytes_to_hex(data)
+                self.dataReceived.emit(dataHex)
+                time.sleep(0.01)
+            else:
+                break
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
