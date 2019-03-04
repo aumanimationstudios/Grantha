@@ -20,7 +20,9 @@ class ReaderWiter():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print ("initialized")
 
-        server_address = ('192.168.1.39', 80)
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        server_address = (ip, 80)
         # self.ui.textEdit01.append('starting up on %s port %s' % server_address)
         self.sock.bind(server_address)
 

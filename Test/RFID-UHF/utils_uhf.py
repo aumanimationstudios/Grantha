@@ -147,7 +147,11 @@ def readEpcVerifier(dataHex):
 
 def randomHexGen():
     randomHex = ""
-    
+
+    for i in range(0,8):
+        randomHex = randomHex + str(random.choice("0123456789ABCDEF"))
+
+    return (randomHex)
 
 
 
