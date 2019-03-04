@@ -3,6 +3,7 @@
 
 from binascii import hexlify, unhexlify
 import collections
+import random
 
 
 # class returnData:
@@ -26,11 +27,11 @@ def severalTimesPollingCommandGen(pollingtime):
     return (pollingCommandFinal)
 
 
-def readVerifier(dataHex):
+def dataHexCleaner(dataHex):
     """
-    Verifier for single and Multi Polling Command Response Frames.
+    Clean the dataHex string by removing starting and ending bytes
     :param dataHex:
-    :return dataDict:
+    :return cleanDataArray:
     """
     dataArray = dataHex.split("7EBB")
 
@@ -51,6 +52,37 @@ def readVerifier(dataHex):
 
         else:
             cleanDataArray.append(x)
+
+    return cleanDataArray
+
+
+def readVerifier(dataHex):
+    """
+    Verifier for single and Multi Polling Command Response Frames.
+    :param dataHex:
+    :return dataDict:
+    """
+    # dataArray = dataHex.split("7EBB")
+
+    # cleanDataArray = dataHexCleaner(dataHex)
+
+    # for x in dataArray:
+    #     if x.startswith("BB"):
+    #         if(x.endswith("7E")):
+    #             y = x[2:-2]
+    #             cleanDataArray.append(y)
+    #         else:
+    #             y = x[2:]
+    #             cleanDataArray.append(y)
+    #
+    #     elif x.endswith("7E"):
+    #         z = x[:-2]
+    #         cleanDataArray.append(z)
+    #
+    #     else:
+    #         cleanDataArray.append(x)
+
+    cleanDataArray = dataHexCleaner(dataHex)
 
     dataDict = collections.OrderedDict()
     # print (cleanDataArray)
@@ -87,6 +119,35 @@ def readVerifier(dataHex):
             # return (x)
             # self.ui.textEdit01.setTextColor(self.blueColor)
             # self.ui.textEdit01.append(x)
+
+
+def readEpcVerifier(dataHex):
+    """
+    Verifier for read EPC Command Response Frames.
+    :param dataHex:
+    :return:
+    """
+    cleanDataArray = dataHexCleaner(dataHex)
+    # print (cleanDataArray)
+    dataDict = collections.OrderedDict()
+    # print (cleanDataArray)
+
+    for x in cleanDataArray:
+        Type = x[0:2]
+
+        Command = x[2:4]
+
+        if len(x) == 72:
+            if Type == '01' and Command == '39':
+                EPC = x[38:70]
+                dataDict[EPC] = 1
+
+    return (dataDict)
+
+
+def randomHexGen():
+    randomHex = ""
+    
 
 
 

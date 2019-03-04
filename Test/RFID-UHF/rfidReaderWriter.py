@@ -282,30 +282,33 @@ class ReaderWiter():
         selParamCommandHex = 'BB'+selParam+selParamChecksum+'7E'
 
         selParamCommand = selParamCommandHex.decode('hex')
-        try:
-            self.connection.send(selParamCommand)
+        while True:
+            try:
+                self.connection.send(selParamCommand)
 
-            time.sleep(1)
+                time.sleep(1)
 
-            data = self.connection.recv(10240)
-            dataHex = bytes_to_hex(data)
+                data = self.connection.recv(10240)
+                dataHex = bytes_to_hex(data)
+                print (dataHex)
 
-            # print (dataHex)
-            if dataHex == 'BB010C0001000E7E':
-                print ("set select successful.")
-                self.ui.textEdit02.setTextColor(self.greenColor)
-                self.ui.textEdit02.append("SET SELECT SUCCESSFUL.")
-                self.ui.dataLine.setEnabled(True)
-                self.ui.readButton.setEnabled(True)
-                self.ui.writeButton.setEnabled(True)
+                if dataHex == 'BB010C0001000E7E':
+                    print ("set select successful.")
+                    self.ui.textEdit02.setTextColor(self.greenColor)
+                    self.ui.textEdit02.append("SET SELECT SUCCESSFUL.")
+                    self.ui.dataLine.setEnabled(True)
+                    self.ui.readButton.setEnabled(True)
+                    self.ui.writeButton.setEnabled(True)
+                    break
+                else:
+                    # self.ui.textEdit02.setTextColor(self.redColor)
+                    # print ("Try Again!")
+                    # self.ui.textEdit02.append("TRY AGAIN!")
+                    raise ValueError('Unable to set select.')
 
-            else:
-                self.ui.textEdit02.setTextColor(self.redColor)
-                print ("Try Again!")
-                self.ui.textEdit02.append("TRY AGAIN!")
-        except:
-            print ("Trying Again!" + str(sys.exc_info()))
-            self.ui.textEdit02.append("TRYING AGAIN!")
+            except:
+                print ("Trying Again!" + str(sys.exc_info()))
+                # self.ui.textEdit02.append("TRYING AGAIN!")
 
     def readEpc(self):
 
@@ -317,15 +320,31 @@ class ReaderWiter():
 
         data = self.connection.recv(10240)
         dataHex = bytes_to_hex(data)
-        print (dataHex)
-        EPC = dataHex[40:72]
-        if len(dataHex) == 76:
-            print ("read success.")
-            self.ui.textEdit02.setTextColor(self.blueColor)
-            self.ui.textEdit02.append(EPC)
-            self.ui.dataLine.setText(EPC)
+        # print (dataHex)
+
+        dataDict = readEpcVerifier(dataHex)
+        print (dataDict)
+
+        if not dataDict:
+            print "No Cards Detected!"
+            self.ui.textEdit02.setTextColor(self.redColor)
+            self.ui.textEdit02.append("NO CARDS DETECTED!")
         else:
-            print ("read failed.")
+            for x in dataDict:
+                print (x)
+                self.ui.textEdit02.setTextColor(self.blueColor)
+                self.ui.textEdit02.append(x)
+                self.ui.dataLine.setText(x)
+
+        # print (dataHex)
+        # EPC = dataHex[40:72]
+        # if len(dataHex) == 76:
+        #     print ("read success.")
+        #     self.ui.textEdit02.setTextColor(self.blueColor)
+        #     self.ui.textEdit02.append(EPC)
+        #     self.ui.dataLine.setText(EPC)
+        # else:
+        #     print ("read failed.")
 
     def writeEpc(self):
         # print ("writeEpc!")
@@ -337,30 +356,31 @@ class ReaderWiter():
 
         writeEpcCommandHex = 'BB'+writeEpcStr+writeEpcChecksum+'7E'
         writeEpcCommand = writeEpcCommandHex.decode('hex')
-        try:
-            self.connection.send(writeEpcCommand)
+        while True:
+            try:
+                self.connection.send(writeEpcCommand)
 
-            time.sleep(1)
+                time.sleep(0.5)
 
-            data = self.connection.recv(10240)
-            dataHex = bytes_to_hex(data)
+                data = self.connection.recv(1024)
+                dataHex = bytes_to_hex(data)
 
-            print (dataHex)
-            # if dataHex == 'BB010C0001000E7E':
-            #     print ("set select successful.")
-            #     self.ui.textEdit02.setTextColor(self.greenColor)
-            #     self.ui.textEdit02.append("SET SELECT SUCCESSFUL.")
-            #     self.ui.dataLine.setEnabled(True)
-            #     self.ui.readButton.setEnabled(True)
-            #     self.ui.writeButton.setEnabled(True)
-            #
-            # else:
-            #     self.ui.textEdit02.setTextColor(self.redColor)
-            #     print ("Try Again!")
-            #     self.ui.textEdit02.append("TRY AGAIN!")
-        except:
-            print ("Trying Again!" + str(sys.exc_info()))
-            self.ui.textEdit02.append("TRYING AGAIN!")
+                print (dataHex)
+                Type = dataHex[2:4]
+
+                Command = dataHex[4:6]
+
+                if Type == '01' and Command == '49':
+                    print ("Write Successful.")
+                    self.ui.textEdit02.setTextColor(self.greenColor)
+                    self.ui.textEdit02.append("WRITE SUCCESSFUL.")
+                    break
+                else:
+                    raise ValueError('unable to write!')
+
+            except:
+                print ("Trying Again!" + str(sys.exc_info()))
+                # self.ui.textEdit02.append("TRYING AGAIN!")
 
     def cancel(self):
         self.ui.dataLine.clear()
