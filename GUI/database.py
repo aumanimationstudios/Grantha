@@ -32,6 +32,7 @@ class DataBase:
 
     authUsers = "SELECT * FROM AUTH_USERS"
 
+
     def __init__(self):
         self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
         self.database.autocommit(1)
@@ -259,6 +260,18 @@ class DataBase:
             return aU
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
+    # def getSlFrmTid(self,tid):
+    #     try:
+    #         query = "SELECT serial_no FROM SERIAL_NO WHERE tag_id={} ".format(tid)
+    #         self.cursor.execute(query)
+    #         slNo = self.cursor.fetchone()
+    #         return slNo
+    #     except:
+    #         print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+
+
+
 
 if __name__ == '__main__':
     # database = MySQLdb.connect("localhost","test","test123","INVENTORY")

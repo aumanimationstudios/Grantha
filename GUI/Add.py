@@ -120,6 +120,7 @@ class addWidget():
         else:
             self.ui.serialNoBox.setText(slNo)
 
+
     def slNoGenerator(self, size=10, chars=string.ascii_uppercase + string.digits):
         slNo = ''.join(random.SystemRandom().choice(chars) for n in range(size))
         return slNo

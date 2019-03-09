@@ -365,7 +365,14 @@ class mainWindow():
 
         sn = self.db.listOfSerialNo()
         SN = [x['serial_no'] for x in sn]
+        # ti = self.db.listOfSerialNo()
+        # # print (ti)
+        # TI = [x['tag_id'] for x in ti]
+        # # print  (TI)
         if slNo in SN:
+            # slNo = self.db.getSlFrmTid(tagId)
+            # slno = slNo['serial_no']
+            # print slno
             # print "received sl.no: "+slNo
             self.ui.comboBox.setEditText(slNo)
 
@@ -390,6 +397,7 @@ class mainWindow():
             self.Msg.setWindowTitle("Wrong Tag")
             self.Msg.setText("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
             self.Msg.show()
+
 
 
 
@@ -518,9 +526,11 @@ class readThread(QThread):
         self.socket.send("READ")
 
         slNo = self.socket.recv()
-        print "received sl.No: " + slNo
-
+        print "Received sl.No: " + slNo
         self.slNoReceived.emit(slNo)
+        # tagId = self.socket.recv()
+        # print "Received Tag Id :" + tagId
+        # self.slNoReceived.emit(tagId)
 
 
 class readMultiThread(QThread):
