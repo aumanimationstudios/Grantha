@@ -357,24 +357,24 @@ class mainWindow():
         self.plcMsg.setText("Place your Tag...")
         self.plcMsg.show()
 
-    def closePlaceTagMessage(self, slNo):
+    def closePlaceTagMessage(self, tagId):
         try:
             self.plcMsg.close()
         except:
             pass
 
-        sn = self.db.listOfSerialNo()
-        SN = [x['serial_no'] for x in sn]
-        # ti = self.db.listOfSerialNo()
-        # # print (ti)
-        # TI = [x['tag_id'] for x in ti]
-        # # print  (TI)
-        if slNo in SN:
-            # slNo = self.db.getSlFrmTid(tagId)
-            # slno = slNo['serial_no']
+        # sn = self.db.listOfSerialNo()
+        # SN = [x['serial_no'] for x in sn]
+        ti = self.db.listOfSerialNo()
+        # print (ti)
+        TI = [x['tag_id'] for x in ti]
+        # print  (TI)
+        if tagId in TI:
+            slNo = self.db.getSlFrmTid(tagId)
+            slno = slNo['serial_no']
             # print slno
-            # print "received sl.no: "+slNo
-            self.ui.comboBox.setEditText(slNo)
+            print "received sl.no: "+slno
+            self.ui.comboBox.setEditText(slno)
 
             column = self.db.getColumns()
             self.theColumn = [x['COLUMN_NAME'] for x in column]
@@ -525,12 +525,11 @@ class readThread(QThread):
 
         self.socket.send("READ")
 
-        slNo = self.socket.recv()
-        print "Received sl.No: " + slNo
-        self.slNoReceived.emit(slNo)
-        # tagId = self.socket.recv()
-        # print "Received Tag Id :" + tagId
-        # self.slNoReceived.emit(tagId)
+        # slNo = self.socket.recv()
+        # print "Received sl.No: " + slNo
+        tagId = self.socket.recv()
+        print "Received Tag Id :" + tagId
+        self.slNoReceived.emit(tagId)
 
 
 class readMultiThread(QThread):
