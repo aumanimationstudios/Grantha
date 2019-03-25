@@ -155,6 +155,7 @@ class ReaderWiter():
         global threads
         rT = recieveThread(self.connection, read, app)
         rT.dataReceived.connect(self.readMultiOutput)
+        print type(rT)
         threads.append(rT)
         rT.start()
 
@@ -244,8 +245,9 @@ class ReaderWiter():
     def stopRead(self):
         global threads
         if threads:
+            print (threads)
             for runningThread in threads:
-                runningThread.exit()
+                runningThread.exitThread()
 
 
         stopStr = 'BB00280000287E'
@@ -398,15 +400,15 @@ class recieveThread(QThread):
         self.connection = connection
         self.readStr = readStr
         self.stop = False
+        self.connection.send(self.readStr)
 
-    def exit(self):
+    def exitThread(self):
         self.stop = True
 
     def run(self):
         # self.starting.emit()
         while True:
             if (self.stop == False):
-                self.connection.send(self.readStr)
 
                 data = self.connection.recv(1024)
                 dataHex = bytes_to_hex(data)

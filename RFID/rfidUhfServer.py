@@ -9,50 +9,108 @@ import sys
 import os
 from utils_uhf import *
 import setproctitle
+import threading
+import debug
 
+threads = []
 
 def GranthaServer(granthaQueue, socketQueue):
-    print ("GranthaServer Started.")
+    debug.info ("GranthaServer Started.")
     context = zmq.Context()
     socket = context.socket(zmq.REP)
     socket.bind("tcp://192.168.1.183:4689")
 
     while True:
         msgFrmCli = socket.recv()
-
+        debug.info ("Message From Client: "+msgFrmCli)
+        # try:
         if (msgFrmCli == "READ"):
             granthaQueue.put("READ_SINGLE")
-            msg = socketQueue.get()
-            print msg
-            try:
-                if (msg=="NO_CARD"):
-                    print "1 No Card Detected!"
-                    socket.send("NO CARD")
-                    raise (ValueError)
-                else:
-                    socket.send(msg)
-            except:
-                print ("Trying Again!")
+            tagIdSingle = socketQueue.get()
+            debug.info (tagIdSingle)
+            # try:
+            if (tagIdSingle=="NO_CARD"):
+                debug.info ("1 No Card Detected!")
+                socket.send("NO CARD")
+                # raise (ValueError)
+            else:
+                try:
+                    socket.send(tagIdSingle)
+                except:
+                    debug.info (str(sys.exc_info()))
+
+            # if (msgFrmCli == "READ_MULTI"):
+        # try:
+        if (msgFrmCli == "READ_MULTI"):
+            # try:
+            granthaQueue.put("READ_MULTI")
+            socket.send("MULTI_READ_STARTED")
+
+            # sqT = socketQThread(socketQueue)
+            # sqT.start()
+
+        if (msgFrmCli == "STOP"):
+            granthaQueue.put("STOP")
+            socket.send("STOPPING")
+            # debug.info (msgFrmCli)
+            # global threads
+            # debug.info (threads)
+            # if threads:
+            #     # debug.info (threads)
+            #     for runningThread in threads:
+            #         runningThread.exitThread()
+            #         socket.send("ackPass")
+
 
 
 def SocketServer(granthaQueue, socketQueue):
-    print ("SocketServer Started.")
+    global threads
+    debug.info ("SocketServer Started.")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    # hostname = socket.gethostname()
-    # ip = socket.gethostbyname(hostname)
-    server_address = ("192.168.1.183", 80)
+    hostname = socket.gethostname()
+    ip = socket.gethostbyname(hostname)
+    server_address = ((ip, 80))
     sock.bind(server_address)
     sock.listen(1)
 
     connection, client_address = sock.accept()
-    print ("connection from: {}".format(client_address))
+    debug.info ("connection from: {}".format(client_address))
 
     while True:
-        msg = granthaQueue.get()
-        if (msg == "READ_SINGLE"):
+        msgRecvd = granthaQueue.get()
+        debug.info("Message Received:"+msgRecvd)
+        if (msgRecvd == "READ_SINGLE"):
             tagId = readSingle(connection)
             socketQueue.put(tagId)
+
+        if (msgRecvd == "READ_MULTI"):
+            sqT = socketQThread(socketQueue)
+            sqT.start()
+            # global threads
+            debug.info (threads)
+            pollingTime = 10000
+            readStr = severalTimesPollingCommandGen(pollingTime)
+            # debug.info readStr
+            read = readStr.decode('hex')
+            connection.send(read)
+            # time.sleep(1)
+            rmT = readMultiThread(connection, socketQueue)
+            # debug.info (type(rmT))
+            threads.append(rmT)
+            debug.info (threads)
+            rmT.start()
+
+        if (msgRecvd == "STOP"):
+            debug.info (threads)
+            if threads:
+                # debug.info (threads)
+                for runningThread in threads:
+                    runningThread.exitThread()
+                threads = []
+
+
+
 
 def readSingle(connection):
     readStr = 'BB00220000227E'
@@ -66,7 +124,7 @@ def readSingle(connection):
     dataDict = readVerifier(dataHex)
 
     if not dataDict:
-        print "2 No Cards Detected!"
+        debug.info ("2 No Cards Detected!")
         return ("NO_CARD")
 
     else:
@@ -80,428 +138,127 @@ def readSingle(connection):
                 if(int(dataDict[x]["RSSI"],16) >= nearestRssi):
                     nearestRssi = int(dataDict[x]["RSSI"],16)
                     nearRestEpc = x
-        # print (nearRestEpc)
+        # debug.info (nearRestEpc)
         tagId = nearRestEpc[16:24]
         return (tagId)
+
+
+
+
+def readMultiOutput(dataHex,socketQueue):
+    # debug.info dataHex
+    # dataHex = bytes_to_hex(data)
+
+    dataDict = readVerifier(dataHex)
+    # debug.info (dataDict)
+
+    if(dataDict):
+        for x in dataDict:
+            tagId = x[16:24]
+            debug.info(tagId)
+            socketQueue.put(tagId)
+
+            # debug.info (x)
+            # self.ui.textEdit01.setTextColor(self.blueColor)
+            # self.ui.textEdit01.append(x)
+
+
+class socketQThread(threading.Thread):
+    def __init__(self, socketQueue):
+        super(socketQThread, self).__init__()
+
+        self.socketQueue = socketQueue
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        while(True):
+            try:
+                self.socket.connect(("192.168.1.39",4695))
+                break
+            except:
+                debug.info(sys.exc_info())
+
+    def run(self):
+        while(True):
+
+            tagIdMulti = self.socketQueue.get()
+            debug.info (tagIdMulti)
+
+            self.socket.send(tagIdMulti)
+
+            if (tagIdMulti == "MULTI_STOP"):
+                # self.socket.shutdown(1)
+                debug.info ("MULTI STOPPED")
+                self.socket.close()
+                break
+
+
+class readMultiThread(threading.Thread):
+    def __init__(self, connection, socketQueue):
+        threading.Thread.__init__(self)
+        self.connection = connection
+        self.socketQueue = socketQueue
+        self.stop = False
+
+
+    def exitThread(self):
+        self.stop = True
+
+    def run(self):
+        while True:
+            if (self.stop == False):
+                # self.connection.send(self.readStr)
+
+                data = self.connection.recv(1024)
+                dataHex = bytes_to_hex(data)
+                # debug.info dataHex
+                readMultiOutput(dataHex,self.socketQueue)
+                # self.dataReceived.emit(dataHex)
+                time.sleep(0.01)
+
+            else:
+                debug.info("Stopping..")
+                stopStr = 'BB00280000287E'
+                stop = stopStr.decode('hex')
+                while True:
+                    try:
+                        self.connection.send(stop)
+                        # time.sleep(0.2)
+                        data = self.connection.recv(4096)
+                        dataHex = bytes_to_hex(data)
+
+                        if dataHex == "BB01280001002A7E":
+                            debug.info ("Reading stopped.")
+                            self.socketQueue.put("MULTI_STOP")
+                            # self.ui.textEdit01.setTextColor(self.greenColor)
+                            # self.ui.textEdit01.append("READING STOPPED!")
+                            break
+                        else:
+                            raise ValueError('Unable to stop')
+                    except:
+                        debug.info ("Trying Again!" + str(sys.exc_info()))
+                        # self.ui.textEdit01.append("TRYING AGAIN!")
+
+                break
+
+
+
+
+
+
 
 
 
 if __name__ =="__main__":
     setproctitle.setproctitle("RFIDUHFSERVER")
 
-    Q = Queue()
-    GS = Process(target=GranthaServer, args=(Q,Q,))
-    SS = Process(target=SocketServer, args=(Q,Q,))
+    GranthaQ = Queue()
+    SocketQ = Queue()
+    GS = Process(target=GranthaServer, args=(GranthaQ,SocketQ,))
+    SS = Process(target=SocketServer, args=(GranthaQ,SocketQ,))
     GS.start()
     SS.start()
 
     GS.join()
     SS.join()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# class Server:
-#     def __init__(self):
-#         self.context = zmq.Context()
-#         self.socket = self.context.socket(zmq.REP)
-#         self.socket.bind("tcp://192.168.1.183:4689")
-#
-#         while True:
-#             msgFrmCli = self.socket.recv()
-#             print "Message from Client: " + msgFrmCli
-#
-#             # if (msgFrmCli == "WRITE"):
-#             #     self.WRITE()
-#
-#             if (msgFrmCli == "READ"):
-#                 self.READ()
-#
-#             if (msgFrmCli == "READ_MULTI"):
-#                 self.READ_MULTI()
-#
-#             # if (msgFrmCli == "WRITE_TAG"):
-#             #     self.WRITE_TAG()
-#             #
-#             # if (msgFrmCli == "FIND_TAG"):
-#             #     self.FIND_TAG()
-#
-#
-#     # def WRITE(self):
-#     #     print "Sending Reply"
-#     #     self.socket.send("INPUT")
-#     #
-#     #     serialNo = self.socket.recv()
-#     #     print "Message from Client: " + serialNo
-#     #     print("Now place your tag to write")
-#     #
-#     #     while True:
-#     #         try:
-#     #             reader = SimpleMFRC522.SimpleMFRC522()
-#     #             msg = reader.write(serialNo)
-#     #             if (msg):
-#     #                 print("Written")
-#     #             GPIO.cleanup()
-#     #             break
-#     #
-#     #         except:
-#     #             print("trying to screw harder : " + str(sys.exc_info()))
-#     #             GPIO.cleanup()
-#     #
-#     #     self.socket.send("Data Written to Tag")
-#
-#
-#     def READ(self):
-#         print "Now place your tag to read"
-#         try:
-#             # queue.put("READ")
-#             reader = SimpleMFRC522.SimpleMFRC522()
-#             id, text = reader.read()
-#             slNo = text.strip()
-#             self.socket.send(slNo)
-#             print "message sent"
-#             GPIO.cleanup()
-#
-#         except:
-#             print("trying hard : " + str(sys.exc_info()))
-#             # GPIO.cleanup()
-#
-#
-#     # def WRITE_TAG(self):
-#     #     print "Sending Reply"
-#     #     self.socket.send("INPUT")
-#     #
-#     #     serialNo = self.socket.recv()
-#     #     print "Message from Client: " + serialNo
-#     #     print("Now place your tag to write")
-#     #
-#     #     while True:
-#     #         try:
-#     #             reader = SimpleMFRC522.SimpleMFRC522()
-#     #             msg = reader.write(serialNo)
-#     #             if (msg):
-#     #                 print("Written")
-#     #             GPIO.cleanup()
-#     #             break
-#     #
-#     #         except:
-#     #             print("trying to screw harder : " + str(sys.exc_info()))
-#     #             GPIO.cleanup()
-#     #
-#     #     self.socket.send("Data Written to Tag")
-#
-#
-#     def READ_MULTI(self):
-#         try:
-#             self.socket.send("GIVE_TIMEOUT")
-#
-#             timeout = self.socket.recv()
-#             subprocess.Popen(["python", "readMultiple02.py", "%s" %(timeout)])
-#
-#             self.socket.send("ackPass")
-#             print "message sent"
-#
-#         except:
-#             print("trying hard : " + str(sys.exc_info()))
-#             self.socket.send("ackFail")
-#             print("Failed to run Multi reader")
-#
-#
-#     # def FIND_TAG(self):
-#     #     try:
-#     #         self.socket.send("GIVE_TIMEOUT")
-#     #
-#     #         timeout = self.socket.recv()
-#     #         subprocess.Popen(["python", "findTag.py", "%s" %(timeout)])
-#     #
-#     #         self.socket.send("ackPass")
-#     #         print "message sent"
-#     #
-#     #     except:
-#     #         print("trying hard : " + str(sys.exc_info()))
-#     #         self.socket.send("ackFail")
-#     #         print("Failed to run Multi reader")
-#
-#
-#
-#
-# if __name__ == "__main__":
-#     Server()
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# class ReaderWiter():
-#     def __init__(self):
-#
-#         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#
-#         hostname = socket.gethostname()
-#         ip = socket.gethostbyname(hostname)
-#         server_address = (ip, 80)
-#         self.sock.bind(server_address)
-#         self.sock.listen(1)
-#
-#         self.connection, client_address = self.sock.accept()
-#
-#
-#     def closeConnection(self):
-#
-#         self.connection.close()
-#
-#         print ("Connection closed.")
-#
-#
-#     def readSingle(self):
-#         readStr = 'BB00220000227E'
-#         read = readStr.decode('hex')
-#         self.connection.send(read)
-#
-#         time.sleep(1)
-#
-#         data = self.connection.recv(10240)
-#         dataHex = bytes_to_hex(data)
-#         print dataHex
-#         dataDict = readVerifier(dataHex)
-#         print (dataDict)
-#
-#         if not dataDict:
-#             print "No Cards Detected!"
-#             self.ui.textEdit01.setTextColor(self.redColor)
-#             self.ui.textEdit01.append("NO CARDS DETECTED!")
-#         else:
-#             nearestRssi = None
-#             nearRestEpc = None
-#             for x in dataDict:
-#                 if(not nearestRssi):
-#                     nearestRssi = int(dataDict[x]["RSSI"],16)
-#                     nearRestEpc = x
-#                 else:
-#                     if(int(dataDict[x]["RSSI"],16) >= nearestRssi):
-#                         nearestRssi = int(dataDict[x]["RSSI"],16)
-#                         nearRestEpc = x
-#
-#                 # print type(dataDict)
-#
-#             print (nearRestEpc)
-#
-#
-#
-#     def readMulti(self):
-#
-#
-#         pollingTime = 10000
-#         readStr = severalTimesPollingCommandGen(pollingTime)
-#         # print readStr
-#         read = readStr.decode('hex')
-#
-#         global threads
-#         rT = recieveThread(self.connection, read, app)
-#         rT.dataReceived.connect(self.readMultiOutput)
-#         threads.append(rT)
-#         rT.start()
-#
-#     def readMultiOutput(self, dataHex):
-#
-#
-#         dataDict = readVerifier(dataHex)
-#         # print (dataDict)
-#
-#         if not dataDict:
-#             print "No Cards Detected!"
-#
-#         else:
-#             for x in dataDict:
-#                 print (x)
-#
-#
-#     def stopRead(self):
-#         global threads
-#         if threads:
-#             for runningThread in threads:
-#                 runningThread.exit()
-#
-#
-#         stopStr = 'BB00280000287E'
-#         stop = stopStr.decode('hex')
-#         while True:
-#             try:
-#                 self.connection.send(stop)
-#                 # time.sleep(0.2)
-#                 data = self.connection.recv(4096)
-#                 dataHex = bytes_to_hex(data)
-#
-#                 if dataHex == "BB01280001002A7E":
-#                     print ("Reading stopped.")
-#
-#                     break
-#                 else:
-#                     raise ValueError('Unable to stop')
-#             except:
-#                 print ("Trying Again!" + str(sys.exc_info()))
-#
-#
-#
-#
-#     def setSelect(self):
-#
-#
-#         # print (mask)
-#         selParam = '000C001301000000206000'+mask
-#         # print (selParam)
-#         selParamChecksum = checksumCalculator(selParam)
-#
-#         selParamCommandHex = 'BB'+selParam+selParamChecksum+'7E'
-#
-#         selParamCommand = selParamCommandHex.decode('hex')
-#         while True:
-#             try:
-#                 self.connection.send(selParamCommand)
-#
-#                 time.sleep(1)
-#
-#                 data = self.connection.recv(10240)
-#                 dataHex = bytes_to_hex(data)
-#                 print (dataHex)
-#
-#                 if dataHex == 'BB010C0001000E7E':
-#                     print ("set select successful.")
-#
-#                     break
-#                 else:
-#
-#                     raise ValueError('Unable to set select.')
-#
-#             except:
-#                 print ("Trying Again!" + str(sys.exc_info()))
-#
-#     def readEpc(self):
-#
-#         readEpcStr = 'BB003900090000000001000000084B7E'
-#         readEpc = readEpcStr.decode('hex')
-#         self.connection.send(readEpc)
-#
-#         time.sleep(1)
-#
-#         data = self.connection.recv(10240)
-#         dataHex = bytes_to_hex(data)
-#         # print (dataHex)
-#
-#         dataDict = readEpcVerifier(dataHex)
-#         print (dataDict)
-#
-#         if not dataDict:
-#             print "No Cards Detected!"
-#
-#         else:
-#             for x in dataDict:
-#                 print (x)
-#
-#
-#
-#
-#     def writeEpc(self):
-#         # print ("writeEpc!")
-#
-#         data = self.ui.dataLine.text()
-#         writeEpcStr = '00490019000000000100000008'+data
-#
-#         writeEpcChecksum = checksumCalculator(writeEpcStr)
-#
-#         writeEpcCommandHex = 'BB'+writeEpcStr+writeEpcChecksum+'7E'
-#         writeEpcCommand = writeEpcCommandHex.decode('hex')
-#         while True:
-#             try:
-#                 self.connection.send(writeEpcCommand)
-#
-#                 time.sleep(0.5)
-#
-#                 data = self.connection.recv(1024)
-#                 dataHex = bytes_to_hex(data)
-#
-#                 print (dataHex)
-#                 Type = dataHex[2:4]
-#
-#                 Command = dataHex[4:6]
-#
-#                 if Type == '01' and Command == '49':
-#                     print ("Write Successful.")
-#
-#                     break
-#                 else:
-#                     raise ValueError('unable to write!')
-#
-#             except:
-#                 print ("Trying Again!" + str(sys.exc_info()))
-#
-#
-#
-#
-#
-# class recieveThread(QThread):
-#     # starting = pyqtSignal()
-#     dataReceived = pyqtSignal(str)
-#
-#     def __init__(self, connection, readStr, parent):
-#         super(recieveThread, self).__init__(parent)
-#         self.connection = connection
-#         self.readStr = readStr
-#         self.stop = False
-#
-#     def exit(self):
-#         self.stop = True
-#
-#     def run(self):
-#         # self.starting.emit()
-#         while True:
-#             if (self.stop == False):
-#                 self.connection.send(self.readStr)
-#
-#                 data = self.connection.recv(1024)
-#                 dataHex = bytes_to_hex(data)
-#                 self.dataReceived.emit(dataHex)
-#                 time.sleep(0.01)
-#             else:
-#                 break
-#
-#
-#
-#
-#
-#
-#
-#
-# if __name__ == '__main__':
-#     app = QApplication(sys.argv)
-#     window = ReaderWiter()
-#     sys.exit(app.exec_())
-
 

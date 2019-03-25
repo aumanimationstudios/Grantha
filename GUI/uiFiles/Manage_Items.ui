@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>459</width>
-    <height>453</height>
+    <width>464</width>
+    <height>550</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,7 +50,8 @@ QCheckBox {
 }
 
 QCheckBox:disabled {
-    color: #76797C;
+    background-color: #31363b;
+    color: #454545;
 }
 
 QCheckBox::indicator,
@@ -63,9 +64,13 @@ QGroupBox::indicator {
     margin-left: 2px;
 }
 
-QCheckBox::indicator:unchecked,
 QGroupBox::indicator:unchecked {
     image: url(:/qss_icons/rc/checkbox_unchecked.png);
+}
+
+QCheckBox::indicator:unchecked {
+    background-color:       black;
+    border:                 2px solid #76797C;
 }
 
 QCheckBox::indicator:unchecked:hover,
@@ -78,9 +83,13 @@ QGroupBox::indicator:unchecked:pressed {
     image: url(:/qss_icons/rc/checkbox_unchecked_focus.png);
 }
 
-QCheckBox::indicator:checked,
 QGroupBox::indicator:checked {
     image: url(:/qss_icons/rc/checkbox_checked.png);
+}
+
+QCheckBox::indicator:checked {
+    background-color:       green;
+    border:                 2px solid white;
 }
 
 QCheckBox::indicator:checked:hover,
@@ -89,7 +98,6 @@ QCheckBox::indicator:checked:pressed,
 QGroupBox::indicator:checked:hover,
 QGroupBox::indicator:checked:focus,
 QGroupBox::indicator:checked:pressed {
-    border: none;
     image: url(:/qss_icons/rc/checkbox_checked_focus.png);
 }
 
@@ -103,12 +111,22 @@ QCheckBox::indicator:indeterminate:pressed {
     image: url(:/qss_icons/rc/checkbox_indeterminate_focus.png);
 }
 
-QCheckBox::indicator:checked:disabled,
+QCheckBox::indicator:checked:disabled {
+    background-color: #31363b;
+    color: #454545;
+    border: 2px solid #31363b;
+}
+
 QGroupBox::indicator:checked:disabled {
     image: url(:/qss_icons/rc/checkbox_checked_disabled.png);
 }
 
-QCheckBox::indicator:unchecked:disabled,
+QCheckBox::indicator:unchecked:disabled {
+    background-color: #31363b;
+    color: #454545;
+    border: 2px solid #31363b;
+}
+
 QGroupBox::indicator:unchecked:disabled {
     image: url(:/qss_icons/rc/checkbox_unchecked_disabled.png);
 }
@@ -130,7 +148,7 @@ QRadioButton::indicator:checked {
 
 QRadioButton::indicator:unchecked {
     background-color:       black;
-    border:                 2px solid white;
+    border:                 2px solid #76797C;
 }
 
 QMenuBar {
@@ -264,6 +282,14 @@ QLineEdit {
     color: #eff0f1;
 }
 
+QLineEdit:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    color: #454545;
+}
+
 QAbstractItemView QLineEdit {
     padding: 0;
 }
@@ -271,7 +297,7 @@ QAbstractItemView QLineEdit {
 QGroupBox {
     border: 1px solid #76797C;
     border-radius: 2px;
-    margin-top: 20px;
+    margin-top: 2px;
 }
 
 QGroupBox::title {
@@ -556,7 +582,8 @@ QLineEdit:hover,
 QTextEdit:hover,
 QPlainTextEdit:hover,
 QAbstractView:hover,
-QTreeView:hover {
+QTreeView:hover,
+QRadioButton:hover {
     border: 1px solid #3daee9;
     color: #eff0f1;
 }
@@ -592,6 +619,14 @@ QComboBox::down-arrow {
 QComboBox::down-arrow:on {
 	top: 1px;
     left: 1px;
+}
+
+QComboBox:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    color: #454545;
 }
 
 QAbstractSpinBox {
@@ -1219,50 +1254,12 @@ QDateEdit::down-arrow:on,
 QDateEdit::down-arrow:hover,
 QDateEdit::down-arrow:focus {
     image: url(:/qss_icons/rc/down_arrow.png);
-}</string>
+}
+</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label01">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="text">
-      <string>Serial No:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="serialNoBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maxLength">
-      <number>30</number>
-     </property>
-     <property name="clearButtonEnabled">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QPushButton" name="randomButton">
-     <property name="text">
-      <string>Random</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label02">
+   <item row="8" column="0">
+    <widget class="QLabel" name="label06">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1270,21 +1267,11 @@ QDateEdit::down-arrow:focus {
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Item Type:</string>
+      <string>Price:</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QComboBox" name="itemTypeBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="label03">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1297,8 +1284,21 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QComboBox" name="descriptionBox">
+   <item row="10" column="0">
+    <widget class="QLabel" name="label08">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Warranty Valid Till:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="makeBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1310,7 +1310,7 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label04">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1324,59 +1324,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QComboBox" name="makeBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="editable">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label05">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Model:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QComboBox" name="modelBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="editable">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label06">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Price:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QLineEdit" name="priceBox">
+    <widget class="QLineEdit" name="tagIdBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1391,52 +1339,15 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label07">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="generateButton">
      <property name="text">
-      <string>Purchase Date:</string>
+      <string>Generate</string>
      </property>
     </widget>
-   </item>
-   <item row="6" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <widget class="QLineEdit" name="purchaseBox">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="purchaseCal">
-       <property name="text">
-        <string>...</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="purchaseNoneButton">
-       <property name="text">
-        <string>None</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
    <item row="7" column="0">
-    <widget class="QLabel" name="label08">
+    <widget class="QLabel" name="label05">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1444,11 +1355,11 @@ QDateEdit::down-arrow:focus {
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Warranty Valid Till:</string>
+      <string>Model:</string>
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
+   <item row="10" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
       <widget class="QLineEdit" name="validBox">
@@ -1479,37 +1390,14 @@ QDateEdit::down-arrow:focus {
      </item>
     </layout>
    </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label09">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Location:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="QComboBox" name="locationBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="2">
+   <item row="11" column="2">
     <widget class="QPushButton" name="locationNoneButton">
      <property name="text">
       <string>None</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
+   <item row="12" column="0">
     <widget class="QLabel" name="label10">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1522,7 +1410,23 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="priceBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maxLength">
+      <number>30</number>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1">
     <widget class="QComboBox" name="userBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -1530,16 +1434,19 @@ QDateEdit::down-arrow:focus {
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="editable">
+      <bool>false</bool>
+     </property>
     </widget>
    </item>
-   <item row="9" column="2">
+   <item row="12" column="2">
     <widget class="QPushButton" name="userNoneButton">
      <property name="text">
       <string>None</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="1">
+   <item row="13" column="1">
     <spacer name="verticalSpacer_2">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -1552,7 +1459,303 @@ QDateEdit::down-arrow:focus {
      </property>
     </spacer>
    </item>
-   <item row="11" column="0" colspan="3">
+   <item row="9" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QLineEdit" name="purchaseBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="purchaseCal">
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="purchaseNoneButton">
+       <property name="text">
+        <string>None</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="descriptionBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="editable">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label02">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Item Type:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="QLabel" name="label09">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Location:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1">
+    <widget class="QComboBox" name="locationBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="editable">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="serialNoBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QComboBox" name="modelBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="editable">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label07">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Purchase Date:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label01">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Serial No:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="itemTypeBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="3">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QRadioButton" name="addButton">
+        <property name="text">
+         <string>add</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="updateButton">
+        <property name="text">
+         <string>update</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QPushButton" name="readButton">
+     <property name="text">
+      <string>Read</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label01_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Tag Id:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QCheckBox" name="serialNoCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="3">
+    <widget class="QCheckBox" name="tagIdCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="3">
+    <widget class="QCheckBox" name="itemTypeCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="3">
+    <widget class="QCheckBox" name="descriptionCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="3">
+    <widget class="QCheckBox" name="makeCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="3">
+    <widget class="QCheckBox" name="modelCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="3">
+    <widget class="QCheckBox" name="priceCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="3">
+    <widget class="QCheckBox" name="purchaseCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="3">
+    <widget class="QCheckBox" name="validCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="3">
+    <widget class="QCheckBox" name="locationCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="3">
+    <widget class="QCheckBox" name="userCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="0" colspan="4">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="cancelButton">

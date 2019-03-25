@@ -184,8 +184,13 @@ class DataBase:
     def insertSerialNo(self, query):
         try:
             self.cursor.execute(query)
+            okMsg = "SlNo Added Successfully"
+            return okMsg
+            # print "Item Added"
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+            errMsg = str(sys.exc_info())
+            return errMsg
 
     def getDetails(self, query):
         try:
@@ -263,7 +268,7 @@ class DataBase:
 
     def getSlFrmTid(self,tid):
         try:
-            query = "SELECT serial_no FROM SERIAL_NO WHERE tag_id={} ".format(tid)
+            query = "SELECT serial_no FROM SERIAL_NO WHERE tag_id=\"{}\" ".format(tid)
             self.cursor.execute(query)
             tId = self.cursor.fetchone()
             return tId
@@ -272,7 +277,7 @@ class DataBase:
 
     def getTidFrmSl(self,slno):
         try:
-            query = "SELECT tag_id FROM SERIAL_NO WHERE serial_no={} ".format(slno)
+            query = "SELECT tag_id FROM SERIAL_NO WHERE serial_no=\"{}\" ".format(slno)
             self.cursor.execute(query)
             slNo = self.cursor.fetchone()
             return slNo

@@ -1296,30 +1296,16 @@ QDateEdit::down-arrow:focus {
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="readMultipleButton">
+       <widget class="QPushButton" name="readMultiButton">
         <property name="text">
          <string>Read Multiple</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox">
-        <property name="value">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label">
+       <widget class="QPushButton" name="stopReadButton">
         <property name="text">
-         <string>Sec</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="readMultiButton">
-        <property name="text">
-         <string>Read</string>
+         <string>Stop Read</string>
         </property>
        </widget>
       </item>
@@ -1338,12 +1324,19 @@ QDateEdit::down-arrow:focus {
     <item row="1" column="0">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QPushButton" name="addButton">
+       <widget class="QPushButton" name="manageItemsButton">
         <property name="styleSheet">
          <string notr="true"/>
         </property>
         <property name="text">
-         <string>ADD ITEM</string>
+         <string>MANAGE ITEMS</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="rfidToolsButton">
+        <property name="text">
+         <string>RFID TOOLS</string>
         </property>
        </widget>
       </item>

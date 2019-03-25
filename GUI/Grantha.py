@@ -9,6 +9,8 @@ from PyQt5.QtCore import QProcess, QThread, pyqtSignal
 import database
 import zmq
 import time
+import socket
+import debug
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -18,7 +20,8 @@ imgFilePath = os.path.join(progPath, "GUI","imageFiles")
 sys.path.append(uiFilePath)
 sys.path.append(imgFilePath)
 
-Add = "Add.py"
+Manage_Items = "Manage_Items.py"
+Rfid_Tools = "Rfid_Tools.py"
 Update = "Update.py"
 Update_Tag = "Update_Tag.py"
 Log = "Log.py"
@@ -29,8 +32,11 @@ aU = database.DataBase().getAuthUsers()
 authUsers = [x['auth_users'] for x in aU]
 
 user = os.environ['USER']
+context = zmq.Context()
+processes = []
 
 class mainWindow():
+    global processes
     def __init__(self):
         # super(myWindow, self).__init__()
         self.rfidMultiCount = 0
@@ -46,7 +52,8 @@ class mainWindow():
         self.ui.comboBox.currentIndexChanged.connect(self.search)
 
         if user in authUsers:
-            self.ui.addButton.clicked.connect(self.add)
+            self.ui.manageItemsButton.clicked.connect(self.manageItems)
+            self.ui.rfidToolsButton.clicked.connect(self.rfidTools)
             self.ui.updateButton.clicked.connect(self.update)
             self.ui.updateTagButton.clicked.connect(self.updateTag)
             self.ui.modifyButton.clicked.connect(self.modify)
@@ -54,6 +61,8 @@ class mainWindow():
             self.ui.logButton.clicked.connect(self.log)
             self.ui.readSingleButton.clicked.connect(self.readFromRfidTag)
             self.ui.readMultiButton.clicked.connect(self.readMultiFromRfidTag)
+            self.ui.stopReadButton.setEnabled(False)
+            self.ui.stopReadButton.clicked.connect(self.stopRead)
 
         self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
@@ -68,14 +77,14 @@ class mainWindow():
     def viewParentPopUp(self,pos):
         # a = self.ui.tableWidget.horizontalHeaderItem(8).text()
         #
-        # print a
+        # debug.info a
 
         selectedCellIndex = self.ui.tableWidget.selectedIndexes()
         for index in selectedCellIndex:
             selectedColumnIndex = index.column()
 
             selectedColumnLabel = self.ui.tableWidget.horizontalHeaderItem(selectedColumnIndex).text()
-            # print selectedColumnLabel
+            # debug.info selectedColumnLabel
 
             if (selectedColumnLabel == "location"):
                 menu = QtWidgets.QMenu()
@@ -108,15 +117,15 @@ class mainWindow():
 
     def viewParent(self):
         selectedText = self.ui.tableWidget.currentItem().text()
-        # print selectedText
+        # debug.info selectedText
         loc = self.db.listOfLocation()
         LOC = [x['location'] for x in loc]
-        # print LOC
+        # debug.info LOC
         if selectedText in LOC:
             query = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(selectedText)
             pL = self.db.getParentLocation(query)
             self.parentLocation = pL['parent_location']
-            # print self.parentLocation
+            # debug.info self.parentLocation
             if self.parentLocation == None:
                 self.parentMessage = "No Parent Location"
             else:
@@ -124,7 +133,7 @@ class mainWindow():
 
             self.viewParentMessage()
         else:
-            print "not valid location"
+            debug.info ("not valid location")
 
     def viewParentMessage(self):
         msg = QtWidgets.QMessageBox()
@@ -159,7 +168,7 @@ class mainWindow():
         self.db.getAllValues(init=True)
         while True:
             primaryResult = self.db.getAllValues()
-            # print primaryResult
+            # debug.info primaryResult
             if (not primaryResult):
                 break
             col = 0
@@ -170,34 +179,8 @@ class mainWindow():
             row +=1
 
         self.ui.tableWidget.resizeColumnsToContents()
-        print "Loaded list of all items."
+        debug.info( "Loaded list of all items.")
         # self.ui.tableWidget.setSortingEnabled(True)
-
-    # def readFromRfidTag(self):
-    #     self.context = zmq.Context()
-    #     print("connecting to rfidScanServer...")
-    #     self.socket = self.context.socket(zmq.REQ)
-    #     self.socket.connect("tcp://192.168.1.206:4689")
-    #
-    #     self.socket.send("READ")
-    #
-    #     slNo = self.socket.recv()
-    #
-    #     # self.ui.serialNoBox.clear()
-    #     self.ui.comboBox.setEditText(slNo)
-    #
-    #     column = self.db.getColumns()
-    #     self.theColumn = [x['COLUMN_NAME'] for x in column]
-    #
-    #     self.ui.tableWidget.setColumnCount(len(self.theColumn))
-    #     self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
-    #
-    #     currTxt = self.ui.comboBox.currentText()
-    #
-    #     self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
-    #     rows = self.db.getRows(self.query)
-    #     self.ui.tableWidget.setRowCount(len(rows))
-    #     self.fillTable()
 
 
     def search(self):
@@ -210,12 +193,12 @@ class mainWindow():
         self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
         currTxt = self.ui.comboBox.currentText()
-        # print currTxt
+        # debug.info currTxt
 
         if self.ui.serialNoButton.isChecked():
             self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
             rows = self.db.getRows(self.query)
-            # print rows
+            # debug.info rows
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
 
@@ -245,7 +228,7 @@ class mainWindow():
         self.db.getValues(self.query,init=True)
         while True:
             primaryResult = self.db.getValues(self.query)
-            # print primaryResult
+            # debug.info primaryResult
             if (not primaryResult):
                 break
             col = 0
@@ -316,9 +299,29 @@ class mainWindow():
 
     # Processes to start when respective buttons are clicked
 
-    def add(self):
+    def manageItems(self):
+        debug.info("Opening Add Menu")
         p = QProcess(parent=self.ui)
-        p.start(sys.executable, Add.split())
+        processes.append(p)
+        debug.info(processes)
+        p.started.connect(self.disableButtons)
+        p.readyReadStandardOutput.connect(self.read_out)
+        p.readyReadStandardError.connect(self.read_err)
+        p.finished.connect(self.enableButtons)
+        p.start(sys.executable, Manage_Items.split())
+
+    def rfidTools(self):
+        debug.info("Opening Rfid Tools Menu")
+        p = QProcess(parent=self.ui)
+        processes.append(p)
+        debug.info(processes)
+        p.started.connect(self.disableButtons)
+        p.readyReadStandardOutput.connect(self.read_out)
+        p.readyReadStandardError.connect(self.read_err)
+        p.finished.connect(self.enableButtons)
+        p.start(sys.executable, Rfid_Tools.split())
+
+
 
     def update(self):
         p = QProcess(parent=self.ui)
@@ -336,18 +339,47 @@ class mainWindow():
         p = QProcess(parent=self.ui)
         p.start(sys.executable, Log.split())
 
-    def findTag(self):
+    def findTag(self,process):
         p = QProcess(parent=self.ui)
         p.start(sys.executable, Find_Tag.split())
 
+    def read_out(self):
+        if processes:
+            for process in processes:
+                print 'stdout:', str(process.readAllStandardOutput()).strip()
+
+    def read_err(self):
+        if processes:
+            for process in processes:
+                print 'stderr:', str(process.readAllStandardError()).strip()
+
+
+    def disableButtons(self):
+        self.ui.readSingleButton.setEnabled(False)
+        self.ui.readMultiButton.setEnabled(False)
+        self.ui.manageItemsButton.setEnabled(False)
+        self.ui.rfidToolsButton.setEnabled(False)
+        self.ui.logButton.setEnabled(False)
+
+
+    def enableButtons(self):
+        self.ui.readSingleButton.setEnabled(True)
+        self.ui.readMultiButton.setEnabled(True)
+        self.ui.manageItemsButton.setEnabled(True)
+        self.ui.rfidToolsButton.setEnabled(True)
+        self.ui.logButton.setEnabled(True)
+        del processes[:]
+        debug.info(processes)
 
 
 
     def readFromRfidTag(self):
+        self.ui.readSingleButton.setEnabled(False)
+        self.ui.readMultiButton.setEnabled(False)
         self.ui.tableWidget.setRowCount(0)
         rT = readThread(app)
         rT.waiting.connect(self.openPlaceTagMessage)
-        rT.slNoReceived.connect(self.closePlaceTagMessage)
+        rT.tagIdReceived.connect(self.closePlaceTagMessage)
         rT.start()
 
     def openPlaceTagMessage(self):
@@ -366,15 +398,15 @@ class mainWindow():
         # sn = self.db.listOfSerialNo()
         # SN = [x['serial_no'] for x in sn]
         ti = self.db.listOfSerialNo()
-        # print (ti)
+        # debug.info (ti)
         TI = [x['tag_id'] for x in ti]
-        # print  (TI)
+        # debug.info  (TI)
         if tagId in TI:
-            slNo = self.db.getSlFrmTid(tagId)
-            slno = slNo['serial_no']
-            # print slno
-            print "received sl.no: "+slno
-            self.ui.comboBox.setEditText(slno)
+            slno = self.db.getSlFrmTid(tagId)
+            slNo = slno['serial_no']
+            # debug.info slno
+            debug.info ("received sl.no: "+slNo)
+            self.ui.comboBox.setEditText(slNo)
 
             column = self.db.getColumns()
             self.theColumn = [x['COLUMN_NAME'] for x in column]
@@ -388,6 +420,9 @@ class mainWindow():
             rows = self.db.getRows(self.query)
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable()
+            self.ui.readSingleButton.setEnabled(True)
+            self.ui.readMultiButton.setEnabled(True)
+
         else:
             self.wrongTagMessage()
 
@@ -397,120 +432,121 @@ class mainWindow():
             self.Msg.setWindowTitle("Wrong Tag")
             self.Msg.setText("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
             self.Msg.show()
-
-
-
+            self.ui.readSingleButton.setEnabled(True)
+            self.ui.readMultiButton.setEnabled(True)
 
     def readMultiFromRfidTag(self):
         self.ui.tableWidget.setRowCount(0)
-        timeout = str(self.ui.spinBox.value())
+        # timeout = str(self.ui.spinBox.value())
 
-        if self.ui.readMultipleButton.isChecked():
-            self.ui.readMultiButton.setEnabled(False)
-            self.rfidMultiUniqSlno.clear()
-            self.rfidMultiCount = 0
+        # if self.ui.readMultipleButton.isChecked():
+        self.ui.readMultiButton.setEnabled(False)
+        self.ui.readSingleButton.setEnabled(False)
+        self.ui.stopReadButton.setEnabled(True)
 
-            rmrT = readMultiReplyThread(app)
-            rmT = readMultiThread(timeout, app)
+        self.rfidMultiUniqSlno.clear()
+        self.rfidMultiCount = 0
 
-            rmrT.slNoReceived.connect(self.updateTable)
-            rmrT.finished.connect(self.readButtonEnable)
-            rmT.ackReceived.connect(self.showTimeout)
+        # rmrT = readMultiReplyThread(app)
+        rmT = readMultiThread(app)
 
-            rmrT.start()
-            rmT.start()
+        # rmrT.slNoReceived.connect(self.updateTable)
+        # rmrT.finished.connect(self.readButtonEnable)
+        rmT.tagIdReceived.connect(self.updateTable)
 
-        else:
+        # rmrT.start()
+        rmT.start()
+
+        # else:
+        #     pass
+
+    def updateTable(self, tagId):
+        if (tagId == "MULTI_READ_STARTED"):
             pass
 
-    def updateTable(self, slNo):
-        sn = self.db.listOfSerialNo()
-        SN = [x['serial_no'] for x in sn]
-
-        if slNo in SN:
-            if (self.rfidMultiUniqSlno.has_key(slNo)):
-                return
-
-            self.rfidMultiUniqSlno[slNo] = 1
-            print self.rfidMultiUniqSlno
-
-            self.rfidMultiCount += 1
-            self.ui.comboBox.setEditText(slNo)
-
-            column = self.db.getColumns()
-            self.theColumn = [x['COLUMN_NAME'] for x in column]
-
-            self.ui.tableWidget.setColumnCount(len(self.theColumn))
-            self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
-
-            self.ui.tableWidget.setRowCount(self.rfidMultiCount)
-
-            currTxt = self.ui.comboBox.currentText()
-
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
-
-            # rows = self.db.getRows(self.query)
-            # self.ui.tableWidget.setRowCount(len(rows))
-
-            rowCount = self.ui.tableWidget.rowCount()
-
-            row = rowCount-1
-
-            self.db.getValues(self.query, init=True)
-            while True:
-                primaryResult = self.db.getValues(self.query)
-                # print primaryResult
-                if (not primaryResult):
-                    break
-                col = 0
-                for n in self.theColumn:
-                    result = primaryResult[n]
-                    self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
-                    col += 1
-                row += 1
-
-            self.ui.tableWidget.resizeColumnsToContents()
-
-            # self.ui.readMultiButton.setEnabled(True)
-
         else:
-            self.wrongTagMessage()
-
-    def readButtonEnable(self):
-        self.ui.readMultiButton.setEnabled(True)
-
-    def showTimeout(self):
-        timeout = self.ui.spinBox.value()
-        print "timeout: " + str(timeout) + "sec"
-
-        ui = uic.loadUi(os.path.join(uiFilePath,'Timer.ui'))
-
-        ui.progressBar.setMaximum(timeout)
-        ui.progressBar.setMinimum(0)
+            ti = self.db.listOfSerialNo()
+            # debug.info (ti)
+            TI = [x['tag_id'] for x in ti]
+            # debug.info  (TI)
+            if tagId in TI:
+                slno = self.db.getSlFrmTid(tagId)
+                slNo = slno['serial_no']
+                debug.info ("received sl.no: "+slNo)
 
 
-        svT = setValueToTimerThread(timeout, app)
-        svT.sending.connect(lambda n , uiObj=ui: self.setValue(n, uiObj))
-        svT.finished.connect(lambda uiObj=ui: self.closeTimer(uiObj))
-        svT.start()
+                if (self.rfidMultiUniqSlno.has_key(slNo)):
+                    return
 
-        ui.show()
+                self.rfidMultiUniqSlno[slNo] = 1
+                debug.info (self.rfidMultiUniqSlno)
 
-    def setValue(self, n, uiObj):
-        uiObj.progressBar.setValue(n)
-        uiObj.progressBar.setFormat(str(n)+' sec')
+                self.rfidMultiCount += 1
+                self.ui.comboBox.setEditText(slNo)
 
-    def closeTimer(self, uiObj):
-        uiObj.deleteLater()
+                column = self.db.getColumns()
+                self.theColumn = [x['COLUMN_NAME'] for x in column]
 
+                self.ui.tableWidget.setColumnCount(len(self.theColumn))
+                self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
+                self.ui.tableWidget.setRowCount(self.rfidMultiCount)
+
+                currTxt = self.ui.comboBox.currentText()
+
+                self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
+
+                # rows = self.db.getRows(self.query)
+                # self.ui.tableWidget.setRowCount(len(rows))
+
+                rowCount = self.ui.tableWidget.rowCount()
+
+                row = rowCount-1
+
+                self.db.getValues(self.query, init=True)
+                while True:
+                    primaryResult = self.db.getValues(self.query)
+                    # debug.info primaryResult
+                    if (not primaryResult):
+                        break
+                    col = 0
+                    for n in self.theColumn:
+                        result = primaryResult[n]
+                        self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                        col += 1
+                    row += 1
+
+                self.ui.tableWidget.resizeColumnsToContents()
+            else:
+                pass
+                # self.ui.readMultiButton.setEnabled(True)
+
+        # else:
+        #     self.wrongTagMessage()
+
+    # def readButtonEnable(self):
+    #     self.ui.readMultiButton.setEnabled(True)
+
+    def stopRead(self):
+        # self.ui.readMultiButton.setEnabled(True)
+        # self.ui.readSingleButton.setEnabled(True)
+        self.ui.stopReadButton.setEnabled(False)
+
+        srT = stopReadThread(app)
+        srT.ackReceived.connect(self.readButtonsEnable)
+        srT.start()
+
+    def readButtonsEnable(self, ack):
+        if (ack == "STOPPING"):
+            self.ui.readSingleButton.setEnabled(True)
+            self.ui.readMultiButton.setEnabled(True)
 
 
 
 
 class readThread(QThread):
     waiting = pyqtSignal()
-    slNoReceived = pyqtSignal(str)
+    tagIdReceived = pyqtSignal(str)
 
     def __init__(self, parent):
         super(readThread, self).__init__(parent)
@@ -518,88 +554,130 @@ class readThread(QThread):
     def run(self):
         self.waiting.emit()
 
-        self.context = zmq.Context()
-        print("connecting to rfid Scanner Server...")
-        self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.1.183:4689")
-
+        
+        debug.info("connecting to rfid Scanner Server...")
+        self.socket = context.socket(zmq.REQ)
+        try:
+            self.socket.connect("tcp://192.168.1.183:4689")
+            debug.info("connected.")
+        except:
+            debug.info (str(sys.exc_info()))
         self.socket.send("READ")
 
         # slNo = self.socket.recv()
-        # print "Received sl.No: " + slNo
-        tagId = self.socket.recv()
-        print "Received Tag Id :" + tagId
-        self.slNoReceived.emit(tagId)
+        # debug.info "Received sl.No: " + slNo
+        try:
+            tagId = self.socket.recv()
+            debug.info( "Received Tag Id :" + tagId)
+            self.tagIdReceived.emit(tagId)
+        except:
+            debug.info (str(sys.exc_info()))
+
+        self.socket.close()
+        
+        if (self.socket.closed == True):
+            debug.info( "read Single Socket closed.")
 
 
 class readMultiThread(QThread):
-    waiting = pyqtSignal()
-    ackReceived = pyqtSignal(str)
-
-    def __init__(self, to, parent):
-        super(readMultiThread, self).__init__(parent)
-        self.to = to
-
-    def run(self):
-        self.waiting.emit()
-
-        self.context = zmq.Context()
-        print("connecting to rfid Scanner Server...")
-        self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.1.183:4689")
-
-        self.socket.send("READ_MULTI")
-
-        rep = self.socket.recv()
-
-        if (rep == "GIVE_TIMEOUT"):
-            self.socket.send(self.to)
-
-        ack = self.socket.recv()
-
-        if (ack == "ackPass"):
-            self.ackReceived.emit(ack)
-        else:
-            pass
-
-
-class readMultiReplyThread(QThread):
-    slNoReceived = pyqtSignal(str)
+    # waiting = pyqtSignal()
+    tagIdReceived = pyqtSignal(str)
 
     def __init__(self, parent):
-        super(readMultiReplyThread, self).__init__(parent)
+        super(readMultiThread, self).__init__(parent)
+        # self.to = to
 
     def run(self):
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REP)
-        self.socket.bind("tcp://192.168.1.39:4690")
+        # self.waiting.emit()
 
-        while True:
-            slNo = self.socket.recv()
-            self.socket.send("received")
-            print "received sl.No: " + slNo
+        
+        debug.info("connecting to rfid Scanner Server...")
+        self.socket = context.socket(zmq.REQ)
+        self.socket.connect("tcp://192.168.1.183:4689")
+        debug.info("connected.")
+        self.socket.send("READ_MULTI")
+        rep = self.socket.recv()
+        debug.info (rep)
+        # self.socket.close()
+        # 
+        # if (context.closed == True) and (self.socket.closed == True):
+        #     debug.info "Socket and Context closed."
+        #####################################
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-            if(slNo == "FUCKINGDONE"):
-                print "exiting"
-                self.socket.close()
-                self.context.term()
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        server_address = (ip, 4695)
+        sock.bind(server_address)
+        sock.listen(1)
+        connection, client_address = sock.accept()
+        #####################################
+        while(True):
+            tagId = connection.recv(1024)
+            debug.info (tagId)
+            # debug.info type(rep)
+            if(tagId == "MULTI_STOP"):
+                connection.close()
+                # sock.shutdown(1)
+                sock.close()
                 break
+            # if(rep == "STOP"):
+            #     connection.close()
+            #     sock.shutdown()
+            #     sock.close()
+            #     break
 
+            else:
+                self.tagIdReceived.emit(tagId)
+        # sock.close()
+        self.socket.close()
+        
+        if (self.socket.closed == True):
+            debug.info( "read Multi Socket closed.")
 
-            self.slNoReceived.emit(slNo)
+class stopReadThread(QThread):
+    # waiting = pyqtSignal()
+    ackReceived = pyqtSignal(str)
 
-
-class setValueToTimerThread(QThread):
-    sending = pyqtSignal(int)
-
-    def __init__(self, to, parent):
-        QThread.__init__(self,parent)
-        self.to = to
+    def __init__(self, parent):
+        super(stopReadThread, self).__init__(parent)
 
     def run(self):
-        for n in range(0, self.to+1):
-            self.sending.emit(n)
-            time.sleep(1)
+        # self.waiting.emit()
+
+        
+        debug.info("connecting to rfid Scanner Server...")
+        self.socket = context.socket(zmq.REQ)
+        self.socket.connect("tcp://192.168.1.183:4689")
+        debug.info("connected.")
+
+        self.socket.send("STOP")
+
+        # slNo = self.socket.recv()
+        # debug.info "Received sl.No: " + slNo
+        ack = self.socket.recv()
+        debug.info (ack)
+        self.ackReceived.emit(ack)
+        self.socket.close()
+        
+        if (self.socket.closed == True):
+            debug.info( "stop Read Socket closed.")
+
+
+
+
+# class setValueToTimerThread(QThread):
+#     sending = pyqtSignal(int)
+#
+#     def __init__(self, to, parent):
+#         QThread.__init__(self,parent)
+#         self.to = to
+#
+#     def run(self):
+#         for n in range(0, self.to+1):
+#             self.sending.emit(n)
+#             time.sleep(1)
 
 
 

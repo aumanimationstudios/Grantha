@@ -34,7 +34,8 @@ QCheckBox {
 }
 
 QCheckBox:disabled {
-    color: #76797C;
+    background-color: #31363b;
+    color: #454545;
 }
 
 QCheckBox::indicator,
@@ -47,9 +48,13 @@ QGroupBox::indicator {
     margin-left: 2px;
 }
 
-QCheckBox::indicator:unchecked,
 QGroupBox::indicator:unchecked {
     image: url(:/qss_icons/rc/checkbox_unchecked.png);
+}
+
+QCheckBox::indicator:unchecked {
+    background-color:       black;
+    border:                 2px solid #76797C;
 }
 
 QCheckBox::indicator:unchecked:hover,
@@ -62,9 +67,13 @@ QGroupBox::indicator:unchecked:pressed {
     image: url(:/qss_icons/rc/checkbox_unchecked_focus.png);
 }
 
-QCheckBox::indicator:checked,
 QGroupBox::indicator:checked {
     image: url(:/qss_icons/rc/checkbox_checked.png);
+}
+
+QCheckBox::indicator:checked {
+    background-color:       green;
+    border:                 2px solid white;
 }
 
 QCheckBox::indicator:checked:hover,
@@ -73,7 +82,6 @@ QCheckBox::indicator:checked:pressed,
 QGroupBox::indicator:checked:hover,
 QGroupBox::indicator:checked:focus,
 QGroupBox::indicator:checked:pressed {
-    border: none;
     image: url(:/qss_icons/rc/checkbox_checked_focus.png);
 }
 
@@ -87,12 +95,22 @@ QCheckBox::indicator:indeterminate:pressed {
     image: url(:/qss_icons/rc/checkbox_indeterminate_focus.png);
 }
 
-QCheckBox::indicator:checked:disabled,
+QCheckBox::indicator:checked:disabled {
+    background-color: #31363b;
+    color: #454545;
+    border: 2px solid #31363b;
+}
+
 QGroupBox::indicator:checked:disabled {
     image: url(:/qss_icons/rc/checkbox_checked_disabled.png);
 }
 
-QCheckBox::indicator:unchecked:disabled,
+QCheckBox::indicator:unchecked:disabled {
+    background-color: #31363b;
+    color: #454545;
+    border: 2px solid #31363b;
+}
+
 QGroupBox::indicator:unchecked:disabled {
     image: url(:/qss_icons/rc/checkbox_unchecked_disabled.png);
 }
@@ -248,6 +266,14 @@ QLineEdit {
     color: #eff0f1;
 }
 
+QLineEdit:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    color: #454545;
+}
+
 QAbstractItemView QLineEdit {
     padding: 0;
 }
@@ -255,7 +281,7 @@ QAbstractItemView QLineEdit {
 QGroupBox {
     border: 1px solid #76797C;
     border-radius: 2px;
-    margin-top: 20px;
+    margin-top: 2px;
 }
 
 QGroupBox::title {
@@ -577,6 +603,14 @@ QComboBox::down-arrow {
 QComboBox::down-arrow:on {
 	top: 1px;
     left: 1px;
+}
+
+QComboBox:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    color: #454545;
 }
 
 QAbstractSpinBox {
