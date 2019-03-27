@@ -21,27 +21,27 @@ def GranthaServer(granthaQueue, socketQueue):
     socket.bind("tcp://192.168.1.183:4689")
 
     while True:
-        msgFrmCli = socket.recv()
-        debug.info ("Message From Client: "+msgFrmCli)
+        msgFrmCli = socket.recv_multipart()
+        debug.info ("Message From Client: "+msgFrmCli[0])
         # try:
-        if (msgFrmCli == "READ"):
+        if (msgFrmCli[0] == "READ"):
             granthaQueue.put("READ_SINGLE")
             tagIdSingle = socketQueue.get()
             debug.info (tagIdSingle)
             # try:
             if (tagIdSingle=="NO_CARD"):
-                debug.info ("1 No Card Detected!")
-                socket.send("NO CARD")
+                debug.info ("No Card Detected! 1")
+                socket.send_multipart(["NO CARD"])
                 # raise (ValueError)
             else:
                 try:
-                    socket.send(tagIdSingle)
+                    socket.send_multipart([tagIdSingle])
                 except:
                     debug.info (str(sys.exc_info()))
 
             # if (msgFrmCli == "READ_MULTI"):
         # try:
-        if (msgFrmCli == "READ_MULTI"):
+        if (msgFrmCli[0] == "READ_MULTI"):
             # try:
             granthaQueue.put("READ_MULTI")
             socket.send("MULTI_READ_STARTED")
@@ -49,17 +49,15 @@ def GranthaServer(granthaQueue, socketQueue):
             # sqT = socketQThread(socketQueue)
             # sqT.start()
 
-        if (msgFrmCli == "STOP"):
+        if (msgFrmCli[0] == "STOP"):
             granthaQueue.put("STOP")
             socket.send("STOPPING")
-            # debug.info (msgFrmCli)
-            # global threads
-            # debug.info (threads)
-            # if threads:
-            #     # debug.info (threads)
-            #     for runningThread in threads:
-            #         runningThread.exitThread()
-            #         socket.send("ackPass")
+
+        if (msgFrmCli[0] == "WRITE"):
+            granthaQueue.put(["WRITE",msgFrmCli[1]])
+            ack = socketQueue.get()
+            debug.info(ack)
+            socket.send_multipart([ack])
 
 
 
@@ -79,7 +77,8 @@ def SocketServer(granthaQueue, socketQueue):
 
     while True:
         msgRecvd = granthaQueue.get()
-        debug.info("Message Received:"+msgRecvd)
+        debug.info(msgRecvd)
+
         if (msgRecvd == "READ_SINGLE"):
             tagId = readSingle(connection)
             socketQueue.put(tagId)
@@ -108,7 +107,10 @@ def SocketServer(granthaQueue, socketQueue):
                 for runningThread in threads:
                     runningThread.exitThread()
                 threads = []
-
+        if (msgRecvd[0] == "WRITE"):
+            # ack = "Recvd"
+            ack = writeEpc(connection,msgRecvd[1])
+            socketQueue.put(ack)
 
 
 
@@ -124,7 +126,7 @@ def readSingle(connection):
     dataDict = readVerifier(dataHex)
 
     if not dataDict:
-        debug.info ("2 No Cards Detected!")
+        debug.info ("No Cards Detected! 2")
         return ("NO_CARD")
 
     else:
@@ -142,6 +144,84 @@ def readSingle(connection):
         tagId = nearRestEpc[16:24]
         return (tagId)
 
+def writeEpc(connection,tagId):
+    readStr = 'BB00220000227E'
+    read = readStr.decode('hex')
+    connection.send(read)
+    time.sleep(1)
+    data = connection.recv(10240)
+    dataHex = bytes_to_hex(data)
+    dataDict = readVerifier(dataHex)
+    if not dataDict:
+        debug.info ("No Cards Detected!")
+        return ("NO_CARD")
+    else:
+        nearestRssi = None
+        nearRestEpc = None
+        for x in dataDict:
+            if(not nearestRssi):
+                nearestRssi = int(dataDict[x]["RSSI"],16)
+                nearRestEpc = x
+            else:
+                if(int(dataDict[x]["RSSI"],16) >= nearestRssi):
+                    nearestRssi = int(dataDict[x]["RSSI"],16)
+                    nearRestEpc = x
+        debug.info(nearRestEpc)
+    selParam = '000C001301000000206000'+nearRestEpc
+    selParamChecksum = checksumCalculator(selParam)
+    selParamCommandHex = 'BB'+selParam+selParamChecksum+'7E'
+    selParamCommand = selParamCommandHex.decode('hex')
+    while True:
+        try:
+            connection.send(selParamCommand)
+            time.sleep(1)
+            data = connection.recv(10240)
+            dataHex = bytes_to_hex(data)
+            # print (dataHex)
+            if dataHex == 'BB010C0001000E7E':
+                debug.info ("set select successful.")
+                readEpcStr = 'BB003900090000000001000000084B7E'
+                readEpc = readEpcStr.decode('hex')
+                connection.send(readEpc)
+                time.sleep(1)
+                data = connection.recv(10240)
+                dataHex = bytes_to_hex(data)
+                dataDict = readEpcVerifier(dataHex)
+                # debug.info (dataDict)
+                if not dataDict:
+                    debug.info("No Cards Detected!")
+                else:
+                    for x in dataDict:
+                        debug.info(x)
+                        debug.info(x[0:24])
+                        # debug.info(x[24:32])
+                        epc = x[0:24]+tagId
+                        debug.info(epc)
+                        writeEpcStr = '00490019000000000100000008' + epc
+                        writeEpcChecksum = checksumCalculator(writeEpcStr)
+                        writeEpcCommandHex = 'BB' + writeEpcStr + writeEpcChecksum + '7E'
+                        writeEpcCommand = writeEpcCommandHex.decode('hex')
+                        while True:
+                            try:
+                                connection.send(writeEpcCommand)
+                                time.sleep(0.5)
+                                data = connection.recv(1024)
+                                dataHex = bytes_to_hex(data)
+                                # print (dataHex)
+                                Type = dataHex[2:4]
+                                Command = dataHex[4:6]
+                                if Type == '01' and Command == '49':
+                                    debug.info ("Write Successful.")
+                                    ack = "ack_pass"
+                                    return ack
+                                else:
+                                    raise ValueError('unable to write!')
+                            except:
+                                print ("Trying Again!" + str(sys.exc_info()))
+            else:
+                raise ValueError('Unable to set select.')
+        except:
+            print ("Trying Again!" + str(sys.exc_info()))
 
 
 

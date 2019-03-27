@@ -64,6 +64,8 @@ class addWidget():
 
         self.ui.addButton.pressed.connect(self.disableCheckboxes)
         self.ui.updateButton.pressed.connect(self.enableCheckBoxes)
+        self.ui.updateTagButton.pressed.connect(self.disableCheckboxesAndBoxes)
+
 
         self.ui.serialNoCheckBox.clicked.connect(self.enableSerialNoBox)
         self.ui.tagIdCheckBox.clicked.connect(self.enableTagIdBox)
@@ -112,6 +114,10 @@ class addWidget():
 
         self.ui.serialNoBox.setEnabled(False)
         self.ui.tagIdBox.setEnabled(False)
+        self.ui.readButton.setEnabled(False)
+        self.disableItToUsrBoxes()
+
+    def disableItToUsrBoxes(self):
         self.ui.itemTypeBox.setEnabled(False)
         self.ui.descriptionBox.setEnabled(False)
         self.ui.makeBox.setEnabled(False)
@@ -122,7 +128,6 @@ class addWidget():
         self.ui.locationBox.setEnabled(False)
         self.ui.userBox.setEnabled(False)
         self.ui.generateButton.setEnabled(False)
-        self.ui.readButton.setEnabled(False)
         self.ui.purchaseCal.setEnabled(False)
         self.ui.validCal.setEnabled(False)
         self.ui.purchaseNoneButton.setEnabled(False)
@@ -133,16 +138,27 @@ class addWidget():
 
     def disableCheckboxes(self):
         self.ui.serialNoCheckBox.setEnabled(False)
+        self.ui.serialNoCheckBox.setChecked(False)
         self.ui.tagIdCheckBox.setEnabled(False)
+        self.ui.tagIdCheckBox.setChecked(False)
         self.ui.itemTypeCheckBox.setEnabled(False)
+        self.ui.itemTypeCheckBox.setChecked(False)
         self.ui.descriptionCheckBox.setEnabled(False)
+        self.ui.descriptionCheckBox.setChecked(False)
         self.ui.makeCheckBox.setEnabled(False)
+        self.ui.makeCheckBox.setChecked(False)
         self.ui.modelCheckBox.setEnabled(False)
+        self.ui.modelCheckBox.setChecked(False)
         self.ui.priceCheckBox.setEnabled(False)
+        self.ui.priceCheckBox.setChecked(False)
         self.ui.purchaseCheckBox.setEnabled(False)
+        self.ui.purchaseCheckBox.setChecked(False)
         self.ui.validCheckBox.setEnabled(False)
+        self.ui.validCheckBox.setChecked(False)
         self.ui.locationCheckBox.setEnabled(False)
+        self.ui.locationCheckBox.setChecked(False)
         self.ui.userCheckBox.setEnabled(False)
+        self.ui.userCheckBox.setChecked(False)
 
         self.ui.serialNoBox.setEnabled(True)
         self.ui.tagIdBox.setEnabled(True)
@@ -164,13 +180,17 @@ class addWidget():
         self.ui.locationNoneButton.setEnabled(True)
         self.ui.userNoneButton.setEnabled(True)
 
+    def disableCheckboxesAndBoxes(self):
+        self.disableCheckboxes()
+        self.disableItToUsrBoxes()
+
     def enableSerialNoBox(self):
         if (self.ui.serialNoCheckBox.isChecked()):
             self.ui.serialNoBox.setEnabled(True)
-            self.ui.generateButton.setEnabled(True)
+            # self.ui.generateButton.setEnabled(True)
         else:
             self.ui.serialNoBox.setEnabled(False)
-            self.ui.generateButton.setEnabled(False)
+            # self.ui.generateButton.setEnabled(False)
 
     def enableTagIdBox(self):
         if (self.ui.tagIdCheckBox.isChecked()):
@@ -271,16 +291,19 @@ class addWidget():
         self.ui.priceBox.setText('0.00')
 
     def loadDetails(self):
-        slNo = self.ui.serialNoBox.currentText()
-        # print slNo
-
-        if slNo in self.slNoList:
-            tagid = self.db.getTidFrmSl(slNo)
-            tagId = tagid['tag_id']
-            self.ui.tagIdBox.setText(tagId)
-            self.fillDetails()
+        if self.ui.updateTagButton.isChecked():
+            pass
         else:
-            self.clearAll()
+            slNo = self.ui.serialNoBox.currentText()
+            # print slNo
+
+            if slNo in self.slNoList:
+                tagid = self.db.getTidFrmSl(slNo)
+                tagId = tagid['tag_id']
+                self.ui.tagIdBox.setText(tagId)
+                self.fillDetails()
+            else:
+                self.clearAll()
 
     def slNoGen(self):
         slNo = self.slNoGenerator()
@@ -423,12 +446,22 @@ class addWidget():
             if (selection == QtWidgets.QMessageBox.Ok):
                 self.update()
 
+        if (self.ui.updateTagButton.isChecked()):
+            confirm = QtWidgets.QMessageBox()
+            confirm.setIcon(QtWidgets.QMessageBox.Question)
+            confirm.setWindowTitle("Confirmation")
+            confirm.setInformativeText("<b>Are you sure you want to update Tag?</b>")
+            confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+            selection = confirm.exec_()
+            if (selection == QtWidgets.QMessageBox.Ok):
+                self.updateTag()
+
 
     def addNew(self):
         debug.info("add new")
         userInput = OrderedDict()
 
-        userInput["serial_no"] = str(self.ui.serialNoBox.currentText())
+        userInput["serial_no"] = str(self.ui.serialNoBox.currentText().strip())
         userInput["item_type"] = str(self.ui.itemTypeBox.currentText())
         userInput["description"] = str(self.ui.descriptionBox.currentText())
         userInput["make"] = str(self.ui.makeBox.currentText())
@@ -455,8 +488,11 @@ class addWidget():
         debug.info(queryAddItem)
         slNo = userInput["serial_no"]
         tagId = str(self.ui.tagIdBox.text())
-        queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no, tag_id) VALUES (\"{0}\",\"{1}\") ".format(slNo,tagId)
-        # debug.info(queryAddSlNo)
+        if tagId:
+            queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no, tag_id) VALUES (\"{0}\",\"{1}\") ".format(slNo,tagId)
+        else:
+            queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no) VALUES (\"{0}\") ".format(slNo)
+        debug.info(queryAddSlNo)
         # self.addItem = self.db.insertItem(queryAddItem)
         # self.db.insertSerialNo(queryAddSlNo)
         # print self.addItem
@@ -511,6 +547,7 @@ class addWidget():
         debug.info(dbvalues)
 
         query = "UPDATE ITEMS SET " + ",".join(dbvalues) + " WHERE serial_no =\"" + slNo + "\""
+        debug.info(query)
         updated = self.db.update(query)
         debug.info(updated)
         self.message(updated)
@@ -518,6 +555,16 @@ class addWidget():
         # debug.info(keys)
         # debug.info(values)
         # debug.info(query)
+
+    def updateTag(self):
+        slNo = str(self.ui.serialNoBox.currentText().strip())
+        tagId = str(self.ui.tagIdBox.text().strip())
+
+        query = "UPDATE SERIAL_NO SET tag_id=\"" + tagId +"\"  WHERE serial_no =\"" + slNo + "\""
+        debug.info(query)
+        updated = self.db.update(query)
+        debug.info(updated)
+        self.message(updated)
 
 
     def message(self,msg1, msg2=""):

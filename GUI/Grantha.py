@@ -22,8 +22,8 @@ sys.path.append(imgFilePath)
 
 Manage_Items = "Manage_Items.py"
 Rfid_Tools = "Rfid_Tools.py"
-Update = "Update.py"
-Update_Tag = "Update_Tag.py"
+# Update = "Update.py"
+# Update_Tag = "Update_Tag.py"
 Log = "Log.py"
 Modify = "Modify.py"
 Find_Tag = "Find_Tag.py"
@@ -54,8 +54,8 @@ class mainWindow():
         if user in authUsers:
             self.ui.manageItemsButton.clicked.connect(self.manageItems)
             self.ui.rfidToolsButton.clicked.connect(self.rfidTools)
-            self.ui.updateButton.clicked.connect(self.update)
-            self.ui.updateTagButton.clicked.connect(self.updateTag)
+            # self.ui.updateButton.clicked.connect(self.update)
+            # self.ui.updateTagButton.clicked.connect(self.updateTag)
             self.ui.modifyButton.clicked.connect(self.modify)
             self.ui.findTagButton.clicked.connect(self.findTag)
             self.ui.logButton.clicked.connect(self.log)
@@ -323,13 +323,13 @@ class mainWindow():
 
 
 
-    def update(self):
-        p = QProcess(parent=self.ui)
-        p.start(sys.executable, Update.split())
-
-    def updateTag(self):
-        p = QProcess(parent=self.ui)
-        p.start(sys.executable, Update_Tag.split())
+    # def update(self):
+    #     p = QProcess(parent=self.ui)
+    #     p.start(sys.executable, Update.split())
+    #
+    # def updateTag(self):
+    #     p = QProcess(parent=self.ui)
+    #     p.start(sys.executable, Update_Tag.split())
 
     def modify(self):
         p = QProcess(parent=self.ui)
@@ -359,7 +359,9 @@ class mainWindow():
         self.ui.readMultiButton.setEnabled(False)
         self.ui.manageItemsButton.setEnabled(False)
         self.ui.rfidToolsButton.setEnabled(False)
+        self.ui.modifyButton.setEnabled(False)
         self.ui.logButton.setEnabled(False)
+        self.ui.findTagButton.setEnabled(False)
 
 
     def enableButtons(self):
@@ -367,7 +369,9 @@ class mainWindow():
         self.ui.readMultiButton.setEnabled(True)
         self.ui.manageItemsButton.setEnabled(True)
         self.ui.rfidToolsButton.setEnabled(True)
+        self.ui.modifyButton.setEnabled(True)
         self.ui.logButton.setEnabled(True)
+        self.ui.findTagButton.setEnabled(True)
         del processes[:]
         debug.info(processes)
 
