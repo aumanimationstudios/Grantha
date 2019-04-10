@@ -6,6 +6,7 @@ import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
 from PyQt5.QtCore import QProcess, QThread, pyqtSignal
 import database
+import dbGrantha
 import string
 import random
 from collections import OrderedDict
@@ -23,27 +24,37 @@ sys.path.append(imgFilePath)
 context = zmq.Context()
 
 class addWidget():
-    db = database.DataBase()
+    # db = database.DataBase()
+    db = dbGrantha.dbGrantha()
 
-    sn = db.listOfSerialNo()
+    getSN = "SELECT * FROM SERIAL_NO"
+    getIT = "SELECT * FROM ITEM_TYPE"
+    getDESC = "SELECT * FROM DESCRIPTION"
+    getMK = "SELECT * FROM MAKE"
+    getMDL = "SELECT * FROM MODEL"
+    getLOC = "SELECT location FROM LOCATION"
+    getUSR = "SELECT * FROM USER"
+
+    # sn = db.listOfSerialNo()
+    sn = db.execute(getSN,dictionary=True)
     slNoList = [x['serial_no'] for x in sn]
-
-    it = db.listOfItemType()
+    # it = db.listOfItemType()
+    it = db.execute(getIT,dictionary=True)
     itemTypeList = [x['item_type'] for x in it]
-
-    desc = db.listOfDescription()
+    # desc = db.listOfDescription()
+    desc = db.execute(getDESC,dictionary=True)
     descriptionList = [x['description'] for x in desc]
-
-    mk = db.listOfMake()
+    # mk = db.listOfMake()
+    mk = db.execute(getMK,dictionary=True)
     makeList = [x['make'] for x in mk]
-
-    mdl = db.listOfModel()
+    # mdl = db.listOfModel()
+    mdl = db.execute(getMDL,dictionary=True)
     modelList = [x['model'] for x in mdl]
-
-    loc = db.listOfLocation()
+    # loc = db.listOfLocation()
+    loc = db.execute(getLOC,dictionary=True)
     locationList = [x['location'] for x in loc]
-
-    usr = db.listOfUser()
+    # usr = db.listOfUser()
+    usr = db.execute(getUSR,dictionary=True)
     userList = [x['user'] for x in usr]
 
     def __init__(self):
@@ -298,7 +309,10 @@ class addWidget():
             # print slNo
 
             if slNo in self.slNoList:
-                tagid = self.db.getTidFrmSl(slNo)
+                getTidFrmSl = "SELECT tag_id FROM SERIAL_NO WHERE serial_no=\"{}\" ".format(slNo)
+                # tagid = self.db.getTidFrmSl(slNo)
+                tagid = self.db.execute(getTidFrmSl,dictionary=True)
+                tagid = tagid[0]
                 tagId = tagid['tag_id']
                 self.ui.tagIdBox.setText(tagId)
                 self.fillDetails()
@@ -339,10 +353,14 @@ class addWidget():
             pass
         self.clearAll()
         self.ui.tagIdBox.setText(tagId)
-        ti = self.db.listOfSerialNo()
-        TI = [x['tag_id'] for x in ti]
+        # ti = self.db.listOfSerialNo()
+        # TI = [x['tag_id'] for x in ti]
+        TI = [x['tag_id'] for x in self.sn]
         if tagId in TI:
-            slno = self.db.getSlFrmTid(tagId)
+            getSlFrmTid = "SELECT serial_no FROM SERIAL_NO WHERE tag_id=\"{}\" ".format(tagId)
+            # slno = self.db.getSlFrmTid(tagId)
+            slno = self.db.execute(getSlFrmTid,dictionary=True)
+            slno = slno[0]
             slNo = slno['serial_no']
             self.ui.serialNoBox.setCurrentText(slNo)
             self.fillDetails()
@@ -353,8 +371,10 @@ class addWidget():
 
     def fillDetails(self):
         slNo = self.ui.serialNoBox.currentText()
-        query = "SELECT * FROM ITEMS WHERE serial_no='%s' " % (slNo)
-        details = self.db.getDetails(query)
+        getDetails = "SELECT * FROM ITEMS WHERE serial_no='%s' " % (slNo)
+        # details = self.db.getDetails(query)
+        details = self.db.execute(getDetails,dictionary=True)
+        details = details[0]
         debug.info (details)
         iT = details["item_type"]
         dSC = details["description"]
@@ -478,7 +498,7 @@ class addWidget():
             keys.append(key)
             values.append(userInput[key])
         # debug.info(keys)
-
+        # debug.info(values)
         # column = self.db.getColumns()
         # theColumn = [x['COLUMN_NAME'] for x in column]
         # debug.info(theColumn)
@@ -487,27 +507,38 @@ class addWidget():
         # queryAddItem = "INSERT INTO ITEMS (" + ','.join(theColumn) + ") VALUES %r" %(tuple(values),)
         debug.info(queryAddItem)
         slNo = userInput["serial_no"]
-        tagId = str(self.ui.tagIdBox.text())
-        if tagId:
-            queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no, tag_id) VALUES (\"{0}\",\"{1}\") ".format(slNo,tagId)
+        if slNo:
+            tagId = str(self.ui.tagIdBox.text())
+            if tagId:
+                queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no, tag_id) VALUES (\"{0}\",\"{1}\") ".format(slNo,tagId)
+            else:
+                queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no) VALUES (\"{0}\") ".format(slNo)
+            debug.info(queryAddSlNo)
+            # self.addItem = self.db.insertItem(queryAddItem)
+            # self.db.insertSerialNo(queryAddSlNo)
+            # print self.addItem
+            # self.writeToTag = self.writeToRfidTag()
+
+            # addItem = self.db.insertItem(queryAddItem)
+            # addSlNo =self.db.insertSerialNo(queryAddSlNo)
+            addSlNo = self.db.execute(queryAddSlNo)
+            debug.info(addSlNo)
+
+            if (addSlNo == 1):
+                # addItem = self.db.insertItem(queryAddItem)
+                addItem = self.db.execute(queryAddItem)
+                if (addItem == 1):
+                    self.message("Item Added Successfully", "Serial No added successfully")
+                else:
+                    queryRemoveSlNo = "DELETE FROM SERIAL_NO WHERE serial_no=\"{0}\"".format(slNo)
+                    debug.info(queryRemoveSlNo)
+                    deleteSlNo = self.db.execute(queryRemoveSlNo)
+                    if (deleteSlNo == 1):
+                        self.message("<b>Item Not Added.</b>", addItem)
+            else:
+                self.message("<b>Item Not Added.</b>",addSlNo)
         else:
-            queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no) VALUES (\"{0}\") ".format(slNo)
-        debug.info(queryAddSlNo)
-        # self.addItem = self.db.insertItem(queryAddItem)
-        # self.db.insertSerialNo(queryAddSlNo)
-        # print self.addItem
-        # self.writeToTag = self.writeToRfidTag()
-
-        # addItem = self.db.insertItem(queryAddItem)
-        addSlNo =self.db.insertSerialNo(queryAddSlNo)
-        debug.info(addSlNo)
-
-        if (addSlNo == "SlNo Added Successfully"):
-            addItem = self.db.insertItem(queryAddItem)
-            self.message(addItem, addSlNo)
-        else:
-            self.message("<b>Item Not Added.</b>", addSlNo)
-
+            self.message("<b>Input a Serial Number</b>")
 
     def update(self):
         debug.info("update")
@@ -545,27 +576,40 @@ class addWidget():
             # values.append(userInput[key])
             dbvalues.append(str(key) +"=\""+ str(userInput[key]) +"\"")
         debug.info(dbvalues)
-
-        query = "UPDATE ITEMS SET " + ",".join(dbvalues) + " WHERE serial_no =\"" + slNo + "\""
-        debug.info(query)
-        updated = self.db.update(query)
-        debug.info(updated)
-        self.message(updated)
-        # dbconn.execute("update assets set " + ",".join(dbvalues) + " where assetId=\"" + str(assid) + "\"")
+        if dbvalues:
+            query = "UPDATE ITEMS SET " + ",".join(dbvalues) + " WHERE serial_no =\"" + slNo + "\""
+            debug.info(query)
+            # updated = self.db.update(query)
+            updated = self.db.execute(query)
+            debug.info(updated)
+            if (updated == 1):
+                self.message("Updated Successfully")
+            else:
+                self.message("<b>Update failed</b>")
+        if not dbvalues:
+            self.message("<b>Update failed</b>","Select fields to update")
         # debug.info(keys)
         # debug.info(values)
         # debug.info(query)
 
     def updateTag(self):
         slNo = str(self.ui.serialNoBox.currentText().strip())
-        tagId = str(self.ui.tagIdBox.text().strip())
-
-        query = "UPDATE SERIAL_NO SET tag_id=\"" + tagId +"\"  WHERE serial_no =\"" + slNo + "\""
-        debug.info(query)
-        updated = self.db.update(query)
-        debug.info(updated)
-        self.message(updated)
-
+        if slNo:
+            tagId = str(self.ui.tagIdBox.text().strip())
+            if tagId:
+                query = "UPDATE SERIAL_NO SET tag_id=\"" + tagId +"\"  WHERE serial_no =\"" + slNo + "\""
+                debug.info(query)
+                # updated = self.db.update(query)
+                updated = self.db.execute(query)
+                debug.info(updated)
+                if (updated == 1):
+                    self.message("Updated Successfully")
+                else:
+                    self.message("<b>Update failed</b>",updated)
+            else:
+                self.message("<b>Update failed</b>","Scan a tag and proceed")
+        else:
+            self.message("<b>Update failed</b>","Select a serial number and proceed")
 
     def message(self,msg1, msg2=""):
         msg = QtWidgets.QMessageBox()

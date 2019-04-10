@@ -253,7 +253,7 @@ class DataBase:
     def getParentLocation(self,query):
         try:
             self.cursor.execute(query)
-            parentLocation = self.cursor.fetchone()
+            parentLocation = self.cursor.fetchall()
             return parentLocation
         except:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
@@ -312,6 +312,49 @@ class DataBase:
             print ("Error: Unable to fetch data : " + str(sys.exc_info()))
             errMsg = str(sys.exc_info())
             return errMsg
+
+
+    def insertImage(self,query):
+        try:
+            self.cursor.execute(query)
+            okMsg = "Image Added Successfully"
+            return okMsg
+            # print "Item Added"
+        except:
+            print ("Error: Unable to fetch data : " + str(sys.exc_info()))
+            errMsg = str(sys.exc_info())
+            return errMsg
+
+    def getColumnsOfImages(self,query):
+        try:
+            self.cursor.execute(query)
+            column = self.cursor.fetchall()
+            return column
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def getAllRowsOfImages(self,query):
+        try:
+            self.cursor.execute(query)
+            rows = self.cursor.fetchall()
+            return rows
+        except:
+            print ("Error: unable to fetch data : "+ str(sys.exc_info()))
+
+    def getAllValuesOfImages(self, query, init=False):
+        try:
+            if(init == False):
+                result = self.cursor.fetchone()
+                return result
+            else:
+                self.cursor.execute(query)
+        except:
+            print ("Error: Unable to fetch data : "+ str(sys.exc_info()))
+
+
+
+
+
 
 if __name__ == '__main__':
     # database = MySQLdb.connect("localhost","test","test123","INVENTORY")

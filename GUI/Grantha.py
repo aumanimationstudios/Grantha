@@ -124,6 +124,8 @@ class mainWindow():
         if selectedText in LOC:
             query = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(selectedText)
             pL = self.db.getParentLocation(query)
+            debug.info(pL)
+            pL = pL[0]
             self.parentLocation = pL['parent_location']
             # debug.info self.parentLocation
             if self.parentLocation == None:
