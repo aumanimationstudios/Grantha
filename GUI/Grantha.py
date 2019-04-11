@@ -3,12 +3,11 @@
 
 import os
 import sys
-from PyQt5 import QtGui, QtWidgets, QtCore, uic
-from PyQt5.QtWidgets import QDesktopWidget, QMessageBox
+from PyQt5 import QtGui, QtWidgets, uic
+from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import QProcess, QThread, pyqtSignal
-import database
+import dbGrantha
 import zmq
-import time
 import socket
 import debug
 
@@ -24,12 +23,9 @@ Manage_Items = "Manage_Items.py"
 Rfid_Tools = "Rfid_Tools.py"
 # Update = "Update.py"
 # Update_Tag = "Update_Tag.py"
-Log = "Log.py"
 Modify = "Modify.py"
+Log = "Log.py"
 Find_Tag = "Find_Tag.py"
-
-aU = database.DataBase().getAuthUsers()
-authUsers = [x['auth_users'] for x in aU]
 
 user = os.environ['USER']
 context = zmq.Context()
@@ -37,6 +33,33 @@ processes = []
 
 class mainWindow():
     global processes
+
+    db = dbGrantha.dbGrantha()
+
+    getAuthUsers = "SELECT * FROM AUTH_USERS"
+    aU = db.execute(getAuthUsers,dictionary=True)
+    authUsers = [x['auth_users'] for x in aU]
+
+    getLOC = "SELECT location FROM LOCATION"
+    loc = db.execute(getLOC, dictionary=True)
+    LOC = [x['location'] for x in loc]
+
+    queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+                WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
+    column = db.execute(queryCol, dictionary=True)
+    theColumn = [x['COLUMN_NAME'] for x in column]
+
+    completer = "SELECT serial_no,item_type,location,user FROM ITEMS"
+    theList = db.execute(completer, dictionary=True)
+    slList = [x['serial_no'] for x in theList]
+    itList = list(set([x['item_type'] for x in theList]))
+    locList = list(set([x['location'] for x in theList]))
+    usrList = list(set([x['user'] for x in theList]))
+
+    getSN = "SELECT * FROM SERIAL_NO"
+    sn = db.execute(getSN, dictionary=True)
+    # slNoList = [x['serial_no'] for x in sn]
+
     def __init__(self):
         # super(myWindow, self).__init__()
         self.rfidMultiCount = 0
@@ -51,7 +74,7 @@ class mainWindow():
 
         self.ui.comboBox.currentIndexChanged.connect(self.search)
 
-        if user in authUsers:
+        if user in self.authUsers:
             self.ui.manageItemsButton.clicked.connect(self.manageItems)
             self.ui.rfidToolsButton.clicked.connect(self.rfidTools)
             # self.ui.updateButton.clicked.connect(self.update)
@@ -72,7 +95,7 @@ class mainWindow():
         self.center()
         self.ui.show()
 
-        self.db = database.DataBase()
+        # self.db = database.DataBase()
 
     def viewParentPopUp(self,pos):
         # a = self.ui.tableWidget.horizontalHeaderItem(8).text()
@@ -118,12 +141,16 @@ class mainWindow():
     def viewParent(self):
         selectedText = self.ui.tableWidget.currentItem().text()
         # debug.info selectedText
-        loc = self.db.listOfLocation()
-        LOC = [x['location'] for x in loc]
+        # loc = self.db.listOfLocation()
+        # getLOC = "SELECT location FROM LOCATION"
+        # loc = self.db.execute(getLOC,dictionary=True)
+        # debug.info(loc)
+        # LOC = [x['location'] for x in loc]
         # debug.info LOC
-        if selectedText in LOC:
-            query = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(selectedText)
-            pL = self.db.getParentLocation(query)
+        if selectedText in self.LOC:
+            getParentLocation = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(selectedText)
+            # pL = self.db.getParentLocation(query)
+            pL = self.db.execute(getParentLocation,dictionary=True)
             debug.info(pL)
             pL = pL[0]
             self.parentLocation = pL['parent_location']
@@ -158,23 +185,37 @@ class mainWindow():
         self.ui.tableWidget.setRowCount(0)
 
         self.ui.comboBox.clearEditText()
-        column = self.db.getColumns()
-        theColumn = [x['COLUMN_NAME'] for x in column]
-        self.ui.tableWidget.setColumnCount(len(theColumn))
-        self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
+        # column = self.db.getColumns()
+        # theColumn = [x['COLUMN_NAME'] for x in column]
+        # queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
+        #             WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
+        #
+        # # debug.info(queryCol)
+        # column = self.db.execute(queryCol, dictionary=True)
+        # theColumn = [x['COLUMN_NAME'] for x in column]
+        # # debug.info(theColumn)
 
-        theRows = self.db.getAllRows()
+        self.ui.tableWidget.setColumnCount(len(self.theColumn))
+        self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+
+        queryAll = "SELECT * FROM ITEMS ORDER BY item_type"
+        # theRows = self.db.getAllRows()
+        theRows = self.db.execute(queryAll,dictionary=True)
+        # debug.info(len(theRows))
         self.ui.tableWidget.setRowCount(len(theRows))
 
         row = 0
-        self.db.getAllValues(init=True)
+        # self.db.getAllValues(init=True)
         while True:
-            primaryResult = self.db.getAllValues()
-            # debug.info primaryResult
-            if (not primaryResult):
+            if (row == len(theRows)):
                 break
+            # primaryResult = self.db.getAllValues()
+            primaryResult = theRows[row]
+            # debug.info (primaryResult)
+            # if (not primaryResult):
+            #     break
             col = 0
-            for n in theColumn:
+            for n in self.theColumn:
                 result = primaryResult[n]
                 self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
                 col +=1
@@ -188,70 +229,84 @@ class mainWindow():
     def search(self):
         self.ui.tableWidget.setRowCount(0)
 
-        column = self.db.getColumns()
-        self.theColumn = [x['COLUMN_NAME'] for x in column]
+        # column = self.db.getColumns()
+        # self.theColumn = [x['COLUMN_NAME'] for x in column]
 
         self.ui.tableWidget.setColumnCount(len(self.theColumn))
         self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
-        currTxt = self.ui.comboBox.currentText()
+        currTxt = self.ui.comboBox.currentText().strip()
         # debug.info currTxt
 
         if self.ui.serialNoButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
-            rows = self.db.getRows(self.query)
-            # debug.info rows
-            self.ui.tableWidget.setRowCount(len(rows))
-            self.fillTable()
+            if (currTxt in self.slList):
+                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
+                # rows = self.db.getRows(self.query)
+                rows = self.db.execute(getRows, dictionary=True)
+                # debug.info rows
+                self.ui.tableWidget.setRowCount(len(rows))
+                self.fillTable(rows)
+            else:
+                pass
 
         if self.ui.itemTypeButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE item_type='%s' " %(currTxt)
-            rows = self.db.getRows(self.query)
-            self.ui.tableWidget.setRowCount(len(rows))
-            self.fillTable()
+            if (currTxt in self.itList):
+                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE item_type='%s' " %(currTxt)
+                # rows = self.db.getRows(self.query)
+                rows = self.db.execute(getRows, dictionary=True)
+                self.ui.tableWidget.setRowCount(len(rows))
+                self.fillTable(rows)
+            else:
+                pass
 
         if self.ui.locationButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE location='%s' " %(currTxt)
-            rows = self.db.getRows(self.query)
-            self.ui.tableWidget.setRowCount(len(rows))
-            self.fillTable()
+            if (currTxt in self.locList):
+                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE location='%s' " %(currTxt)
+                # rows = self.db.getRows(self.query)
+                rows = self.db.execute(getRows, dictionary=True)
+                self.ui.tableWidget.setRowCount(len(rows))
+                self.fillTable(rows)
+            else:
+                pass
 
         if self.ui.userButton.isChecked():
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE user='%s' " %(currTxt)
-            rows = self.db.getRows(self.query)
-            self.ui.tableWidget.setRowCount(len(rows))
-            self.fillTable()
+            if (currTxt in self.usrList):
+                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE user='%s' " %(currTxt)
+                # rows = self.db.getRows(self.query)
+                rows = self.db.execute(getRows, dictionary=True)
+                self.ui.tableWidget.setRowCount(len(rows))
+                self.fillTable(rows)
+            else:
+                pass
 
         # else:
         #     self.message()
 
-    def fillTable(self):
+    def fillTable(self,rows):
         row = 0
-        self.db.getValues(self.query,init=True)
         while True:
-            primaryResult = self.db.getValues(self.query)
-            # debug.info primaryResult
-            if (not primaryResult):
+            if (row == len(rows)):
                 break
+            primaryResult = rows[row]
             col = 0
             for n in self.theColumn:
                 result = primaryResult[n]
-                self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
-                col +=1
-            row +=1
+                self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                col += 1
+            row += 1
 
         self.ui.tableWidget.resizeColumnsToContents()
-
-
 
 
     def slNoBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
-        theList = self.db.Completer()
-        slList = [x['serial_no'] for x in theList]
-        slList.sort()
-        self.ui.comboBox.addItems(slList)
+        # completer = "SELECT serial_no,item_type,location,user FROM ITEMS"
+        # # theList = self.db.Completer()
+        # theList = self.db.execute(completer,dictionary=True)
+        # slList = [x['serial_no'] for x in theList]
+        self.slList.sort()
+        self.ui.comboBox.addItems(self.slList)
         # self.model = QtCore.QStringListModel()
         # self.model.setStringList(slList)
         # self.completer()
@@ -259,10 +314,10 @@ class mainWindow():
     def itBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
-        theList = self.db.Completer()
-        itList = list(set([x['item_type'] for x in theList]))
-        itList.sort()
-        self.ui.comboBox.addItems(itList)
+        # theList = self.db.Completer()
+        # itList = list(set([x['item_type'] for x in theList]))
+        self.itList.sort()
+        self.ui.comboBox.addItems(self.itList)
         # self.model = QtCore.QStringListModel()
         # self.model.setStringList(itList)
         # self.completer()
@@ -270,10 +325,10 @@ class mainWindow():
     def locBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
-        theList = self.db.Completer()
-        locList = list(set([x['location'] for x in theList]))
-        locList.sort()
-        self.ui.comboBox.addItems(locList)
+        # theList = self.db.Completer()
+        # locList = list(set([x['location'] for x in theList]))
+        self.locList.sort()
+        self.ui.comboBox.addItems(self.locList)
         # self.model = QtCore.QStringListModel()
         # self.model.setStringList(locList)
         # self.completer()
@@ -281,10 +336,10 @@ class mainWindow():
     def usrBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
-        theList = self.db.Completer()
-        usrList = list(set([x['user'] for x in theList]))
-        usrList.sort()
-        self.ui.comboBox.addItems(usrList)
+        # theList = self.db.Completer()
+        # usrList = list(set([x['user'] for x in theList]))
+        self.usrList.sort()
+        self.ui.comboBox.addItems(self.usrList)
         # self.model = QtCore.QStringListModel()
         # self.model.setStringList(usrList)
         # self.completer()
@@ -334,7 +389,14 @@ class mainWindow():
     #     p.start(sys.executable, Update_Tag.split())
 
     def modify(self):
+        debug.info("Opening Modify Menu")
         p = QProcess(parent=self.ui)
+        processes.append(p)
+        debug.info(processes)
+        p.started.connect(self.disableButtons)
+        p.readyReadStandardOutput.connect(self.read_out)
+        p.readyReadStandardError.connect(self.read_err)
+        p.finished.connect(self.enableButtons)
         p.start(sys.executable, Modify.split())
 
     def log(self):
@@ -403,29 +465,35 @@ class mainWindow():
 
         # sn = self.db.listOfSerialNo()
         # SN = [x['serial_no'] for x in sn]
-        ti = self.db.listOfSerialNo()
+        # ti = self.db.listOfSerialNo()
         # debug.info (ti)
-        TI = [x['tag_id'] for x in ti]
+        TI = [x['tag_id'] for x in self.sn]
         # debug.info  (TI)
         if tagId in TI:
-            slno = self.db.getSlFrmTid(tagId)
+            # slno = self.db.getSlFrmTid(tagId)
+            getSlFrmTid = "SELECT serial_no FROM SERIAL_NO WHERE tag_id=\"{}\" ".format(tagId)
+            slno = self.db.execute(getSlFrmTid, dictionary=True)
+            slno = slno[0]
             slNo = slno['serial_no']
             # debug.info slno
             debug.info ("received sl.no: "+slNo)
             self.ui.comboBox.setEditText(slNo)
 
-            column = self.db.getColumns()
-            self.theColumn = [x['COLUMN_NAME'] for x in column]
+            # column = self.db.getColumns()
+            # self.theColumn = [x['COLUMN_NAME'] for x in column]
 
             self.ui.tableWidget.setColumnCount(len(self.theColumn))
             self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
-            currTxt = self.ui.comboBox.currentText()
+            currTxt = self.ui.comboBox.currentText().strip()
 
-            self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
-            rows = self.db.getRows(self.query)
+            # self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
+            # rows = self.db.getRows(self.query)
+            getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
+            rows = self.db.execute(getRows, dictionary=True)
+
             self.ui.tableWidget.setRowCount(len(rows))
-            self.fillTable()
+            self.fillTable(rows)
             self.ui.readSingleButton.setEnabled(True)
             self.ui.readMultiButton.setEnabled(True)
 
@@ -471,15 +539,18 @@ class mainWindow():
             pass
 
         else:
-            ti = self.db.listOfSerialNo()
-            # debug.info (ti)
-            TI = [x['tag_id'] for x in ti]
+            # ti = self.db.listOfSerialNo()
+            # # debug.info (ti)
+            # TI = [x['tag_id'] for x in ti]
             # debug.info  (TI)
+            TI = [x['tag_id'] for x in self.sn]
             if tagId in TI:
-                slno = self.db.getSlFrmTid(tagId)
+                # slno = self.db.getSlFrmTid(tagId)
+                getSlFrmTid = "SELECT serial_no FROM SERIAL_NO WHERE tag_id=\"{}\" ".format(tagId)
+                slno = self.db.execute(getSlFrmTid, dictionary=True)
+                slno = slno[0]
                 slNo = slno['serial_no']
                 debug.info ("received sl.no: "+slNo)
-
 
                 if (self.rfidMultiUniqSlno.has_key(slNo)):
                     return
@@ -490,8 +561,8 @@ class mainWindow():
                 self.rfidMultiCount += 1
                 self.ui.comboBox.setEditText(slNo)
 
-                column = self.db.getColumns()
-                self.theColumn = [x['COLUMN_NAME'] for x in column]
+                # column = self.db.getColumns()
+                # self.theColumn = [x['COLUMN_NAME'] for x in column]
 
                 self.ui.tableWidget.setColumnCount(len(self.theColumn))
                 self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
@@ -499,28 +570,40 @@ class mainWindow():
                 self.ui.tableWidget.setRowCount(self.rfidMultiCount)
 
                 currTxt = self.ui.comboBox.currentText()
-
-                self.query = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
-
+                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
+                rows = self.db.execute(getRows, dictionary=True)
+                # debug.info(rows)
                 # rows = self.db.getRows(self.query)
                 # self.ui.tableWidget.setRowCount(len(rows))
 
                 rowCount = self.ui.tableWidget.rowCount()
 
-                row = rowCount-1
+                # row = rowCount-1
+                #
+                # self.db.getValues(self.query, init=True)
+                # while True:
+                #     primaryResult = self.db.getValues(self.query)
+                #     # debug.info primaryResult
+                #     if (not primaryResult):
+                #         break
+                #     col = 0
+                #     for n in self.theColumn:
+                #         result = primaryResult[n]
+                #         self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                #         col += 1
+                #     row += 1
 
-                self.db.getValues(self.query, init=True)
+                row = rowCount -1
                 while True:
-                    primaryResult = self.db.getValues(self.query)
-                    # debug.info primaryResult
-                    if (not primaryResult):
-                        break
+                    primaryResult = rows[0]
+                    # debug.info(primaryResult)
                     col = 0
                     for n in self.theColumn:
                         result = primaryResult[n]
                         self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
                         col += 1
                     row += 1
+                    break
 
                 self.ui.tableWidget.resizeColumnsToContents()
             else:

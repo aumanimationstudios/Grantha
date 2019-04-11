@@ -4,8 +4,7 @@
 import os
 import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
-from PyQt5.QtCore import QProcess, QThread, pyqtSignal
-import database
+from PyQt5.QtCore import QThread, pyqtSignal
 import dbGrantha
 import string
 import random
@@ -27,7 +26,7 @@ class addWidget():
     # db = database.DataBase()
     db = dbGrantha.dbGrantha()
 
-    getSN = "SELECT * FROM SERIAL_NO"
+    # getSN = "SELECT * FROM SERIAL_NO"
     getIT = "SELECT * FROM ITEM_TYPE"
     getDESC = "SELECT * FROM DESCRIPTION"
     getMK = "SELECT * FROM MAKE"
@@ -35,25 +34,24 @@ class addWidget():
     getLOC = "SELECT location FROM LOCATION"
     getUSR = "SELECT * FROM USER"
 
-    # sn = db.listOfSerialNo()
-    sn = db.execute(getSN,dictionary=True)
-    slNoList = [x['serial_no'] for x in sn]
-    # it = db.listOfItemType()
+    # sn = db.execute(getSN,dictionary=True)
+    # slNoList = [x['serial_no'] for x in sn]
+
     it = db.execute(getIT,dictionary=True)
     itemTypeList = [x['item_type'] for x in it]
-    # desc = db.listOfDescription()
+
     desc = db.execute(getDESC,dictionary=True)
     descriptionList = [x['description'] for x in desc]
-    # mk = db.listOfMake()
+
     mk = db.execute(getMK,dictionary=True)
     makeList = [x['make'] for x in mk]
-    # mdl = db.listOfModel()
+
     mdl = db.execute(getMDL,dictionary=True)
     modelList = [x['model'] for x in mdl]
-    # loc = db.listOfLocation()
+
     loc = db.execute(getLOC,dictionary=True)
     locationList = [x['location'] for x in loc]
-    # usr = db.listOfUser()
+
     usr = db.execute(getUSR,dictionary=True)
     userList = [x['user'] for x in usr]
 
@@ -278,6 +276,9 @@ class addWidget():
             self.ui.userNoneButton.setEnabled(False)
 
     def load(self):
+        getSN = "SELECT * FROM SERIAL_NO"
+        self.sn = self.db.execute(getSN, dictionary=True)
+        self.slNoList = [x['serial_no'] for x in self.sn]
         self.ui.serialNoBox.clear()
         self.ui.serialNoBox.addItems(self.slNoList)
 
@@ -305,7 +306,7 @@ class addWidget():
         if self.ui.updateTagButton.isChecked():
             pass
         else:
-            slNo = self.ui.serialNoBox.currentText()
+            slNo = self.ui.serialNoBox.currentText().strip()
             # print slNo
 
             if slNo in self.slNoList:
@@ -370,7 +371,7 @@ class addWidget():
 
 
     def fillDetails(self):
-        slNo = self.ui.serialNoBox.currentText()
+        slNo = self.ui.serialNoBox.currentText().strip()
         getDetails = "SELECT * FROM ITEMS WHERE serial_no='%s' " % (slNo)
         # details = self.db.getDetails(query)
         details = self.db.execute(getDetails,dictionary=True)
@@ -482,15 +483,15 @@ class addWidget():
         userInput = OrderedDict()
 
         userInput["serial_no"] = str(self.ui.serialNoBox.currentText().strip())
-        userInput["item_type"] = str(self.ui.itemTypeBox.currentText())
-        userInput["description"] = str(self.ui.descriptionBox.currentText())
-        userInput["make"] = str(self.ui.makeBox.currentText())
-        userInput["model"] = str(self.ui.modelBox.currentText())
-        userInput["price"] = str(self.ui.priceBox.text())
-        userInput["purchased_on"] = str(self.ui.purchaseBox.text())
-        userInput["warranty_valid_till"] = str(self.ui.validBox.text())
-        userInput["location"] = str(self.ui.locationBox.currentText())
-        userInput["user"] = str(self.ui.userBox.currentText())
+        userInput["item_type"] = str(self.ui.itemTypeBox.currentText().strip())
+        userInput["description"] = str(self.ui.descriptionBox.currentText().strip())
+        userInput["make"] = str(self.ui.makeBox.currentText().strip())
+        userInput["model"] = str(self.ui.modelBox.currentText().strip())
+        userInput["price"] = str(self.ui.priceBox.text().strip())
+        userInput["purchased_on"] = str(self.ui.purchaseBox.text().strip())
+        userInput["warranty_valid_till"] = str(self.ui.validBox.text().strip())
+        userInput["location"] = str(self.ui.locationBox.currentText().strip())
+        userInput["user"] = str(self.ui.userBox.currentText().strip())
 
         keys = []
         values = []
@@ -508,7 +509,7 @@ class addWidget():
         debug.info(queryAddItem)
         slNo = userInput["serial_no"]
         if slNo:
-            tagId = str(self.ui.tagIdBox.text())
+            tagId = str(self.ui.tagIdBox.text().strip())
             if tagId:
                 queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no, tag_id) VALUES (\"{0}\",\"{1}\") ".format(slNo,tagId)
             else:
@@ -529,6 +530,7 @@ class addWidget():
                 addItem = self.db.execute(queryAddItem)
                 if (addItem == 1):
                     self.message("Item Added Successfully", "Serial No added successfully")
+                    self.load()
                 else:
                     queryRemoveSlNo = "DELETE FROM SERIAL_NO WHERE serial_no=\"{0}\"".format(slNo)
                     debug.info(queryRemoveSlNo)
@@ -545,28 +547,28 @@ class addWidget():
         userInput = {}
 
         # if (self.ui.serialNoCheckBox.isChecked()):
-        slNo =  str(self.ui.serialNoBox.currentText())
+        slNo =  str(self.ui.serialNoBox.currentText().strip())
         debug.info(slNo)
 
         if (self.ui.itemTypeCheckBox.isChecked()):
-            userInput["item_type"] = str(self.ui.itemTypeBox.currentText())
+            userInput["item_type"] = str(self.ui.itemTypeBox.currentText().strip())
 
         if (self.ui.descriptionCheckBox.isChecked()):
-            userInput["description"] = str(self.ui.descriptionBox.currentText())
+            userInput["description"] = str(self.ui.descriptionBox.currentText().strip())
         if (self.ui.makeCheckBox.isChecked()):
-            userInput["make"] = str(self.ui.makeBox.currentText())
+            userInput["make"] = str(self.ui.makeBox.currentText().strip())
         if (self.ui.modelCheckBox.isChecked()):
-            userInput["model"] = str(self.ui.modelBox.currentText())
+            userInput["model"] = str(self.ui.modelBox.currentText().strip())
         if (self.ui.priceCheckBox.isChecked()):
-            userInput["price"] = str(self.ui.priceBox.text())
+            userInput["price"] = str(self.ui.priceBox.text().strip())
         if (self.ui.purchaseCheckBox.isChecked()):
-            userInput["purchased_on"] = str(self.ui.purchaseBox.text())
+            userInput["purchased_on"] = str(self.ui.purchaseBox.text().strip())
         if (self.ui.validCheckBox.isChecked()):
-            userInput["warranty_valid_till"] = str(self.ui.validBox.text())
+            userInput["warranty_valid_till"] = str(self.ui.validBox.text().strip())
         if (self.ui.locationCheckBox.isChecked()):
-            userInput["location"] = str(self.ui.locationBox.currentText())
+            userInput["location"] = str(self.ui.locationBox.currentText().strip())
         if (self.ui.userCheckBox.isChecked()):
-            userInput["user"] = str(self.ui.userBox.currentText())
+            userInput["user"] = str(self.ui.userBox.currentText().strip())
 
         # keys = []
         # values = []

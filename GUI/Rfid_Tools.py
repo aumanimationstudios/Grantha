@@ -3,13 +3,10 @@
 
 import os
 import sys
-from PyQt5 import QtGui,QtWidgets,QtCore,uic
-from PyQt5.QtCore import QProcess, QThread, pyqtSignal, Qt
-import database
-import string
+from PyQt5 import QtGui,QtWidgets,uic
+from PyQt5.QtCore import QThread, pyqtSignal, Qt
+import dbGrantha
 import random
-from collections import OrderedDict
-import time
 import zmq
 import debug
 
@@ -24,11 +21,15 @@ sys.path.append(imgFilePath)
 context = zmq.Context()
 
 class addWidget():
+    db = dbGrantha.dbGrantha()
+
+    getSN = "SELECT * FROM SERIAL_NO"
+    sn = db.execute(getSN,dictionary=True)
+
+
     def __init__(self):
         self.ui = uic.loadUi(os.path.join(uiFilePath, 'Rfid_Tools.ui'))
-
-        self.db = database.DataBase()
-
+        # self.db = database.DataBase()
         self.ui.readButton.clicked.connect(self.readFromRfidTag)
         self.ui.randomHexButton.clicked.connect(self.randomHexGen)
         self.ui.writeButton.clicked.connect(self.writeToRfidTag)
@@ -65,10 +66,13 @@ class addWidget():
         self.ui.serialNoBox.clear()
         self.ui.statusBox.clear()
         self.ui.tagIdBox.setText(tagId)
-        ti = self.db.listOfSerialNo()
-        TI = [x['tag_id'] for x in ti]
+        # ti = self.db.listOfSerialNo()
+        TI = [x['tag_id'] for x in self.sn]
 
-        tagIdList = self.db.getTagIdList()
+        # tagIdList = self.db.getTagIdList()
+        getTagId = "SELECT * FROM TAG_ID"
+        tagIdList = self.db.execute(getTagId, dictionary=True)
+
         TIL = {x['id']:x['status'] for x in tagIdList}
         debug.info(tagIdList)
         debug.info(TIL)
@@ -81,7 +85,10 @@ class addWidget():
             if (tagIdStatus == 1):
                 self.ui.statusBox.setText("ACTIVE")
                 if tagId in TI:
-                    slno = self.db.getSlFrmTid(tagId)
+                    getSlFrmTid = "SELECT serial_no FROM SERIAL_NO WHERE tag_id=\"{}\" ".format(tagId)
+                    # slno = self.db.getSlFrmTid(tagId)
+                    slno = self.db.execute(getSlFrmTid, dictionary=True)
+                    slno = slno[0]
                     slNo = slno['serial_no']
                     self.ui.serialNoBox.setText(slNo)
                     # self.fillDetails()
@@ -134,24 +141,30 @@ class addWidget():
     def activateTag(self):
         debug.info("Activating")
         tagId = self.ui.tagIdBox.text()
-        query = "UPDATE TAG_ID SET status=\"1\" WHERE id =\"" + tagId + "\""
-        debug.info(query)
-        updated = self.db.update(query)
-        debug.info(updated)
-        if (updated=="Updated Successfully"):
-            self.ui.statusBox.setText("ACTIVE")
-            self.ui.textEdit.append("Activated")
+        if tagId:
+            query = "UPDATE TAG_ID SET status=\"1\" WHERE id =\"" + tagId + "\""
+            debug.info(query)
+            # updated = self.db.update(query)
+            updated = self.db.execute(query)
+            debug.info(updated)
+            # if (updated=="Updated Successfully"):
+            if (updated==1):
+                self.ui.statusBox.setText("ACTIVE")
+                self.ui.textEdit.append("Activated")
 
     def deactivateTag(self):
         debug.info("Deactivating")
         tagId = self.ui.tagIdBox.text()
-        query = "UPDATE TAG_ID SET status=\"0\" WHERE id =\"" + tagId + "\""
-        debug.info(query)
-        updated = self.db.update(query)
-        debug.info(updated)
-        if (updated=="Updated Successfully"):
-            self.ui.statusBox.setText("INACTIVE")
-            self.ui.textEdit.append("Deactivated")
+        if tagId:
+            query = "UPDATE TAG_ID SET status=\"0\" WHERE id =\"" + tagId + "\""
+            debug.info(query)
+            # updated = self.db.update(query)
+            updated = self.db.execute(query)
+            debug.info(updated)
+            # if (updated=="Updated Successfully"):
+            if (updated==1):
+                self.ui.statusBox.setText("INACTIVE")
+                self.ui.textEdit.append("Deactivated")
 
 
     def randomHexGen(self):
@@ -184,13 +197,13 @@ class addWidget():
         tagId = str(self.ui.randomHexBox.text())
         query = "INSERT INTO TAG_ID (id) VALUES (\"{0}\") ".format(tagId)
         debug.info(query)
-        addTagId = self.db.insertTagId(query)
+        # addTagId = self.db.insertTagId(query)
+        addTagId = self.db.execute(query)
         debug.info(addTagId)
-        self.ui.textEdit.append(addTagId)
-
-
-
-
+        if (addTagId==1):
+            self.ui.textEdit.append("Tag Id Added Successfully")
+        else:
+            self.ui.textEdit.append(addTagId)
 
 
 
