@@ -34,7 +34,7 @@ class DataBase:
 
 
     def __init__(self):
-        self.database = MySQLdb.connect("localhost","test","test123","INVENTORY")
+        self.database = MySQLdb.connect()
         self.database.autocommit(1)
         self.cursor = self.database.cursor(MySQLdb.cursors.DictCursor)
 

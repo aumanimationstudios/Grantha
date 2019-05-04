@@ -11,17 +11,23 @@ from utils_uhf import *
 import setproctitle
 import threading
 import debug
+import signal
 
 threads = []
 
 def GranthaServer(granthaQueue, socketQueue):
     debug.info ("GranthaServer Started.")
     context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.bind("tcp://192.168.1.183:4689")
+    sock = context.socket(zmq.REP)
+    hostname = socket.gethostname()
+    ip = socket.gethostbyname(hostname)
+    debug.info(hostname)
+    debug.info(ip)
+    # socket.bind("tcp://192.168.1.183:4689")
+    sock.bind("tcp://"+ip+":4689")
 
     while True:
-        msgFrmCli = socket.recv_multipart()
+        msgFrmCli = sock.recv_multipart()
         debug.info ("Message From Client: "+msgFrmCli[0])
         # try:
         if (msgFrmCli[0] == "READ"):
@@ -31,11 +37,11 @@ def GranthaServer(granthaQueue, socketQueue):
             # try:
             if (tagIdSingle=="NO_CARD"):
                 debug.info ("No Card Detected! 1")
-                socket.send_multipart(["NO CARD"])
+                sock.send_multipart(["NO CARD"])
                 # raise (ValueError)
             else:
                 try:
-                    socket.send_multipart([tagIdSingle])
+                    sock.send_multipart([tagIdSingle])
                 except:
                     debug.info (str(sys.exc_info()))
 
@@ -44,20 +50,20 @@ def GranthaServer(granthaQueue, socketQueue):
         if (msgFrmCli[0] == "READ_MULTI"):
             # try:
             granthaQueue.put("READ_MULTI")
-            socket.send("MULTI_READ_STARTED")
+            sock.send("MULTI_READ_STARTED")
 
             # sqT = socketQThread(socketQueue)
             # sqT.start()
 
         if (msgFrmCli[0] == "STOP"):
             granthaQueue.put("STOP")
-            socket.send("STOPPING")
+            sock.send("STOPPING")
 
         if (msgFrmCli[0] == "WRITE"):
             granthaQueue.put(["WRITE",msgFrmCli[1]])
             ack = socketQueue.get()
             debug.info(ack)
-            socket.send_multipart([ack])
+            sock.send_multipart([ack])
 
 
 
@@ -68,6 +74,8 @@ def SocketServer(granthaQueue, socketQueue):
 
     hostname = socket.gethostname()
     ip = socket.gethostbyname(hostname)
+    debug.info(hostname)
+    debug.info(ip)
     server_address = ((ip, 80))
     sock.bind(server_address)
     sock.listen(1)
@@ -123,6 +131,7 @@ def readSingle(connection):
 
     data = connection.recv(10240)
     dataHex = bytes_to_hex(data)
+    debug.info(dataHex)
     dataDict = readVerifier(dataHex)
 
     if not dataDict:
@@ -210,12 +219,14 @@ def writeEpc(connection,tagId):
                                 # print (dataHex)
                                 Type = dataHex[2:4]
                                 Command = dataHex[4:6]
+                                debug.info(Type+Command)
                                 if Type == '01' and Command == '49':
                                     debug.info ("Write Successful.")
                                     ack = "ack_pass"
                                     return ack
                                 else:
-                                    raise ValueError('unable to write!')
+                                    # raise ValueError('unable to write!')
+                                    debug.info("Unable to write!")
                             except:
                                 print ("Trying Again!" + str(sys.exc_info()))
             else:
@@ -241,6 +252,10 @@ def readMultiOutput(dataHex,socketQueue):
             # debug.info (x)
             # self.ui.textEdit01.setTextColor(self.blueColor)
             # self.ui.textEdit01.append(x)
+
+def keyboardInterruptHandler(signal, frame):
+    debug.info("KeyboardInterrupt (ID: {}) has been caught. Cleaning up...".format(signal))
+    exit(0)
 
 
 class socketQThread(threading.Thread):
@@ -321,12 +336,7 @@ class readMultiThread(threading.Thread):
 
                 break
 
-
-
-
-
-
-
+signal.signal(signal.SIGINT, keyboardInterruptHandler)
 
 
 if __name__ =="__main__":

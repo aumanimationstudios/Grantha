@@ -178,10 +178,13 @@ class addWidget():
     def writeToRfidTag(self):
         print("writing")
         tagId = str(self.ui.randomHexBox.text())
-        wT = writeThread(tagId, app)
-        wT.waiting.connect(self.writeStarting)
-        wT.ackReceived.connect(self.writeDone)
-        wT.start()
+        if tagId:
+            wT = writeThread(tagId, app)
+            wT.waiting.connect(self.writeStarting)
+            wT.ackReceived.connect(self.writeDone)
+            wT.start()
+        else:
+            self.ui.textEdit.append("No Tag Id to Write")
 
     def writeStarting(self):
         self.ui.textEdit.append("Writing")

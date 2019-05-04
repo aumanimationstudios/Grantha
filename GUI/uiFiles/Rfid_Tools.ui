@@ -1285,8 +1285,11 @@ QDateEdit::down-arrow:focus {
      <property name="maxLength">
       <number>30</number>
      </property>
-     <property name="clearButtonEnabled">
+     <property name="readOnly">
       <bool>true</bool>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -1376,7 +1379,7 @@ QDateEdit::down-arrow:focus {
       <bool>true</bool>
      </property>
      <property name="clearButtonEnabled">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -1414,8 +1417,11 @@ QDateEdit::down-arrow:focus {
      <property name="maxLength">
       <number>30</number>
      </property>
-     <property name="clearButtonEnabled">
+     <property name="readOnly">
       <bool>true</bool>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
      </property>
     </widget>
    </item>

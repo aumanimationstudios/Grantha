@@ -6,11 +6,15 @@ import MySQLdb.cursors
 import debug
 import sys
 import time
+import yaml
 
-host = "localhost"
-user = "test"
-password = "test123"
-database = "INVENTORY"
+conf = open("/etc/grantha/grantha.conf","r")
+confDict = yaml.safe_load(conf)
+
+host = confDict["host"]
+user = confDict["user"]
+password = confDict["password"]
+database = confDict["database"]
 
 class dbGrantha:
 
@@ -96,5 +100,3 @@ class dbGrantha:
                     self.disconnect()
                     raise
 
-# if __name__ == '__main__':
-#     dbg = dbGrantha()

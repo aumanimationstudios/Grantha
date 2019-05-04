@@ -606,6 +606,7 @@ class addWidget():
                 debug.info(updated)
                 if (updated == 1):
                     self.message("Updated Successfully")
+                    self.load()
                 else:
                     self.message("<b>Update failed</b>",updated)
             else:

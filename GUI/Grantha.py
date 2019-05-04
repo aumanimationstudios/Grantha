@@ -11,6 +11,7 @@ import zmq
 import socket
 import debug
 
+
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
 uiFilePath = os.path.join(progPath,"GUI","uiFiles")
@@ -121,7 +122,7 @@ class mainWindow():
 
                 if(selected):
                     viewParentAction = menu.addAction("View Parent Location")
-                    if user in authUsers:
+                    if user in self.authUsers:
                         modifyLocationAction = menu.addAction("Modify Location")
 
                 action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
