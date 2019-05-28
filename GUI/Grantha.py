@@ -502,13 +502,13 @@ class mainWindow():
             self.wrongTagMessage()
 
     def wrongTagMessage(self):
-            self.Msg = QtWidgets.QMessageBox()
-            self.Msg.setIcon(QtWidgets.QMessageBox.Information)
-            self.Msg.setWindowTitle("Wrong Tag")
-            self.Msg.setText("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
-            self.Msg.show()
-            self.ui.readSingleButton.setEnabled(True)
-            self.ui.readMultiButton.setEnabled(True)
+        self.Msg = QtWidgets.QMessageBox()
+        self.Msg.setIcon(QtWidgets.QMessageBox.Information)
+        self.Msg.setWindowTitle("Wrong Tag")
+        self.Msg.setText("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
+        self.Msg.show()
+        self.ui.readSingleButton.setEnabled(True)
+        self.ui.readMultiButton.setEnabled(True)
 
     def readMultiFromRfidTag(self):
         self.ui.tableWidget.setRowCount(0)

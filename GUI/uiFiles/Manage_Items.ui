@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>468</width>
-    <height>553</height>
+    <width>516</width>
+    <height>577</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1258,6 +1258,29 @@ QDateEdit::down-arrow:focus {
 </string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="4">
+    <widget class="QCheckBox" name="imageCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label01">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Image:</string>
+     </property>
+    </widget>
+   </item>
    <item row="11" column="1">
     <widget class="QComboBox" name="locationBox">
      <property name="sizePolicy">
@@ -1271,14 +1294,14 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="8" column="3">
+   <item row="8" column="4">
     <widget class="QCheckBox" name="priceCheckBox">
      <property name="text">
       <string/>
      </property>
     </widget>
    </item>
-   <item row="12" column="3">
+   <item row="12" column="4">
     <widget class="QCheckBox" name="userCheckBox">
      <property name="text">
       <string/>
@@ -1317,7 +1340,7 @@ QDateEdit::down-arrow:focus {
     </layout>
    </item>
    <item row="11" column="0">
-    <widget class="QLabel" name="label09">
+    <widget class="QLabel" name="label11">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1329,7 +1352,7 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="5" column="3">
+   <item row="5" column="4">
     <widget class="QCheckBox" name="descriptionCheckBox">
      <property name="text">
       <string/>
@@ -1402,7 +1425,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="7" column="0">
-    <widget class="QLabel" name="label05">
+    <widget class="QLabel" name="label07">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1415,7 +1438,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="12" column="0">
-    <widget class="QLabel" name="label10">
+    <widget class="QLabel" name="label12">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1427,14 +1450,14 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="7" column="3">
+   <item row="7" column="4">
     <widget class="QCheckBox" name="modelCheckBox">
      <property name="text">
       <string/>
      </property>
     </widget>
    </item>
-   <item row="6" column="3">
+   <item row="6" column="4">
     <widget class="QCheckBox" name="makeCheckBox">
      <property name="text">
       <string/>
@@ -1457,7 +1480,7 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="14" column="0" colspan="4">
+   <item row="14" column="0" colspan="5">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="cancelButton">
@@ -1509,7 +1532,7 @@ QDateEdit::down-arrow:focus {
     </layout>
    </item>
    <item row="8" column="0">
-    <widget class="QLabel" name="label06">
+    <widget class="QLabel" name="label08">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1521,7 +1544,7 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="2" column="3">
+   <item row="2" column="4">
     <widget class="QCheckBox" name="serialNoCheckBox">
      <property name="text">
       <string/>
@@ -1536,7 +1559,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="6" column="0">
-    <widget class="QLabel" name="label04">
+    <widget class="QLabel" name="label06">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1580,7 +1603,7 @@ QDateEdit::down-arrow:focus {
     </layout>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="label01_2">
+    <widget class="QLabel" name="label03">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1639,7 +1662,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="9" column="0">
-    <widget class="QLabel" name="label07">
+    <widget class="QLabel" name="label09">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1678,7 +1701,7 @@ QDateEdit::down-arrow:focus {
     </spacer>
    </item>
    <item row="5" column="0">
-    <widget class="QLabel" name="label03">
+    <widget class="QLabel" name="label05">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1691,7 +1714,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QLabel" name="label02">
+    <widget class="QLabel" name="label04">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1717,7 +1740,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QLabel" name="label01">
+    <widget class="QLabel" name="label02">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1739,7 +1762,7 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="11" column="3">
+   <item row="11" column="4">
     <widget class="QCheckBox" name="locationCheckBox">
      <property name="text">
       <string/>
@@ -1759,7 +1782,7 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="3" column="3">
+   <item row="3" column="4">
     <widget class="QCheckBox" name="tagIdCheckBox">
      <property name="text">
       <string/>
@@ -1779,7 +1802,7 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="10" column="3">
+   <item row="10" column="4">
     <widget class="QCheckBox" name="validCheckBox">
      <property name="text">
       <string/>
@@ -1787,7 +1810,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="10" column="0">
-    <widget class="QLabel" name="label08">
+    <widget class="QLabel" name="label10">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1799,14 +1822,14 @@ QDateEdit::down-arrow:focus {
      </property>
     </widget>
    </item>
-   <item row="4" column="3">
+   <item row="4" column="4">
     <widget class="QCheckBox" name="itemTypeCheckBox">
      <property name="text">
       <string/>
      </property>
     </widget>
    </item>
-   <item row="9" column="3">
+   <item row="9" column="4">
     <widget class="QCheckBox" name="purchaseCheckBox">
      <property name="text">
       <string/>
@@ -1823,6 +1846,52 @@ QDateEdit::down-arrow:focus {
      </property>
      <property name="editable">
       <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="imageBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maxLength">
+      <number>30</number>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="captureButton">
+     <property name="text">
+      <string>Capture</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="3">
+    <widget class="QPushButton" name="loadButton">
+     <property name="text">
+      <string>Load</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="4">
+    <widget class="QFrame" name="frame">
+     <property name="styleSheet">
+      <string notr="true">border:0</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
      </property>
     </widget>
    </item>

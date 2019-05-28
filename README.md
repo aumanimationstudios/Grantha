@@ -7,4 +7,5 @@ Simple Inventory Management tool
 * `PyQt5`
 * `zmq`
 * `mysql`
+* `mysql-python`
 * `yaml`

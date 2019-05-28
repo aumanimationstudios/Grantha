@@ -4,13 +4,16 @@
 import os
 import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 import dbGrantha
 import string
 import random
 from collections import OrderedDict
 import zmq
 import debug
+import subprocess
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -55,11 +58,14 @@ class addWidget():
     usr = db.execute(getUSR,dictionary=True)
     userList = [x['user'] for x in usr]
 
+    layout = QVBoxLayout()
+
+
     def __init__(self):
         self.ui = uic.loadUi(os.path.join(uiFilePath, 'Manage_Items.ui'))
 
         # self.db = database.DataBase()
-
+        self.ui.frame.setLayout(self.layout)
         self.load()
         self.ui.serialNoBox.setCurrentText(" ")
         self.ui.itemTypeBox.setCurrentText(" ")
@@ -88,6 +94,8 @@ class addWidget():
         self.ui.locationCheckBox.clicked.connect(self.enableLocationBox)
         self.ui.userCheckBox.clicked.connect(self.enableUserBox)
 
+        self.ui.captureButton.clicked.connect(self.captureImage)
+        self.ui.loadButton.clicked.connect(self.loadFile)
         self.ui.serialNoBox.currentIndexChanged.connect(self.loadDetails)
         self.ui.generateButton.clicked.connect(self.slNoGen)
         self.ui.readButton.clicked.connect(self.readFromRfidTag)
@@ -127,6 +135,10 @@ class addWidget():
         self.disableItToUsrBoxes()
 
     def disableItToUsrBoxes(self):
+        self.ui.frame.setEnabled(False)
+        self.ui.imageBox.setEnabled(False)
+        self.ui.captureButton.setEnabled(False)
+        self.ui.loadButton.setEnabled(False)
         self.ui.itemTypeBox.setEnabled(False)
         self.ui.descriptionBox.setEnabled(False)
         self.ui.makeBox.setEnabled(False)
@@ -146,6 +158,8 @@ class addWidget():
 
 
     def disableCheckboxes(self):
+        self.ui.imageCheckBox.setEnabled(False)
+        self.ui.frame.setEnabled(True)
         self.ui.serialNoCheckBox.setEnabled(False)
         self.ui.serialNoCheckBox.setChecked(False)
         self.ui.tagIdCheckBox.setEnabled(False)
@@ -169,6 +183,9 @@ class addWidget():
         self.ui.userCheckBox.setEnabled(False)
         self.ui.userCheckBox.setChecked(False)
 
+        self.ui.imageBox.setEnabled(True)
+        self.ui.captureButton.setEnabled(True)
+        self.ui.loadButton.setEnabled(True)
         self.ui.serialNoBox.setEnabled(True)
         self.ui.tagIdBox.setEnabled(True)
         self.ui.itemTypeBox.setEnabled(True)
@@ -301,6 +318,70 @@ class addWidget():
         self.ui.userBox.addItems(self.userList)
 
         self.ui.priceBox.setText('0.00')
+
+    # def loadFile(self):
+    #     # dialog = QtWidgets.QFileDialog()
+    #     # # dialog.setDirectory(self, "/crap/crap.server/")
+    #     # # my_dir = QtWidgets.QFileDialog.getExistingDirectory(self.ui,"Open a folder","/",QtWidgets.QFileDialog.ShowDirsOnly)
+    #     # fileName = dialog.getOpenFileName(self.ui, 'Open File', '/crap/crap.server/', '*.png *.jpg *.jpeg')
+    #     # debug.info(fileName)
+    #     # # directory = dialog.directoryEntered.connect()
+    #     # # debug.info(directory)
+    #     # self.ui.imageBox.clear()
+    #     # self.ui.imageBox.setText(fileName[0].strip())
+    #
+    #     fT = fileWidget()
+    #     # # fT.fileClicked.connect(self.fileClicked)
+    #     fT.show()
+
+    def loadFile(self):
+        self.widget = QWidget()
+        hLay = QHBoxLayout()
+        self.widget.setLayout(hLay)
+        treeView = QTreeView()
+        hLay.addWidget(treeView)
+        rootDir = "/crap/crap.server/Sanath_Shetty/piCameraCaptures/"
+        self.dirModel = QFileSystemModel()
+        self.dirModel.setRootPath(rootDir)
+        self.dirModel.setFilter(QDir.NoDotAndDotDot | QDir.Files)
+        treeView.setModel(self.dirModel)
+        treeView.setRootIndex(self.dirModel.index(rootDir))
+        treeView.hideColumn(1)
+        treeView.hideColumn(2)
+        treeView.hideColumn(3)
+        treeView.clicked.connect(self.fileClicked)
+        self.widget.show()
+
+    def fileClicked(self, index):
+        path = (self.dirModel.fileInfo(index).absoluteFilePath()).strip()
+        self.ui.imageBox.clear()
+        self.ui.imageBox.setText(path)
+        self.widget.close()
+        debug.info(path)
+
+        for i in reversed(range(self.layout.count())):
+            self.layout.itemAt(i).widget().setParent(None)
+        imageThumb = ImageWidget(path, 32)
+        imageThumb.clicked.connect(lambda x, imagePath = path:self.imageWidgetClicked(imagePath))
+        self.layout.addWidget(imageThumb)
+
+    def imageWidgetClicked(self, path):
+        image_path = str(path)
+        debug.info(image_path)
+        debug.info("Image Clicked")
+        cmdFull = "feh \"" + image_path + "\" -Z -."
+        debug.info(cmdFull)
+        subprocess.Popen(cmdFull, shell=True)
+
+    def captureImage(self):
+        slNo = str((self.ui.serialNoBox.currentText()).strip())
+        if not slNo:
+            self.message("Please Provide a Serial No")
+        else:
+            cT = captureThread(slNo, app)
+            # cT.waiting.connect(self.openPlaceTagMessage)
+            cT.ackReceived.connect(self.message)
+            cT.start()
 
     def loadDetails(self):
         if self.ui.updateTagButton.isChecked():
@@ -692,6 +773,55 @@ class readThread(QThread):
         if (self.socket.closed == True):
             debug.info("read Single Socket closed.")
 
+class captureThread(QThread):
+    # waiting = pyqtSignal()
+    ackReceived = pyqtSignal(str)
+
+    def __init__(self, slNo, parent):
+        super(captureThread, self).__init__(parent)
+        self.slNo = slNo
+
+    def run(self):
+        # self.waiting.emit()
+
+        debug.info("connecting to rfid Scanner Server...")
+        self.socket = context.socket(zmq.REQ)
+        try:
+            self.socket.connect("tcp://192.168.1.183:4689")
+            debug.info("connected.")
+        except:
+            debug.info(str(sys.exc_info()))
+        self.socket.send_multipart(["CAPTURE",self.slNo])
+
+        # slNo = self.socket.recv()
+        # debug.info "Received sl.No: " + slNo
+        try:
+            ack = self.socket.recv()
+            debug.info(ack)
+            self.ackReceived.emit(ack)
+        except:
+            debug.info(str(sys.exc_info()))
+
+        self.socket.close()
+
+        if (self.socket.closed == True):
+            debug.info("Capture Socket closed.")
+
+class ImageWidget(QtWidgets.QPushButton):
+  def __init__(self, imagePath, imageSize, parent=None):
+    super(ImageWidget, self).__init__(parent)
+    self.imagePath = imagePath
+    self.picture = QtGui.QPixmap(imagePath)
+    # debug.info (self.imagePath)
+    self.picture  = self.picture.scaledToHeight(imageSize,0)
+
+  def paintEvent(self, event):
+    painter = QtGui.QPainter(self)
+    painter.setPen(QtCore.Qt.NoPen)
+    painter.drawPixmap(0, 0, self.picture)
+
+  def sizeHint(self):
+    return(self.picture.size())
 
 
 # class writeThread(QtCore.QThread):

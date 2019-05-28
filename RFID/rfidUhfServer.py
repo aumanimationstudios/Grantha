@@ -12,6 +12,7 @@ import setproctitle
 import threading
 import debug
 import signal
+import subprocess
 
 threads = []
 
@@ -64,6 +65,11 @@ def GranthaServer(granthaQueue, socketQueue):
             ack = socketQueue.get()
             debug.info(ack)
             sock.send_multipart([ack])
+
+        if (msgFrmCli[0] == "CAPTURE"):
+            debug.info(msgFrmCli[1])
+            sock.send("Captured")
+            subprocess.Popen(["python", "camera.py", msgFrmCli[1]])
 
 
 

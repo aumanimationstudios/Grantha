@@ -5,9 +5,9 @@ import os
 import sys
 import subprocess
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
-from PyQt5.QtWidgets import QApplication, QFileDialog, QLabel, QPushButton
-from PyQt5.QtGui import QIcon,QPixmap
-from PyQt5.QtCore import QProcess, QThread, pyqtSignal, Qt
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 import MySQLdb
 import MySQLdb.cursors
 
@@ -119,6 +119,12 @@ def viewImage():
 
     ui.tableWidget.resizeColumnsToContents()
     ui.tableWidget.resizeRowsToContents()
+
+    # layout = QVBoxLayout()
+    # layout.addWidget(ImageWidget("/crap/crap.server/Kuppi.jpg",32))
+    # ui.frame.setLayout(layout)
+
+
 
 # def cellClick():
 #     debug.info("cell clicked")
