@@ -3,14 +3,17 @@
 
 import os
 import sys
-from PyQt5 import QtGui, QtWidgets, uic
+from PyQt5 import QtGui, QtWidgets, uic, QtCore
 from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import QProcess, QThread, pyqtSignal
 import dbGrantha
 import zmq
 import socket
 import debug
-
+import subprocess
+from Utils_Gui import *
+import time
+import setproctitle
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -94,7 +97,7 @@ class mainWindow():
         self.ui.tableWidget.customContextMenuRequested.connect(self.viewParentPopUp)
 
         self.center()
-        self.ui.show()
+        self.ui.showMaximized()
 
         # self.db = database.DataBase()
 
@@ -157,20 +160,20 @@ class mainWindow():
             self.parentLocation = pL['parent_location']
             # debug.info self.parentLocation
             if self.parentLocation == None:
-                self.parentMessage = "No Parent Location"
+                parentMessage = "No Parent Location"
             else:
-                self.parentMessage = self.parentLocation
-
-            self.viewParentMessage()
+                parentMessage = self.parentLocation
+            messageBox(parentMessage)
+            # self.viewParentMessage()
         else:
             debug.info ("not valid location")
 
-    def viewParentMessage(self):
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setWindowTitle("Message")
-        msg.setText(self.parentMessage)
-        msg.exec_()
+    # def viewParentMessage(self):
+    #     msg = QtWidgets.QMessageBox()
+    #     msg.setIcon(QtWidgets.QMessageBox.Information)
+    #     msg.setWindowTitle("Message")
+    #     msg.setText(self.parentMessage)
+    #     msg.exec_()
 
     def center(self):
         qr = self.ui.frameGeometry()
@@ -222,10 +225,30 @@ class mainWindow():
                 col +=1
             row +=1
 
+        numRows = self.ui.tableWidget.rowCount()
+        for row in range(numRows):
+            path = str(self.ui.tableWidget.item(row, 10).text())
+            debug.info(path)
+            self.ui.tableWidget.takeItem(row, 10)
+            imageThumb = ImageWidget(path, 32)
+            imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+            self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+
+        # self.ui.tableWidget.resizeColumnsToContents()
+        self.ui.tableWidget.resizeRowsToContents()
         self.ui.tableWidget.resizeColumnsToContents()
         debug.info( "Loaded list of all items.")
         # self.ui.tableWidget.setSortingEnabled(True)
 
+    # def imageWidgetClicked(self, imagePath):
+    #     image_path = str(imagePath)
+    #     debug.info(image_path)
+    #     debug.info("Image Clicked")
+    #
+    #     # cmdFull = "xdg-open \"" + image_path + "\""
+    #     cmdFull = "feh \"" + image_path + "\" -Z -."
+    #     debug.info(cmdFull)
+    #     subprocess.Popen(cmdFull, shell=True)
 
     def search(self):
         self.ui.tableWidget.setRowCount(0)
@@ -296,8 +319,19 @@ class mainWindow():
                 col += 1
             row += 1
 
-        self.ui.tableWidget.resizeColumnsToContents()
+        # self.ui.tableWidget.resizeColumnsToContents()
 
+        numRows = self.ui.tableWidget.rowCount()
+        for row in range(numRows):
+            path = str(self.ui.tableWidget.item(row, 10).text())
+            debug.info(path)
+            self.ui.tableWidget.takeItem(row, 10)
+            imageThumb = ImageWidget(path, 32)
+            imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+            self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+
+        self.ui.tableWidget.resizeColumnsToContents()
+        self.ui.tableWidget.resizeRowsToContents()
 
     def slNoBtnClick(self):
         self.ui.comboBox.clear()
@@ -358,7 +392,7 @@ class mainWindow():
     # Processes to start when respective buttons are clicked
 
     def manageItems(self):
-        debug.info("Opening Add Menu")
+        debug.info("Opening manage items Menu")
         p = QProcess(parent=self.ui)
         processes.append(p)
         debug.info(processes)
@@ -447,21 +481,41 @@ class mainWindow():
         self.ui.readMultiButton.setEnabled(False)
         self.ui.tableWidget.setRowCount(0)
         rT = readThread(app)
-        rT.waiting.connect(self.openPlaceTagMessage)
+        # self.msg = messageBox("Place Your Tag")
+        rT.waiting.connect(self.msg)
+        # widgets.append(self.msg)
         rT.tagIdReceived.connect(self.closePlaceTagMessage)
         rT.start()
 
-    def openPlaceTagMessage(self):
-        self.plcMsg = QtWidgets.QMessageBox()
-        self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
-        self.plcMsg.setWindowTitle("Message")
-        self.plcMsg.setText("Place your Tag...")
-        self.plcMsg.show()
+    def msg(self, plceMsg):
+        messagebox = TimerMessageBox(1, plceMsg)
+        messagebox.exec_()
+
+    # def openPlaceTagMessage(self):
+    #     self.plcMsg = QtWidgets.QMessageBox()
+    #     self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
+    #     self.plcMsg.setWindowTitle("Message")
+    #     self.plcMsg.setText("Place your Tag...")
+    #     self.plcMsg.show()
 
     def closePlaceTagMessage(self, tagId):
         try:
-            self.plcMsg.close()
+            # self.plcMsg.close()
+            # debug.info(widgets)
+            # # # for childQWidget in self.ui.findChildren(QtWidgets.QWidget):
+            # # #     childQWidget.close()
+            # # # self.isDirectlyClose = True
+            # # # return QtGui.QMainWindow.close(self)
+            # btn = self.msg.defaultButton()
+            # debug.info(btn)
+            # for openWidgets in widgets:
+            #     # openWidgets.close()
+            #     self.msg.close(openWidgets)
+            # self.plcMsg.close()
+            # self.msg.close()
+            debug.info("Message Closed")
         except:
+            debug.info (str(sys.exc_info()))
             pass
 
         # sn = self.db.listOfSerialNo()
@@ -499,16 +553,20 @@ class mainWindow():
             self.ui.readMultiButton.setEnabled(True)
 
         else:
-            self.wrongTagMessage()
+            messageBox("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>","",os.path.join(imgFilePath,"oh.png"))
+            self.ui.readSingleButton.setEnabled(True)
+            self.ui.readMultiButton.setEnabled(True)
+            # self.wrongTagMessage()
 
-    def wrongTagMessage(self):
-        self.Msg = QtWidgets.QMessageBox()
-        self.Msg.setIcon(QtWidgets.QMessageBox.Information)
-        self.Msg.setWindowTitle("Wrong Tag")
-        self.Msg.setText("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
-        self.Msg.show()
-        self.ui.readSingleButton.setEnabled(True)
-        self.ui.readMultiButton.setEnabled(True)
+    # def wrongTagMessage(self):
+    #     # self.Msg = QtWidgets.QMessageBox()
+    #     # self.Msg.setIcon(QtWidgets.QMessageBox.Information)
+    #     # self.Msg.setWindowTitle("Wrong Tag")
+    #     # self.Msg.setText("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!")
+    #     # self.Msg.show()
+    #     messageBox("This Serial No. does not exists in Database \n And/Or \n Tag was not scanned properly!",os.path.join(imgFilePath,"oh.png"))
+    #     self.ui.readSingleButton.setEnabled(True)
+    #     self.ui.readMultiButton.setEnabled(True)
 
     def readMultiFromRfidTag(self):
         self.ui.tableWidget.setRowCount(0)
@@ -634,15 +692,35 @@ class mainWindow():
 
 
 
+class ImageWidget(QtWidgets.QPushButton):
+    def __init__(self, imagePath, imageSize, parent=None):
+        super(ImageWidget, self).__init__(parent)
+        self.imagePath = imagePath
+        self.picture = QtGui.QPixmap(imagePath)
+        # debug.info (self.imagePath)
+        self.picture  = self.picture.scaledToHeight(imageSize,0)
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawPixmap(0, 0, self.picture)
+
+    def sizeHint(self):
+        return(self.picture.size())
+
+
+
+
+
 class readThread(QThread):
-    waiting = pyqtSignal()
+    waiting = pyqtSignal(str)
     tagIdReceived = pyqtSignal(str)
 
     def __init__(self, parent):
         super(readThread, self).__init__(parent)
 
     def run(self):
-        self.waiting.emit()
+        self.waiting.emit("Place your tag...")
 
         
         debug.info("connecting to rfid Scanner Server...")
@@ -774,6 +852,7 @@ class stopReadThread(QThread):
 
 
 if __name__ == '__main__':
+    setproctitle.setproctitle("GRANTHA")
     app = QtWidgets.QApplication(sys.argv)
     window = mainWindow()
     sys.exit(app.exec_())

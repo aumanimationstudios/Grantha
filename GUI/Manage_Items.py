@@ -14,6 +14,7 @@ from collections import OrderedDict
 import zmq
 import debug
 import subprocess
+from Utils_Gui import *
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -350,6 +351,7 @@ class addWidget():
         treeView.hideColumn(2)
         treeView.hideColumn(3)
         treeView.clicked.connect(self.fileClicked)
+        self.widget.resize(250,400)
         self.widget.show()
 
     def fileClicked(self, index):
@@ -362,26 +364,34 @@ class addWidget():
         for i in reversed(range(self.layout.count())):
             self.layout.itemAt(i).widget().setParent(None)
         imageThumb = ImageWidget(path, 32)
-        imageThumb.clicked.connect(lambda x, imagePath = path:self.imageWidgetClicked(imagePath))
+        imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
         self.layout.addWidget(imageThumb)
 
-    def imageWidgetClicked(self, path):
-        image_path = str(path)
-        debug.info(image_path)
-        debug.info("Image Clicked")
-        cmdFull = "feh \"" + image_path + "\" -Z -."
-        debug.info(cmdFull)
-        subprocess.Popen(cmdFull, shell=True)
+    # def imageWidgetClicked(self, path):
+    #     image_path = str(path)
+    #     debug.info(image_path)
+    #     debug.info("Image Clicked")
+    #     cmdFull = "feh \"" + image_path + "\" -Z -."
+    #     debug.info(cmdFull)
+    #     subprocess.Popen(cmdFull, shell=True)
 
     def captureImage(self):
         slNo = str((self.ui.serialNoBox.currentText()).strip())
         if not slNo:
-            self.message("Please Provide a Serial No")
+            try:
+                messageBox("Please Provide a Serial No")
+            except:
+                debug.info(str(sys.exc_info()))
         else:
-            cT = captureThread(slNo, app)
+            subprocess.Popen(["python", "Pi_Camera_Preview.py", slNo])
+            cT = captureThread(app)
             # cT.waiting.connect(self.openPlaceTagMessage)
-            cT.ackReceived.connect(self.message)
+            cT.ackReceived.connect(self.showTimerMsg)
             cT.start()
+
+    def showTimerMsg(self, msg):
+        messagebox = TimerMessageBox(1, msg)
+        messagebox.exec_()
 
     def loadDetails(self):
         if self.ui.updateTagButton.isChecked():
@@ -417,21 +427,27 @@ class addWidget():
 
     def readFromRfidTag(self):
         rT = readThread(app)
-        rT.waiting.connect(self.openPlaceTagMessage)
+        rT.waiting.connect(self.msg)
         rT.tagIdReceived.connect(self.closePlaceTagMessage)
         rT.start()
 
-    def openPlaceTagMessage(self):
-        self.plcMsg = QtWidgets.QMessageBox()
-        self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
-        self.plcMsg.setWindowTitle("Message")
-        self.plcMsg.setText("Place your Tag...")
-        self.plcMsg.show()
+    def msg(self, plceMsg):
+        messagebox = TimerMessageBox(1, plceMsg)
+        messagebox.exec_()
+
+    # def openPlaceTagMessage(self):
+    #     self.plcMsg = QtWidgets.QMessageBox()
+    #     self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
+    #     self.plcMsg.setWindowTitle("Message")
+    #     self.plcMsg.setText("Place your Tag...")
+    #     self.plcMsg.show()
 
     def closePlaceTagMessage(self, tagId):
         try:
-            self.plcMsg.close()
+            debug.info("Message Closed")
+            # self.plcMsg.close()
         except:
+            debug.info(str(sys.exc_info()))
             pass
         self.clearAll()
         self.ui.tagIdBox.setText(tagId)
@@ -573,6 +589,7 @@ class addWidget():
         userInput["warranty_valid_till"] = str(self.ui.validBox.text().strip())
         userInput["location"] = str(self.ui.locationBox.currentText().strip())
         userInput["user"] = str(self.ui.userBox.currentText().strip())
+        userInput["image"] = str(self.ui.imageBox.text().strip())
 
         keys = []
         values = []
@@ -610,18 +627,18 @@ class addWidget():
                 # addItem = self.db.insertItem(queryAddItem)
                 addItem = self.db.execute(queryAddItem)
                 if (addItem == 1):
-                    self.message("Item Added Successfully", "Serial No added successfully")
+                    messageBox("Item Added Successfully", "Serial No added successfully")
                     self.load()
                 else:
                     queryRemoveSlNo = "DELETE FROM SERIAL_NO WHERE serial_no=\"{0}\"".format(slNo)
                     debug.info(queryRemoveSlNo)
                     deleteSlNo = self.db.execute(queryRemoveSlNo)
                     if (deleteSlNo == 1):
-                        self.message("<b>Item Not Added.</b>", addItem)
+                        messageBox("<b>Item Not Added.</b>", addItem)
             else:
-                self.message("<b>Item Not Added.</b>",addSlNo)
+                messageBox("<b>Item Not Added.</b>",addSlNo)
         else:
-            self.message("<b>Input a Serial Number</b>")
+            messageBox("<b>Input a Serial Number</b>")
 
     def update(self):
         debug.info("update")
@@ -666,11 +683,11 @@ class addWidget():
             updated = self.db.execute(query)
             debug.info(updated)
             if (updated == 1):
-                self.message("Updated Successfully")
+                messageBox("Updated Successfully")
             else:
-                self.message("<b>Update failed</b>")
+                messageBox("<b>Update failed</b>")
         if not dbvalues:
-            self.message("<b>Update failed</b>","Select fields to update")
+            messageBox("<b>Update failed</b>","Select fields to update")
         # debug.info(keys)
         # debug.info(values)
         # debug.info(query)
@@ -686,21 +703,21 @@ class addWidget():
                 updated = self.db.execute(query)
                 debug.info(updated)
                 if (updated == 1):
-                    self.message("Updated Successfully")
+                    messageBox("Updated Successfully")
                     self.load()
                 else:
-                    self.message("<b>Update failed</b>",updated)
+                    messageBox("<b>Update failed</b>",updated)
             else:
-                self.message("<b>Update failed</b>","Scan a tag and proceed")
+                messageBox("<b>Update failed</b>","Scan a tag and proceed")
         else:
-            self.message("<b>Update failed</b>","Select a serial number and proceed")
+            messageBox("<b>Update failed</b>","Select a serial number and proceed")
 
-    def message(self,msg1, msg2=""):
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setWindowTitle("Message")
-        msg.setText(msg1+"\n"+msg2)
-        msg.exec_()
+    # def message(self,msg1, msg2=""):
+    #     msg = QtWidgets.QMessageBox()
+    #     msg.setIcon(QtWidgets.QMessageBox.Information)
+    #     msg.setWindowTitle("Message")
+    #     msg.setText(msg1+"\n"+msg2)
+    #     msg.exec_()
 
     # def writeToRfidTag(self):
     #     idText = self.ui.serialNoBox.text()
@@ -741,14 +758,14 @@ class addWidget():
 
 
 class readThread(QThread):
-    waiting = pyqtSignal()
+    waiting = pyqtSignal(str)
     tagIdReceived = pyqtSignal(str)
 
     def __init__(self, parent):
         super(readThread, self).__init__(parent)
 
     def run(self):
-        self.waiting.emit()
+        self.waiting.emit("Place your tag...")
 
         debug.info("connecting to rfid Scanner Server...")
         self.socket = context.socket(zmq.REQ)
@@ -773,13 +790,14 @@ class readThread(QThread):
         if (self.socket.closed == True):
             debug.info("read Single Socket closed.")
 
+
 class captureThread(QThread):
     # waiting = pyqtSignal()
     ackReceived = pyqtSignal(str)
 
-    def __init__(self, slNo, parent):
+    def __init__(self, parent):
         super(captureThread, self).__init__(parent)
-        self.slNo = slNo
+        # self.slNo = slNo
 
     def run(self):
         # self.waiting.emit()
@@ -791,7 +809,7 @@ class captureThread(QThread):
             debug.info("connected.")
         except:
             debug.info(str(sys.exc_info()))
-        self.socket.send_multipart(["CAPTURE",self.slNo])
+        self.socket.send_multipart(["START_CAMERA_PREVIEW"])
 
         # slNo = self.socket.recv()
         # debug.info "Received sl.No: " + slNo
@@ -806,6 +824,7 @@ class captureThread(QThread):
 
         if (self.socket.closed == True):
             debug.info("Capture Socket closed.")
+
 
 class ImageWidget(QtWidgets.QPushButton):
   def __init__(self, imagePath, imageSize, parent=None):

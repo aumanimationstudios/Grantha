@@ -66,10 +66,30 @@ def GranthaServer(granthaQueue, socketQueue):
             debug.info(ack)
             sock.send_multipart([ack])
 
+        if (msgFrmCli[0] == "START_CAMERA_PREVIEW"):
+            try:
+                os.system("pkill -9 RPI_CAMERA_LIVE")
+            except:
+                debug.info(str(sys.exc_info()))
+
+            subprocess.Popen(["python3", "rpi_camera_live.py"])
+            sock.send("Previewing")
+
         if (msgFrmCli[0] == "CAPTURE"):
+            try:
+                os.system("pkill -9 RPI_CAMERA_LIVE")
+                # rpiCamPrvPid = int(subprocess.check_output(["pidof","-s","RPI_CAMERA_LIVE"]))
+                # os.system("kill -9 "+str(rpiCamPrvPid))
+            except:
+                debug.info(str(sys.exc_info()))
+
             debug.info(msgFrmCli[1])
+            cam = subprocess.Popen(["python", "camera.py", msgFrmCli[1]],stdout=subprocess.PIPE)
+            # line = cam.stdout.readline()
+            # debug.info(line)
+            for line in iter(cam.stdout.readline,''):
+                debug.info(line)
             sock.send("Captured")
-            subprocess.Popen(["python", "camera.py", msgFrmCli[1]])
 
 
 

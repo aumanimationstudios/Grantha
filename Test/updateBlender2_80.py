@@ -34,4 +34,5 @@ if(downloadLink):
 blenderrc="/proj/standard/share/blender-2.80-rc"
 blenderfinal=os.path.join(destinationDir,untaredFolder)
 
+os.system ("rm " + blenderrc)
 os.system ("ln -sf " + blenderfinal + " " + blenderrc)
