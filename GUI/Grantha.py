@@ -1,6 +1,8 @@
 #!/usr/bin/python2.7
 # *-* coding: utf-8 *-*
 
+### rfidUhfServer Script Should be running in machine connected to RFID Reader Module ###
+
 import os
 import sys
 from PyQt5 import QtGui, QtWidgets, uic, QtCore

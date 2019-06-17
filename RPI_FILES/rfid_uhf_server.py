@@ -1,6 +1,9 @@
 #!/usr/bin/python2
 # *-* coding: utf-8 *-*
 
+### Server for Uhf rfid reading ###
+### Needs to be Run as sudo ###
+
 from multiprocessing import Process, Queue
 import socket
 import zmq
@@ -16,7 +19,14 @@ import subprocess
 
 threads = []
 
+
 def GranthaServer(granthaQueue, socketQueue):
+    """
+    zmq Server to communicate with Grantha
+    :param granthaQueue:
+    :param socketQueue:
+    :return:
+    """
     debug.info ("GranthaServer Started.")
     context = zmq.Context()
     sock = context.socket(zmq.REP)
@@ -24,37 +34,34 @@ def GranthaServer(granthaQueue, socketQueue):
     ip = socket.gethostbyname(hostname)
     debug.info(hostname)
     debug.info(ip)
-    # socket.bind("tcp://192.168.1.183:4689")
+    # Binding REP Socket to tcp port 4689
     sock.bind("tcp://"+ip+":4689")
 
     while True:
+        # Wait for next request from client
         msgFrmCli = sock.recv_multipart()
         debug.info ("Message From Client: "+msgFrmCli[0])
-        # try:
+
         if (msgFrmCli[0] == "READ"):
+            # Put item into the queue
             granthaQueue.put("READ_SINGLE")
+            # Remove and return an item from the queue
             tagIdSingle = socketQueue.get()
             debug.info (tagIdSingle)
-            # try:
+
             if (tagIdSingle=="NO_CARD"):
-                debug.info ("No Card Detected! 1")
+                debug.info ("No Card Detected!")
+                # Send reply back to client
                 sock.send_multipart(["NO CARD"])
-                # raise (ValueError)
             else:
                 try:
                     sock.send_multipart([tagIdSingle])
                 except:
                     debug.info (str(sys.exc_info()))
 
-            # if (msgFrmCli == "READ_MULTI"):
-        # try:
         if (msgFrmCli[0] == "READ_MULTI"):
-            # try:
             granthaQueue.put("READ_MULTI")
             sock.send("MULTI_READ_STARTED")
-
-            # sqT = socketQThread(socketQueue)
-            # sqT.start()
 
         if (msgFrmCli[0] == "STOP"):
             granthaQueue.put("STOP")
@@ -68,25 +75,23 @@ def GranthaServer(granthaQueue, socketQueue):
 
         if (msgFrmCli[0] == "START_CAMERA_PREVIEW"):
             try:
+                # Kill Rpi camera live previewing script if running
                 os.system("pkill -9 RPI_CAMERA_LIVE")
             except:
                 debug.info(str(sys.exc_info()))
-
+            # Run Rpi Camera Previewing script
             subprocess.Popen(["python3", "rpi_camera_live.py"])
             sock.send("Previewing")
 
         if (msgFrmCli[0] == "CAPTURE"):
             try:
                 os.system("pkill -9 RPI_CAMERA_LIVE")
-                # rpiCamPrvPid = int(subprocess.check_output(["pidof","-s","RPI_CAMERA_LIVE"]))
-                # os.system("kill -9 "+str(rpiCamPrvPid))
             except:
                 debug.info(str(sys.exc_info()))
 
             debug.info(msgFrmCli[1])
+            # Run Camera Script
             cam = subprocess.Popen(["python3", "camera.py", msgFrmCli[1]],stdout=subprocess.PIPE)
-            # line = cam.stdout.readline()
-            # debug.info(line)
             for line in iter(cam.stdout.readline,''):
                 debug.info(line)
             sock.send("Captured")
@@ -94,15 +99,22 @@ def GranthaServer(granthaQueue, socketQueue):
 
 
 def SocketServer(granthaQueue, socketQueue):
+    """
+    Socket Server to communicate with the Rfid Reader Module
+    :param granthaQueue:
+    :param socketQueue:
+    :return:
+    """
     global threads
     debug.info ("SocketServer Started.")
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     hostname = socket.gethostname()
     ip = socket.gethostbyname(hostname)
     debug.info(hostname)
     debug.info(ip)
     server_address = ((ip, 80))
+    # Bind socket to port 80
     sock.bind(server_address)
     sock.listen(1)
 
@@ -110,17 +122,19 @@ def SocketServer(granthaQueue, socketQueue):
     debug.info ("connection from: {}".format(client_address))
 
     while True:
+        # Remove and return an item from the queue
         msgRecvd = granthaQueue.get()
         debug.info(msgRecvd)
 
         if (msgRecvd == "READ_SINGLE"):
             tagId = readSingle(connection)
+            # Put item into the queue
             socketQueue.put(tagId)
 
         if (msgRecvd == "READ_MULTI"):
             sqT = socketQThread(socketQueue)
             sqT.start()
-            # global threads
+
             debug.info (threads)
             pollingTime = 10000
             readStr = severalTimesPollingCommandGen(pollingTime)
@@ -149,22 +163,29 @@ def SocketServer(granthaQueue, socketQueue):
 
 
 def readSingle(connection):
+    """
+    Read Rfid Tag and return tag id
+    :param connection:
+    :return tagId:
+    """
     readStr = 'BB00220000227E'
     read = readStr.decode('hex')
+    # Send single polling command to Uhf Reader module
     connection.send(read)
 
     time.sleep(1)
-
+    # Receive response frame from the Uhf Reader module
     data = connection.recv(10240)
     dataHex = bytes_to_hex(data)
     debug.info(dataHex)
     dataDict = readVerifier(dataHex)
 
     if not dataDict:
-        debug.info ("No Cards Detected! 2")
+        debug.info ("No Cards Detected!")
         return ("NO_CARD")
 
     else:
+        # Find nearest Epc value and return tag id from it.
         nearestRssi = None
         nearRestEpc = None
         for x in dataDict:
@@ -366,7 +387,7 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 
 
 if __name__ =="__main__":
-    setproctitle.setproctitle("RFIDUHFSERVER")
+    setproctitle.setproctitle("RFID_UHF_SERVER")
 
     GranthaQ = Queue()
     SocketQ = Queue()
