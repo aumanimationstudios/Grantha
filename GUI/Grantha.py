@@ -16,6 +16,7 @@ import subprocess
 from Utils_Gui import *
 import time
 import setproctitle
+import tempfile
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -36,6 +37,7 @@ Find_Tag = "Find_Tag.py"
 user = os.environ['USER']
 context = zmq.Context()
 processes = []
+tempDir = tempfile.gettempdir()
 
 class mainWindow():
     global processes
@@ -50,8 +52,7 @@ class mainWindow():
     loc = db.execute(getLOC, dictionary=True)
     LOC = [x['location'] for x in loc]
 
-    queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS \
-                WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
+    queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
     column = db.execute(queryCol, dictionary=True)
     theColumn = [x['COLUMN_NAME'] for x in column]
 
@@ -230,11 +231,12 @@ class mainWindow():
         numRows = self.ui.tableWidget.rowCount()
         for row in range(numRows):
             path = str(self.ui.tableWidget.item(row, 10).text())
-            debug.info(path)
-            self.ui.tableWidget.takeItem(row, 10)
-            imageThumb = ImageWidget(path, 32)
-            imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-            self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+            if path:
+                debug.info(path)
+                self.ui.tableWidget.takeItem(row, 10)
+                imageThumb = ImageWidget(path, 32)
+                imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
 
         # self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.resizeRowsToContents()
@@ -326,11 +328,12 @@ class mainWindow():
         numRows = self.ui.tableWidget.rowCount()
         for row in range(numRows):
             path = str(self.ui.tableWidget.item(row, 10).text())
-            debug.info(path)
-            self.ui.tableWidget.takeItem(row, 10)
-            imageThumb = ImageWidget(path, 32)
-            imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-            self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+            if path:
+                debug.info(path)
+                self.ui.tableWidget.takeItem(row, 10)
+                imageThumb = ImageWidget(path, 32)
+                imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
 
         self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.resizeRowsToContents()
@@ -401,6 +404,8 @@ class mainWindow():
         p.started.connect(self.disableButtons)
         p.readyReadStandardOutput.connect(self.read_out)
         p.readyReadStandardError.connect(self.read_err)
+        # p.setStandardOutputFile(tempDir + os.sep + "Grantha_ManageItems_" + user + ".log")
+        # p.setStandardErrorFile(tempDir + os.sep + "Grantha_ManageItems_" + user + ".err")
         p.finished.connect(self.enableButtons)
         p.start(sys.executable, Manage_Items.split())
 
@@ -447,12 +452,12 @@ class mainWindow():
     def read_out(self):
         if processes:
             for process in processes:
-                print 'stdout:', str(process.readAllStandardOutput()).strip()
+                print ('stdout:', str(process.readAllStandardOutput()).strip())
 
     def read_err(self):
         if processes:
             for process in processes:
-                print 'stderr:', str(process.readAllStandardError()).strip()
+                print ('stderr:', str(process.readAllStandardError()).strip())
 
 
     def disableButtons(self):
@@ -666,7 +671,29 @@ class mainWindow():
                     row += 1
                     break
 
+                # numRows = self.ui.tableWidget.rowCount()
+                # for row in range(numRows):
+                #     path = str(self.ui.tableWidget.item(row, 10).text())
+                #     debug.info(path)
+                #     self.ui.tableWidget.takeItem(row, 10)
+                #     imageThumb = ImageWidget(path, 32)
+                #     imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                #     self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+                #
+                # self.ui.tableWidget.resizeColumnsToContents()
+                # self.ui.tableWidget.resizeRowsToContents()
+                numRow = self.rfidMultiCount -1
+                path = str(self.ui.tableWidget.item(numRow, 10).text())
+                if path:
+                    debug.info(path)
+                    self.ui.tableWidget.takeItem(numRow, 10)
+                    imageThumb = ImageWidget(path, 32)
+                    imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                    self.ui.tableWidget.setCellWidget(numRow, 10, imageThumb)
+
+                self.ui.tableWidget.resizeRowsToContents()
                 self.ui.tableWidget.resizeColumnsToContents()
+
             else:
                 pass
                 # self.ui.readMultiButton.setEnabled(True)
@@ -852,9 +879,12 @@ class stopReadThread(QThread):
 
 
 
-
 if __name__ == '__main__':
     setproctitle.setproctitle("GRANTHA")
+
+    # sys.stdout = open(tempDir + os.sep + "Grantha_" + user + ".log", 'w')
+    # print('test')
+    # tempDir + os.sep + "Grantha_ManageItems_" + user + ".log"
     app = QtWidgets.QApplication(sys.argv)
     window = mainWindow()
     sys.exit(app.exec_())

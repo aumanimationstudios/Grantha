@@ -383,7 +383,7 @@ class addWidget():
             except:
                 debug.info(str(sys.exc_info()))
         else:
-            subprocess.Popen(["python", "Pi_Camera_Preview.py", slNo])
+            # subprocess.Popen(["python", "Pi_Camera_Preview.py", slNo])
             cT = captureThread(app)
             # cT.waiting.connect(self.openPlaceTagMessage)
             cT.ackReceived.connect(self.showTimerMsg)
@@ -392,6 +392,8 @@ class addWidget():
     def showTimerMsg(self, msg):
         messagebox = TimerMessageBox(1, msg)
         messagebox.exec_()
+        slNo = str((self.ui.serialNoBox.currentText()).strip())
+        subprocess.Popen(["python", "Pi_Camera_Preview.py", slNo])
 
     def loadDetails(self):
         if self.ui.updateTagButton.isChecked():
@@ -493,6 +495,18 @@ class addWidget():
         self.ui.validBox.setText(wD)
         self.ui.locationBox.setCurrentText(lOC)
         self.ui.userBox.setCurrentText(uSR)
+
+        path = details["image"]
+        self.ui.imageBox.clear()
+        self.ui.imageBox.setText(path)
+        debug.info(path)
+
+        for i in reversed(range(self.layout.count())):
+            self.layout.itemAt(i).widget().setParent(None)
+        if path:
+            imageThumb = ImageWidget(path, 32)
+            imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+            self.layout.addWidget(imageThumb)
 
 
     def purchaseNone(self):

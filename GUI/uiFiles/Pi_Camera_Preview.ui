@@ -1273,13 +1273,7 @@ QDateEdit::down-arrow:focus {
     </widget>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QWebEngineView" name="webEngineView">
-     <property name="url">
-      <url>
-       <string>http://192.168.1.183:8000/index.html</string>
-      </url>
-     </property>
-    </widget>
+    <widget class="QWebEngineView" name="webEngineView"/>
    </item>
   </layout>
  </widget>

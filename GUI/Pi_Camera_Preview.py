@@ -8,7 +8,7 @@ from PyQt5 import QtGui,QtWidgets,QtCore,uic
 from PyQt5 import QtWebEngineWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-# from PyQt5.QtCore import *
+from PyQt5.QtCore import *
 import MySQLdb
 import MySQLdb.cursors
 import argparse
@@ -76,13 +76,26 @@ def captureImage():
 
 def closeWindow():
     app.closeAllWindows()
-    message = Utils_Gui.TimerMessageBox(1,"Captured")
+    message = Utils_Gui.TimerMessageBox(1,"<b>Captured</b>")
     message.exec_()
+
+def center():
+    qr = ui.frameGeometry()
+    cp = QDesktopWidget().availableGeometry().center()
+    qr.moveCenter(cp)
+    ui.move(qr.topLeft())
 
 app = QtWidgets.QApplication(sys.argv)
 
 ui = uic.loadUi(os.path.join(uiFilePath,"Pi_Camera_Preview.ui"))
 ui.captureButton.clicked.connect(captureImage)
 
+url = "http://192.168.1.183:8000"
+try:
+    ui.webEngineView.load(QUrl(url))
+except:
+    pass
+
+center()
 ui.show()
 sys.exit(app.exec_())
