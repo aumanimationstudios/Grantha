@@ -320,20 +320,6 @@ class addWidget():
 
         self.ui.priceBox.setText('0.00')
 
-    # def loadImage(self):
-    #     # dialog = QtWidgets.QFileDialog()
-    #     # # dialog.setDirectory(self, "/crap/crap.server/")
-    #     # # my_dir = QtWidgets.QFileDialog.getExistingDirectory(self.ui,"Open a folder","/",QtWidgets.QFileDialog.ShowDirsOnly)
-    #     # fileName = dialog.getOpenFileName(self.ui, 'Open File', '/crap/crap.server/', '*.png *.jpg *.jpeg')
-    #     # debug.info(fileName)
-    #     # # directory = dialog.directoryEntered.connect()
-    #     # # debug.info(directory)
-    #     # self.ui.imageBox.clear()
-    #     # self.ui.imageBox.setText(fileName[0].strip())
-    #
-    #     fT = fileWidget()
-    #     # # fT.fileClicked.connect(self.fileClicked)
-    #     fT.show()
 
     def loadImage(self):
         self.widget = QWidget()
@@ -367,13 +353,6 @@ class addWidget():
         imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
         self.layout.addWidget(imageThumb)
 
-    # def imageWidgetClicked(self, path):
-    #     image_path = str(path)
-    #     debug.info(image_path)
-    #     debug.info("Image Clicked")
-    #     cmdFull = "feh \"" + image_path + "\" -Z -."
-    #     debug.info(cmdFull)
-    #     subprocess.Popen(cmdFull, shell=True)
 
     def captureImage(self):
         slNo = str((self.ui.serialNoBox.currentText()).strip())
@@ -437,12 +416,6 @@ class addWidget():
         messagebox = TimerMessageBox(1, plceMsg)
         messagebox.exec_()
 
-    # def openPlaceTagMessage(self):
-    #     self.plcMsg = QtWidgets.QMessageBox()
-    #     self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
-    #     self.plcMsg.setWindowTitle("Message")
-    #     self.plcMsg.setText("Place your Tag...")
-    #     self.plcMsg.show()
 
     def closePlaceTagMessage(self, tagId):
         try:
@@ -610,14 +583,9 @@ class addWidget():
         for key in userInput.keys():
             keys.append(key)
             values.append(userInput[key])
-        # debug.info(keys)
-        # debug.info(values)
-        # column = self.db.getColumns()
-        # theColumn = [x['COLUMN_NAME'] for x in column]
-        # debug.info(theColumn)
+
         queryAddItem = "INSERT INTO ITEMS (" + ','.join(keys) + ") VALUES %r" %(tuple(values),)
-        # debug.info(query)
-        # queryAddItem = "INSERT INTO ITEMS (" + ','.join(theColumn) + ") VALUES %r" %(tuple(values),)
+
         debug.info(queryAddItem)
         slNo = userInput["serial_no"]
         if slNo:
@@ -627,13 +595,7 @@ class addWidget():
             else:
                 queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no) VALUES (\"{0}\") ".format(slNo)
             debug.info(queryAddSlNo)
-            # self.addItem = self.db.insertItem(queryAddItem)
-            # self.db.insertSerialNo(queryAddSlNo)
-            # print self.addItem
-            # self.writeToTag = self.writeToRfidTag()
 
-            # addItem = self.db.insertItem(queryAddItem)
-            # addSlNo =self.db.insertSerialNo(queryAddSlNo)
             addSlNo = self.db.execute(queryAddSlNo)
             debug.info(addSlNo)
 
@@ -726,49 +688,10 @@ class addWidget():
         else:
             messageBox("<b>Update failed</b>","Select a serial number and proceed")
 
-    # def message(self,msg1, msg2=""):
-    #     msg = QtWidgets.QMessageBox()
-    #     msg.setIcon(QtWidgets.QMessageBox.Information)
-    #     msg.setWindowTitle("Message")
-    #     msg.setText(msg1+"\n"+msg2)
-    #     msg.exec_()
-
-    # def writeToRfidTag(self):
-    #     idText = self.ui.serialNoBox.text()
-    #     wT = writeThread(app, idText)
-    #     # wT.waiting.connect(self.openplaceTagMessage)
-    #     # wT.confirmation.connect(self.closePlaceTagMessage)
-    #     wT.start()
-
-    # def insertMessage(self):
-    #     insMsg = QtWidgets.QMessageBox()
-    #     insMsg.setIcon(QtWidgets.QMessageBox.Information)
-    #     insMsg.setWindowTitle("Message")
-    #     insMsg.setText(self.addItem )#+" \n"+ self.writeToTag)
-    #     insMsg.show()
-        # msg.resize(0,0)
-        # msg.about(msg,"Message", self.addItem)
-    # def openplaceTagMessage(self):
-    #     self.plcMsg = QtWidgets.QMessageBox()
-    #     # self.plcMsg.setStandardButtons(self, 0)
-    #     self.plcMsg.setIcon(QtWidgets.QMessageBox.Information)
-    #     self.plcMsg.setWindowTitle("Message")
-    #     self.plcMsg.setText("Place your Tag...")
-    #     self.plcMsg.show()
-    #
-    # def closePlaceTagMessage(self, msg):
-    #     # self.plcMsg.close()
-    #     # self.insertMessage()
-    #     self.plcMsg.setText(self.addItem + " \n"+ msg )
-    #     self.load()
 
     def closeEvent(self):
         self.ui.close()
 
-    # def okMessage(self):
-    #     msgBox = QtWidgets.QMessageBox()
-    #     msgBox.resize(0,0)
-    #     msgBox.about(msgBox,"Confirmation","Item Added. \nSl.No: "+ self.ui.serialNoBox.text())
 
 
 class readThread(QThread):
@@ -857,40 +780,6 @@ class ImageWidget(QtWidgets.QPushButton):
     return(self.picture.size())
 
 
-# class writeThread(QtCore.QThread):
-#     # initiateWrite = QtCore.pyqtSignal()
-#     # inputForWrite = QtCore.pyqtSignal()
-#     waiting = QtCore.pyqtSignal()
-#     confirmation = QtCore.pyqtSignal(str)
-#
-#     def __init__(self, parent, idText):
-#         super(writeThread, self).__init__(parent)
-#         self.idText = idText
-#     def run(self):
-#         self.waiting.emit()
-#
-#         self.context = zmq.Context()
-#         debug.info("connecting to rfidScanServer...")
-#         self.socket = self.context.socket(zmq.REQ)
-#         self.socket.connect("tcp://192.168.1.183:4689")
-#
-#         self.socket.send("WRITE")
-#
-#         msgFrmServ = self.socket.recv()
-#
-#         if (msgFrmServ == "INPUT"):
-#             text = str(self.idText)
-#             self.socket.send(text)
-#
-#             msgFrmServ = self.socket.recv()
-#             debug.info (msgFrmServ)
-#             self.confirmation.emit(msgFrmServ)
-#             # return msgFrmServ
-        # print "Message from Server :" + msgFrmServ
-        # self.socket.close()
-
-    # def closeEvent(self):
-    #     self.ui.close()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

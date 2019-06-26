@@ -6,8 +6,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0ed56c35-0bc2-4eda-890a-b5c35c40d196" name="Default" comment="minor bug fixes">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GUI/Grantha.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUI/Grantha.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/GUI/Manage_Items.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUI/Manage_Items.py" afterDir="false" />
     </list>
     <list id="a234ab25-d846-4e7d-8ad9-e07ab2996347" name="Revert &quot;fu&quot;" comment="Revert &quot;beginners file&quot;&#10;&#10;This reverts commit 673f822" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -88,7 +88,7 @@
         <counts>
           <entry key="Python Console" value="610" />
           <entry key="dummy" value="42" />
-          <entry key="gitignore" value="5" />
+          <entry key="gitignore" value="10" />
           <entry key="html" value="147" />
           <entry key="json" value="14" />
           <entry key="md" value="107" />
@@ -105,7 +105,7 @@
           <entry key="HTML" value="147" />
           <entry key="JSON" value="14" />
           <entry key="Markdown" value="107" />
-          <entry key="PLAIN_TEXT" value="1711" />
+          <entry key="PLAIN_TEXT" value="1716" />
           <entry key="Python" value="62558" />
           <entry key="PythonStub" value="1" />
           <entry key="RegExp" value="1" />
@@ -170,11 +170,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/GUI/Grantha.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="241">
-              <caret line="716" lean-forward="true" selection-start-line="716" selection-end-line="716" />
+            <state relative-caret-position="255">
+              <caret line="724" lean-forward="true" selection-start-line="724" selection-end-line="724" />
               <folding>
                 <element signature="e#137#146#0" expanded="true" />
                 <marker date="1561540709150" expanded="true" signature="21118:21123" ph="..." />
@@ -194,18 +194,17 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GUI/Manage_Items.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
+            <state relative-caret-position="391">
+              <caret line="788" lean-forward="true" selection-start-line="788" selection-end-line="788" />
               <folding>
                 <element signature="e#44#53#0" expanded="true" />
-                <marker date="1561027714133" expanded="true" signature="12180:12191" ph="..." />
-                <marker date="1561027714133" expanded="true" signature="12920:12929" ph="..." />
-                <marker date="1561027714133" expanded="true" signature="13614:13623" ph="..." />
-                <marker date="1561027714133" expanded="true" signature="13789:13813" ph="..." />
-                <marker date="1561027714133" expanded="true" signature="14936:15145" ph="..." />
+                <marker date="1561548024232" expanded="true" signature="12211:12220" ph="..." />
+                <marker date="1561548024232" expanded="true" signature="12905:12914" ph="..." />
+                <marker date="1561548024232" expanded="true" signature="13080:13104" ph="..." />
+                <marker date="1561548024232" expanded="true" signature="13948:14157" ph="..." />
               </folding>
             </state>
           </provider>
@@ -398,13 +397,13 @@
         <option value="$PROJECT_DIR$/GUI/Utils_Gui.py" />
         <option value="$PROJECT_DIR$/GUI/Pi_Camera_Preview.py" />
         <option value="$PROJECT_DIR$/Test/wacomDriver.py" />
-        <option value="$PROJECT_DIR$/GUI/Manage_Items.py" />
         <option value="$PROJECT_DIR$/GUI/Rfid_Tools.py" />
         <option value="$USER_HOME$/hello.py" />
         <option value="$USER_HOME$/imageDownloads/hello.py" />
         <option value="$PROJECT_DIR$/GUI/dbGrantha.py" />
-        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/GUI/Grantha.py" />
+        <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/GUI/Manage_Items.py" />
       </list>
     </option>
   </component>
@@ -464,7 +463,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
-    <property name="last_opened_file_path" value="/opt/dev-ops" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Test" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -1043,7 +1042,7 @@
     <frame x="-1" y="0" width="1922" height="1050" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49936467" visible="true" weight="0.1748401" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49936467" visible="true" weight="0.1748401" />
       <window_info id="Structure" order="1" weight="0.24973656" />
       <window_info id="Favorites" order="2" sideWeight="0.5006353" side_tool="true" weight="0.14488935" />
       <window_info id="DB Browser" order="3" weight="0.32982087" />
@@ -1058,7 +1057,7 @@
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.7206823" side_tool="true" weight="0.22318527" />
       <window_info anchor="bottom" id="Python Console" order="9" sideWeight="0.3382508" weight="0.33586133" />
       <window_info anchor="bottom" id="DB Execution Console" order="10" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4339019" side_tool="true" visible="true" weight="0.27302274" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4339019" side_tool="true" visible="true" weight="0.28277355" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -1471,30 +1470,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/GUI/Manage_Items.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
-          <folding>
-            <element signature="e#44#53#0" expanded="true" />
-            <marker date="1561027714133" expanded="true" signature="12180:12191" ph="..." />
-            <marker date="1561027714133" expanded="true" signature="12920:12929" ph="..." />
-            <marker date="1561027714133" expanded="true" signature="13614:13623" ph="..." />
-            <marker date="1561027714133" expanded="true" signature="13789:13813" ph="..." />
-            <marker date="1561027714133" expanded="true" signature="14936:15145" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/GUI/Grantha.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="716" lean-forward="true" selection-start-line="716" selection-end-line="716" />
+        <state relative-caret-position="255">
+          <caret line="724" lean-forward="true" selection-start-line="724" selection-end-line="724" />
           <folding>
             <element signature="e#137#146#0" expanded="true" />
             <marker date="1561540709150" expanded="true" signature="21118:21123" ph="..." />
             <marker date="1561540709150" expanded="true" signature="21388:21393" ph="..." />
             <marker date="1561540709150" expanded="true" signature="21539:21544" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GUI/Manage_Items.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="788" lean-forward="true" selection-start-line="788" selection-end-line="788" />
+          <folding>
+            <element signature="e#44#53#0" expanded="true" />
+            <marker date="1561548024232" expanded="true" signature="12211:12220" ph="..." />
+            <marker date="1561548024232" expanded="true" signature="12905:12914" ph="..." />
+            <marker date="1561548024232" expanded="true" signature="13080:13104" ph="..." />
+            <marker date="1561548024232" expanded="true" signature="13948:14157" ph="..." />
           </folding>
         </state>
       </provider>
