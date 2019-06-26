@@ -1,26 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/GUI/Grantha.py" line="468" />
+    <bookmark url="file://$PROJECT_DIR$/GUI/Grantha.py" line="398" />
     <bookmark url="file://$PROJECT_DIR$/Test/imageInTable.py" line="74" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0ed56c35-0bc2-4eda-890a-b5c35c40d196" name="Default" comment="minor bug fixes">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_no_data_01-11-2018.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_no_data_05-11-2018.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_no_data_06-10-2018.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_no_data_08-12-2018.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_no_data_11-06-2019.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_no_data_19-04-2019.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_no_data_23-02-2019.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_with_data_01-11-2018.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_with_data_05-11-2018.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_with_data_06-10-2018.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_with_data_08-12-2018.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_with_data_11-06-2019.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_with_data_19-04-2019.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grantha-DB-Backup/Grantha_with_data_23-02-2019.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GUI/Grantha.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUI/Grantha.py" afterDir="false" />
     </list>
     <list id="a234ab25-d846-4e7d-8ad9-e07ab2996347" name="Revert &quot;fu&quot;" comment="Revert &quot;beginners file&quot;&#10;&#10;This reverts commit 673f822" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -105,7 +92,7 @@
           <entry key="html" value="147" />
           <entry key="json" value="14" />
           <entry key="md" value="107" />
-          <entry key="py" value="62509" />
+          <entry key="py" value="62512" />
           <entry key="pyi" value="1" />
           <entry key="qss" value="215" />
           <entry key="sh" value="565" />
@@ -119,7 +106,7 @@
           <entry key="JSON" value="14" />
           <entry key="Markdown" value="107" />
           <entry key="PLAIN_TEXT" value="1711" />
-          <entry key="Python" value="62555" />
+          <entry key="Python" value="62558" />
           <entry key="PythonStub" value="1" />
           <entry key="RegExp" value="1" />
           <entry key="Scratch" value="603" />
@@ -183,26 +170,26 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GUI/Grantha.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="57">
-              <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+            <state relative-caret-position="241">
+              <caret line="716" lean-forward="true" selection-start-line="716" selection-end-line="716" />
               <folding>
                 <element signature="e#137#146#0" expanded="true" />
-                <marker date="1561376065053" expanded="true" signature="27571:27576" ph="..." />
-                <marker date="1561376065053" expanded="true" signature="27841:27846" ph="..." />
-                <marker date="1561376065053" expanded="true" signature="27992:27997" ph="..." />
+                <marker date="1561540709150" expanded="true" signature="21118:21123" ph="..." />
+                <marker date="1561540709150" expanded="true" signature="21388:21393" ph="..." />
+                <marker date="1561540709150" expanded="true" signature="21539:21544" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="5" selection-start-column="5" selection-end-column="5" />
+            <state relative-caret-position="17">
+              <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
@@ -210,8 +197,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/GUI/Manage_Items.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="7259">
-              <caret line="427" lean-forward="true" selection-start-line="427" selection-end-line="427" />
+            <state relative-caret-position="34">
+              <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
               <folding>
                 <element signature="e#44#53#0" expanded="true" />
                 <marker date="1561027714133" expanded="true" signature="12180:12191" ph="..." />
@@ -416,8 +403,8 @@
         <option value="$USER_HOME$/hello.py" />
         <option value="$USER_HOME$/imageDownloads/hello.py" />
         <option value="$PROJECT_DIR$/GUI/dbGrantha.py" />
-        <option value="$PROJECT_DIR$/GUI/Grantha.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/GUI/Grantha.py" />
       </list>
     </option>
   </component>
@@ -468,11 +455,6 @@
               <item name="Grantha" type="b2602c69:ProjectViewProjectNode" />
               <item name="Grantha" type="462c0819:PsiDirectoryNode" />
               <item name="RPI_FILES" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Grantha" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Grantha" type="462c0819:PsiDirectoryNode" />
-              <item name="Test" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -1076,7 +1058,7 @@
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.7206823" side_tool="true" weight="0.22318527" />
       <window_info anchor="bottom" id="Python Console" order="9" sideWeight="0.3382508" weight="0.33586133" />
       <window_info anchor="bottom" id="DB Execution Console" order="10" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4339019" side_tool="true" visible="true" weight="0.25027084" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4339019" side_tool="true" visible="true" weight="0.27302274" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -1479,10 +1461,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/.directory">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/GUI/Manage_Items.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7259">
-          <caret line="427" lean-forward="true" selection-start-line="427" selection-end-line="427" />
+        <state relative-caret-position="34">
+          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
           <folding>
             <element signature="e#44#53#0" expanded="true" />
             <marker date="1561027714133" expanded="true" signature="12180:12191" ph="..." />
@@ -1496,24 +1488,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/GUI/Grantha.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="57">
-          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+        <state relative-caret-position="241">
+          <caret line="716" lean-forward="true" selection-start-line="716" selection-end-line="716" />
           <folding>
             <element signature="e#137#146#0" expanded="true" />
-            <marker date="1561376065053" expanded="true" signature="27571:27576" ph="..." />
-            <marker date="1561376065053" expanded="true" signature="27841:27846" ph="..." />
-            <marker date="1561376065053" expanded="true" signature="27992:27997" ph="..." />
+            <marker date="1561540709150" expanded="true" signature="21118:21123" ph="..." />
+            <marker date="1561540709150" expanded="true" signature="21388:21393" ph="..." />
+            <marker date="1561540709150" expanded="true" signature="21539:21544" ph="..." />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.directory">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="5" selection-start-column="5" selection-end-column="5" />
         </state>
       </provider>
     </entry>
