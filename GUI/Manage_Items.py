@@ -96,7 +96,7 @@ class addWidget():
         self.ui.userCheckBox.clicked.connect(self.enableUserBox)
 
         self.ui.captureButton.clicked.connect(self.captureImage)
-        self.ui.loadButton.clicked.connect(self.loadFile)
+        self.ui.loadButton.clicked.connect(self.loadImage)
         self.ui.serialNoBox.currentIndexChanged.connect(self.loadDetails)
         self.ui.generateButton.clicked.connect(self.slNoGen)
         self.ui.readButton.clicked.connect(self.readFromRfidTag)
@@ -320,7 +320,7 @@ class addWidget():
 
         self.ui.priceBox.setText('0.00')
 
-    # def loadFile(self):
+    # def loadImage(self):
     #     # dialog = QtWidgets.QFileDialog()
     #     # # dialog.setDirectory(self, "/crap/crap.server/")
     #     # # my_dir = QtWidgets.QFileDialog.getExistingDirectory(self.ui,"Open a folder","/",QtWidgets.QFileDialog.ShowDirsOnly)
@@ -335,7 +335,7 @@ class addWidget():
     #     # # fT.fileClicked.connect(self.fileClicked)
     #     fT.show()
 
-    def loadFile(self):
+    def loadImage(self):
         self.widget = QWidget()
         hLay = QHBoxLayout()
         self.widget.setLayout(hLay)

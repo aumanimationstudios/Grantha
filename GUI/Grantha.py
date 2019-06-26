@@ -232,7 +232,7 @@ class mainWindow():
         for row in range(numRows):
             path = str(self.ui.tableWidget.item(row, 10).text())
             if path:
-                debug.info(path)
+                # debug.info(path)
                 self.ui.tableWidget.takeItem(row, 10)
                 imageThumb = ImageWidget(path, 32)
                 imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
@@ -329,7 +329,7 @@ class mainWindow():
         for row in range(numRows):
             path = str(self.ui.tableWidget.item(row, 10).text())
             if path:
-                debug.info(path)
+                # debug.info(path)
                 self.ui.tableWidget.takeItem(row, 10)
                 imageThumb = ImageWidget(path, 32)
                 imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
@@ -685,7 +685,7 @@ class mainWindow():
                 numRow = self.rfidMultiCount -1
                 path = str(self.ui.tableWidget.item(numRow, 10).text())
                 if path:
-                    debug.info(path)
+                    # debug.info(path)
                     self.ui.tableWidget.takeItem(numRow, 10)
                     imageThumb = ImageWidget(path, 32)
                     imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))

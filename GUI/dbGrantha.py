@@ -12,10 +12,11 @@ conf = open("/etc/grantha/grantha.conf","r")
 confDict = yaml.safe_load(conf)
 
 host = confDict["host"]
-user = confDict["user"]
-password = confDict["password"]
+# user = confDict["user"]
+# password = confDict["password"]
 database = confDict["database"]
-
+debug.info(host)
+debug.info(database)
 class dbGrantha:
 
     def __init__(self):
@@ -27,14 +28,14 @@ class dbGrantha:
     def disconnect(self):
         try:
             self.__conn.close()
+            debug.info("Database connection closed")
         except:
             debug.info(str(sys.exc_info()))
-        debug.info("Database connection closed")
 
     def _connInventory(self):
         while(1):
             try:
-                conn = MySQLdb.connect(host,user,password,database)
+                conn = MySQLdb.connect(host=host,db=database)
                 conn.autocommit(1)
                 debug.info("Database connected")
                 return(conn)

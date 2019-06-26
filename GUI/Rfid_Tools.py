@@ -172,7 +172,15 @@ class addWidget():
         for i in range(0, 8):
             randomHex = randomHex + str(random.choice("0123456789ABCDEF"))
         debug.info(randomHex)
-        self.ui.randomHexBox.setText(randomHex)
+
+        getTagId = "SELECT id FROM TAG_ID"
+        tagIdList = self.db.execute(getTagId, dictionary=True)
+        TIL = [x['id'] for x in tagIdList]
+
+        if randomHex in TIL:
+            self.randomHexGen()
+        else:
+            self.ui.randomHexBox.setText(randomHex)
 
 
     def writeToRfidTag(self):
