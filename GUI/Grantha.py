@@ -1,7 +1,10 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2
 # *-* coding: utf-8 *-*
+__author__ = "Sanath Shetty K"
+__license__ = "GPL"
+__email__ = "sanathshetty111@gmail.com"
 
-### rfidUhfServer Script Should be running in machine connected to RFID Reader Module ###
+### rfidUhfServer Script Should be running in machine connected to RFID Reader Module to use rfid options###
 
 import os
 import sys
@@ -170,7 +173,7 @@ class mainWindow():
 
 
     def allBtnClick(self):
-        # self.ui.tableWidget.setSortingEnabled(False)
+        self.ui.tableWidget.setSortingEnabled(False)
         # self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.setRowCount(0)
 
@@ -197,20 +200,26 @@ class mainWindow():
             row +=1
 
         numRows = self.ui.tableWidget.rowCount()
+        paths = {}
         for row in range(numRows):
             path = str(self.ui.tableWidget.item(row, 10).text())
-            if path:
-                # debug.info(path)
-                self.ui.tableWidget.takeItem(row, 10)
-                imageThumb = ImageWidget(path, 32)
-                imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-                self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+            paths[row]=path
 
+        if paths:
+            for x in paths.keys():
+                if paths[x]:
+                    # debug.info(paths[x])
+                    self.ui.tableWidget.takeItem(x, 10)
+                    imageThumb = ImageWidget(paths[x], 32)
+                    imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                    self.ui.tableWidget.setCellWidget(x, 10, imageThumb)
+                else:
+                    pass
         # self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.resizeRowsToContents()
         self.ui.tableWidget.resizeColumnsToContents()
         debug.info( "Loaded list of all items.")
-        # self.ui.tableWidget.setSortingEnabled(True)
+        self.ui.tableWidget.setSortingEnabled(True)
 
 
     def search(self):
