@@ -327,12 +327,12 @@ class addWidget():
         self.widget.setLayout(hLay)
         treeView = QTreeView()
         hLay.addWidget(treeView)
-        rootDir = "/crap/crap.server/Sanath_Shetty/piCameraCaptures/"
+        imageDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
         self.dirModel = QFileSystemModel()
-        self.dirModel.setRootPath(rootDir)
+        self.dirModel.setRootPath(imageDir)
         self.dirModel.setFilter(QDir.NoDotAndDotDot | QDir.Files)
         treeView.setModel(self.dirModel)
-        treeView.setRootIndex(self.dirModel.index(rootDir))
+        treeView.setRootIndex(self.dirModel.index(imageDir))
         treeView.hideColumn(1)
         treeView.hideColumn(2)
         treeView.hideColumn(3)
