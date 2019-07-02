@@ -18,7 +18,7 @@ import signal
 import subprocess
 
 threads = []
-
+user = os.environ['USER']
 
 def GranthaServer(granthaQueue, socketQueue):
     """
@@ -389,6 +389,7 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 if __name__ =="__main__":
     setproctitle.setproctitle("RFID_UHF_SERVER")
 
+if user=="root":
     GranthaQ = Queue()
     SocketQ = Queue()
     GS = Process(target=GranthaServer, args=(GranthaQ,SocketQ,))
@@ -398,4 +399,7 @@ if __name__ =="__main__":
 
     GS.join()
     SS.join()
+else:
+    debug.info("No Permission, Run as Root")
+    exit(0)
 
