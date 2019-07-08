@@ -211,7 +211,7 @@ class mainWindow():
                     # debug.info(paths[x])
                     self.ui.tableWidget.takeItem(x, 10)
                     imageThumb = ImageWidget(paths[x], 32)
-                    imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                    imageThumb.clicked.connect(lambda x, imagePath=paths[x]: imageWidgetClicked(imagePath))
                     self.ui.tableWidget.setCellWidget(x, 10, imageThumb)
                 else:
                     pass
