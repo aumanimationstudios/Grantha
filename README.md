@@ -10,8 +10,4 @@ Simple Inventory Management tool
 * `mysql`
 * `mysql-python`
 * `yaml`
-
-#### Optional
-
-* `feh` image viewer
 * `setproctitle`
