@@ -389,17 +389,18 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 if __name__ =="__main__":
     setproctitle.setproctitle("RFID_UHF_SERVER")
 
-if user=="root":
-    GranthaQ = Queue()
-    SocketQ = Queue()
-    GS = Process(target=GranthaServer, args=(GranthaQ,SocketQ,))
-    SS = Process(target=SocketServer, args=(GranthaQ,SocketQ,))
-    GS.start()
-    SS.start()
+    if user=="root":
+        time.sleep(60)
+        GranthaQ = Queue()
+        SocketQ = Queue()
+        GS = Process(target=GranthaServer, args=(GranthaQ,SocketQ,))
+        SS = Process(target=SocketServer, args=(GranthaQ,SocketQ,))
+        GS.start()
+        SS.start()
 
-    GS.join()
-    SS.join()
-else:
-    debug.info("No Permission, Run as Root")
-    exit(0)
+        GS.join()
+        SS.join()
+    else:
+        debug.info("No Permission, Run as Root")
+        exit(0)
 
