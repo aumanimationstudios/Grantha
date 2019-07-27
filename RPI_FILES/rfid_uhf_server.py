@@ -80,7 +80,7 @@ def GranthaServer(granthaQueue, socketQueue):
             except:
                 debug.info(str(sys.exc_info()))
             # Run Rpi Camera Previewing script
-            subprocess.Popen(["python3", "rpi_camera_live.py"])
+            subprocess.Popen(["python3", "/home/pi/Grantha/RPI_FILES/rpi_camera_live.py"])
             sock.send("Previewing")
 
         if (msgFrmCli[0] == "CAPTURE"):
@@ -91,7 +91,7 @@ def GranthaServer(granthaQueue, socketQueue):
 
             debug.info(msgFrmCli[1])
             # Run Camera Script
-            cam = subprocess.Popen(["python3", "camera.py", msgFrmCli[1]],stdout=subprocess.PIPE)
+            cam = subprocess.Popen(["python3", "/home/pi/Grantha/RPI_FILES/camera.py", msgFrmCli[1]],stdout=subprocess.PIPE)
             for line in iter(cam.stdout.readline,''):
                 debug.info(line)
             sock.send("Captured")

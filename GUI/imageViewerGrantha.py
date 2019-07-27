@@ -56,6 +56,10 @@ class QtImageViewer(QGraphicsView):
     def __init__(self):
         QGraphicsView.__init__(self)
 
+        self.setRenderHint(QtGui.QPainter.Antialiasing)
+        self.setRenderHint(QtGui.QPainter.TextAntialiasing)
+        self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        self.setRenderHint(QtGui.QPainter.HighQualityAntialiasing)
         # Image is displayed as a QPixmap in a QGraphicsScene attached to this QGraphicsView.
         self.scene = QGraphicsScene()
         self.setScene(self.scene)
@@ -184,10 +188,6 @@ class QtImageViewer(QGraphicsView):
                 self.scene.setSelectionArea(QPainterPath())  # Clear current selection area.
                 if selectionBBox.isValid() and (selectionBBox != viewBBox):
                     self.zoomStack.append(selectionBBox)
-                    # debug.info(self.zoomStack)
-                    # a = self.zoomStack[-1]
-                    # debug.info(a)
-                    # debug.info(a.getCoords())
                     self.updateViewer()
             self.setDragMode(QGraphicsView.NoDrag)
             self.rightMouseButtonReleased.emit(scenePos.x(), scenePos.y())

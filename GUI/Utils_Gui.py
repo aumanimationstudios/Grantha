@@ -19,13 +19,13 @@ def imageWidgetClicked(path):
     :return:
     """
     image_path = str(path)
-    # debug.info(image_path)
+    debug.info(image_path)
     # debug.info("Image Clicked")
     # cmdFull = "feh \"" + image_path + "\" -Z -."
     # cmdFull = "python imageViewerGrantha.py " + image_path
-    debug.info(image_path)
     # debug.info(cmdFull)
     # subprocess.Popen(cmdFull, shell=True)
+
     subprocess.Popen(["python", "imageViewerGrantha.py", image_path])
 
 def messageBox(msg1, msg2="", path=""):
