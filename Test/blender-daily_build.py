@@ -20,9 +20,9 @@ untaredFolder = None
 optDir = "/opt/blender-daily_build/"
 # optDir = "/opt/blender-daily_build/"
 
-for link in soup.findAll('a', attrs={'href': re.compile("(?=.*2.82)(?=.*linux-glibc217-x86_64.tar.bz2)")}):
+for link in soup.findAll('a', attrs={'href': re.compile("(?=.*2.82)(?=.*linux-glibc217-x86_64.tar.xz)")}):
     fileName = link.get('href').replace("/download/","")
-    untaredFolder = fileName.replace(".tar.bz2","")
+    untaredFolder = fileName.replace(".tar.xz","")
     downloadLink = ("https://builder.blender.org"+link.get('href'))
     print (downloadLink)
     print(fileName)
