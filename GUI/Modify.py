@@ -8,12 +8,12 @@ import dbGrantha
 import debug
 
 filePath = os.path.abspath(__file__)
-progPath = os.sep.join(filePath.split(os.sep)[:-2])
-uiFilePath = os.path.join(progPath,"GUI", "uiFiles")
-imgFilePath = os.path.join(progPath, "GUI","imageFiles")
+projDir = os.sep.join(filePath.split(os.sep)[:-2])
+uiDir = os.path.join(projDir,"GUI", "uiFiles")
+imageDir = os.path.join(projDir, "GUI","imageFiles")
 
-sys.path.append(uiFilePath)
-sys.path.append(imgFilePath)
+sys.path.append(uiDir)
+sys.path.append(imageDir)
 
 class modifyWidget():
     db = dbGrantha.dbGrantha()
@@ -28,7 +28,7 @@ class modifyWidget():
 
 
     def __init__(self):
-        self.ui = uic.loadUi(os.path.join(uiFilePath, 'Modify.ui'))
+        self.ui = uic.loadUi(os.path.join(uiDir, 'Modify.ui'))
 
         # self.db = database.DataBase()
 
@@ -40,7 +40,7 @@ class modifyWidget():
 
 
         self.ui.setWindowTitle('Modify Parent Location')
-        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
+        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
 
         self.ui.show()
         self.ui.cancelButton.clicked.connect(self.ui.close)

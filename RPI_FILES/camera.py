@@ -31,7 +31,7 @@ try:
     debug.info(i)
     camera.capture('/home/pi/Pictures/%s.jpg' %i)
 
-    os.system("rsync -av /home/pi/Pictures/%s.jpg bluepixels@blue0030:/blueprod/STOR2/stor2/grantha/share/pics/" %i)
+    os.system("rsync -av /home/pi/Pictures/%s.jpg bluepixels@blue0030:/blueprod/STOR2/stor2/grantha/share/temp/" %i)
 
 except:
     debug.info(str(sys.exc_info()))

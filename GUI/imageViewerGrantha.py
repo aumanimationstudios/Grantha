@@ -27,7 +27,8 @@ imgFilePath = os.path.join(progPath, "GUI","imageFiles")
 sys.path.append(imgFilePath)
 
 parser = argparse.ArgumentParser(description="Utility to view images")
-parser.add_argument('path', metavar='N', type=str, help='Path to image file')
+# parser.add_argument('path', metavar='N', type=str, help='Path to image file')
+parser.add_argument("-p","--path",dest="path",help="Absolute path of the image")
 args = parser.parse_args()
 
 

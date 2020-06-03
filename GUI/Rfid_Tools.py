@@ -11,12 +11,12 @@ import zmq
 import debug
 
 filePath = os.path.abspath(__file__)
-progPath = os.sep.join(filePath.split(os.sep)[:-2])
-uiFilePath = os.path.join(progPath,"GUI","uiFiles")
-imgFilePath = os.path.join(progPath, "GUI","imageFiles")
+projDir = os.sep.join(filePath.split(os.sep)[:-2])
+uiDir = os.path.join(projDir,"GUI","uiFiles")
+imageDir = os.path.join(projDir, "GUI","imageFiles")
 
-sys.path.append(uiFilePath)
-sys.path.append(imgFilePath)
+sys.path.append(uiDir)
+sys.path.append(imageDir)
 
 context = zmq.Context()
 
@@ -28,7 +28,7 @@ class addWidget():
 
 
     def __init__(self):
-        self.ui = uic.loadUi(os.path.join(uiFilePath, 'Rfid_Tools.ui'))
+        self.ui = uic.loadUi(os.path.join(uiDir, 'Rfid_Tools.ui'))
         # self.db = database.DataBase()
         self.ui.readButton.clicked.connect(self.readFromRfidTag)
         self.ui.randomHexButton.clicked.connect(self.randomHexGen)
@@ -39,7 +39,7 @@ class addWidget():
 
 
         self.ui.setWindowTitle('Rfid Tools')
-        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
+        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
         self.ui.show()
 
 

@@ -9,6 +9,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QProcess, QThread, pyqtSignal, Qt
 import zmq
 import database
+import dbGrantha
 
 
 filePath = os.path.abspath(__file__)
@@ -129,9 +130,10 @@ app = QApplication(sys.argv)
 ui = uic.loadUi(os.path.join(uiFilePath, "Find_Tag.ui"))
 ui.show()
 
-db = database.DataBase()
+# db = database.DataBase()
+db = dbGrantha.dbGrantha()
 
-sn = db.listOfSerialNo()
+sn = db.execute("SELECT * FROM SERIAL_NO", dictionary=True)
 SN = [x['serial_no'] for x in sn]
 ui.comboBox.addItems(SN)
 

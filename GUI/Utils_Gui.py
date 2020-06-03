@@ -6,8 +6,9 @@ import debug
 import subprocess
 import os
 
-# filePath = os.path.abspath(__file__)
-# progPath = os.sep.join(filePath.split(os.sep)[:-2])
+filePath = os.path.abspath(__file__)
+# currDir = os.sep.join(filePath.split(os.sep)[:-1])
+progPath = os.sep.join(filePath.split(os.sep)[:-2])
 # uiFilePath = os.path.join(progPath,"GUI","uiFiles")
 # imgFilePath = os.path.join(progPath, "GUI","imageFiles")
 
@@ -25,8 +26,10 @@ def imageWidgetClicked(path):
     # cmdFull = "python imageViewerGrantha.py " + image_path
     # debug.info(cmdFull)
     # subprocess.Popen(cmdFull, shell=True)
-
-    subprocess.Popen(["python", "imageViewerGrantha.py", image_path])
+    # cmd = "python " + os.path.join(projDir, "src", "batch_rename.py") + " --path " + path + " --asset " + selectedFiles[0]
+    cmd = "python " + os.path.join(progPath, "GUI", "imageViewerGrantha.py")+" --path "+ image_path
+    debug.info(cmd)
+    subprocess.Popen(cmd, shell=True)
 
 def messageBox(msg1, msg2="", path=""):
     """

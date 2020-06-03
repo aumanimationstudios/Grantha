@@ -22,31 +22,37 @@ import setproctitle
 import tempfile
 
 filePath = os.path.abspath(__file__)
-progPath = os.sep.join(filePath.split(os.sep)[:-2])
-uiFilePath = os.path.join(progPath,"GUI","uiFiles")
-imgFilePath = os.path.join(progPath, "GUI","imageFiles")
+# debug.info(filePath)
+projDir = os.sep.join(filePath.split(os.sep)[:-2])
+uiDir = os.path.join(projDir,"GUI","uiFiles")
+imageDir = os.path.join(projDir, "GUI","imageFiles")
+fileDir = os.path.join(projDir, "GUI")
 
-sys.path.append(uiFilePath)
-sys.path.append(imgFilePath)
+sys.path.append(uiDir)
+sys.path.append(imageDir)
+sys.path.append(fileDir)
 
-Manage_Items = "Manage_Items.py"
-Rfid_Tools = "Rfid_Tools.py"
+# Path of side panel button scripts
+Manage_Items = os.path.join(fileDir, "Manage_Items.py")
+Rfid_Tools = os.path.join(fileDir, "Rfid_Tools.py")
 # Update = "Update.py"
 # Update_Tag = "Update_Tag.py"
-Modify = "Modify.py"
-Log = "Log.py"
-Find_Tag = "Find_Tag.py"
+Modify = os.path.join(fileDir, "Modify.py")
+Log = os.path.join(fileDir, "Log.py")
+Find_Tag = os.path.join(fileDir, "Find_Tag.py")
 
 user = os.environ['USER']
 context = zmq.Context()
 processes = []
-tempDir = tempfile.gettempdir()
+# tempDir = tempfile.gettempdir()
 
 class mainWindow():
     global processes
 
+    # Database query execution function
     db = dbGrantha.dbGrantha()
 
+    # List Authorized users to access modify functions
     getAuthUsers = "SELECT * FROM AUTH_USERS"
     aU = db.execute(getAuthUsers,dictionary=True)
     authUsers = [x['auth_users'] for x in aU]
@@ -74,7 +80,7 @@ class mainWindow():
         # super(myWindow, self).__init__()
         self.rfidMultiCount = 0
         self.rfidMultiUniqSlno = {}
-        self.ui = uic.loadUi(os.path.join(uiFilePath, 'Grantha.ui'))
+        self.ui = uic.loadUi(os.path.join(uiDir, 'Grantha.ui'))
 
         self.ui.allButton.pressed.connect(self.allBtnClick)
         self.ui.serialNoButton.pressed.connect(self.slNoBtnClick)
@@ -98,7 +104,7 @@ class mainWindow():
             self.ui.stopReadButton.clicked.connect(self.stopRead)
 
         self.ui.setWindowTitle('GRANTHA')
-        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
+        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
 
         self.ui.tableWidget.customContextMenuRequested.connect(self.viewParentPopUp)
 
@@ -381,12 +387,14 @@ class mainWindow():
         p.start(sys.executable, Modify.split())
 
     def log(self):
-        p = QProcess(parent=self.ui)
-        p.start(sys.executable, Log.split())
+        pass
+        # p = QProcess(parent=self.ui)
+        # p.start(sys.executable, Log.split())
 
     def findTag(self,process):
-        p = QProcess(parent=self.ui)
-        p.start(sys.executable, Find_Tag.split())
+        pass
+        # p = QProcess(parent=self.ui)
+        # p.start(sys.executable, Find_Tag.split())
 
     def read_out(self):
         if processes:
@@ -471,7 +479,7 @@ class mainWindow():
             self.ui.readMultiButton.setEnabled(True)
 
         else:
-            messageBox("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>","",os.path.join(imgFilePath,"oh.png"))
+            messageBox("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>","",os.path.join(imageDir,"oh.png"))
             self.ui.readSingleButton.setEnabled(True)
             self.ui.readMultiButton.setEnabled(True)
             # self.wrongTagMessage()

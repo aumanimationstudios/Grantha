@@ -5,6 +5,8 @@ import os
 import sys
 from PyQt5 import QtGui,QtWidgets,QtCore,uic
 import database
+import debug
+import dbGrantha
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -14,11 +16,13 @@ imgFilePath = os.path.join(progPath, "GUI","imageFiles")
 sys.path.append(uiFilePath)
 sys.path.append(imgFilePath)
 
+db = dbGrantha.dbGrantha()
+
 class logWidget():
     def __init__(self):
         self.ui = uic.loadUi(os.path.join(uiFilePath, 'Log.ui'))
 
-        self.db = database.DataBase()
+        # self.db = database.DataBase()
 
         self.load()
 
@@ -31,34 +35,53 @@ class logWidget():
         self.ui.show()
 
     def load(self):
-        sn = self.db.listOfSerialNo()
+        # sn = self.db.listOfSerialNo()
+        sn = db.execute("SELECT * FROM SERIAL_NO", dictionary=True)
+        debug.info(sn)
         self.SN = [x['serial_no'] for x in sn]
         self.ui.serialNoBox.clear()
         self.ui.serialNoBox.addItems(self.SN)
 
     def allLog(self):
         self.ui.tableWidget.clearContents()
-        column = self.db.getColumnsOfLog()
+        self.ui.tableWidget.setRowCount(0)
+        # column = self.db.getColumnsOfLog()
+        column = db.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'UPDATE_LOG' \
+                            AND COLUMN_NAME NOT IN ('no')", dictionary=True)
         self.theColumn = [x['COLUMN_NAME'] for x in column]
+        debug.info(self.theColumn)
         self.ui.tableWidget.setColumnCount(len(self.theColumn))
         self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
         self.query = "SELECT " + ','.join(self.theColumn) + " FROM UPDATE_LOG"
-        rows = self.db.getRowsOfLog(self.query)
+        rows = db.execute(self.query,dictionary=True)
         self.ui.tableWidget.setRowCount(len(rows))
 
+        # row = 0
+        # db.execute(self.query,dictionary=True)
+        # while True:
+        #     primaryResult = db.execute(self.query,dictionary=True)
+        #     debug.info(primaryResult)
+        #     if (not primaryResult):
+        #         break
+        #     col = 0
+        #     for n in self.theColumn:
+        #         result = primaryResult[n]
+        #         self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
+        #         col +=1
+        #     row +=1
+
         row = 0
-        self.db.getValuesOfLog(self.query,init=True)
         while True:
-            primaryResult = self.db.getValuesOfLog(self.query)
-            if (not primaryResult):
+            if (row == len(rows)):
                 break
+            primaryResult = rows[row]
             col = 0
             for n in self.theColumn:
                 result = primaryResult[n]
-                self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
-                col +=1
-            row +=1
+                self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                col += 1
+            row += 1
 
         self.ui.tableWidget.resizeColumnsToContents()
 
@@ -66,29 +89,47 @@ class logWidget():
 
 
     def loadLog(self):
-        column = self.db.getColumnsOfLog()
+        self.ui.tableWidget.clearContents()
+        self.ui.tableWidget.setRowCount(0)
+        # column = self.db.getColumnsOfLog()
+        column = db.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'UPDATE_LOG' \
+                            AND COLUMN_NAME NOT IN ('no')", dictionary=True)
         self.theColumn = [x['COLUMN_NAME'] for x in column]
         self.ui.tableWidget.setColumnCount(len(self.theColumn))
         self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
 
         self.query = "SELECT " + ','.join(self.theColumn) + " FROM UPDATE_LOG WHERE serial_no='%s' " % (self.ui.serialNoBox.currentText())
-        rows = self.db.getRowsOfLog(self.query)
-        self.ui.tableWidget.setRowCount(len(rows))
+        rows = db.execute(self.query,dictionary=True)
+        debug.info(rows)
+        if rows != 0:
+            self.ui.tableWidget.setRowCount(len(rows))
 
-        row = 0
-        self.db.getValuesOfLog(self.query,init=True)
-        while True:
-            primaryResult = self.db.getValuesOfLog(self.query)
-            if (not primaryResult):
-                break
-            col = 0
-            for n in self.theColumn:
-                result = primaryResult[n]
-                self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
-                col +=1
-            row +=1
+        # row = 0
+        # self.db.getValuesOfLog(self.query,init=True)
+        # while True:
+        #     primaryResult = self.db.getValuesOfLog(self.query)
+        #     if (not primaryResult):
+        #         break
+        #     col = 0
+        #     for n in self.theColumn:
+        #         result = primaryResult[n]
+        #         self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
+        #         col +=1
+        #     row +=1
 
-        self.ui.tableWidget.resizeColumnsToContents()
+            row = 0
+            while True:
+                if (row == len(rows)):
+                    break
+                primaryResult = rows[row]
+                col = 0
+                for n in self.theColumn:
+                    result = primaryResult[n]
+                    self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                    col += 1
+                row += 1
+
+            self.ui.tableWidget.resizeColumnsToContents()
 
 
 if __name__ == '__main__':

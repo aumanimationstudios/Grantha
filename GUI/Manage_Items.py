@@ -17,12 +17,12 @@ import subprocess
 from Utils_Gui import *
 
 filePath = os.path.abspath(__file__)
-progPath = os.sep.join(filePath.split(os.sep)[:-2])
-uiFilePath = os.path.join(progPath,"GUI","uiFiles")
-imgFilePath = os.path.join(progPath, "GUI","imageFiles")
+projDir = os.sep.join(filePath.split(os.sep)[:-2])
+uiDir = os.path.join(projDir,"GUI","uiFiles")
+imageDir = os.path.join(projDir, "GUI","imageFiles")
 
-sys.path.append(uiFilePath)
-sys.path.append(imgFilePath)
+sys.path.append(uiDir)
+sys.path.append(imageDir)
 
 context = zmq.Context()
 
@@ -63,7 +63,7 @@ class addWidget():
 
 
     def __init__(self):
-        self.ui = uic.loadUi(os.path.join(uiFilePath, 'Manage_Items.ui'))
+        self.ui = uic.loadUi(os.path.join(uiDir, 'Manage_Items.ui'))
 
         # self.db = database.DataBase()
         self.ui.frame.setLayout(self.layout)
@@ -110,9 +110,9 @@ class addWidget():
         self.ui.saveButton.clicked.connect(self.confirmation)
 
         self.ui.setWindowTitle('Manage Items')
-        self.ui.purchaseCal.setIcon(QtGui.QIcon(os.path.join(imgFilePath, 'cal.png')))
-        self.ui.validCal.setIcon(QtGui.QIcon(os.path.join(imgFilePath, 'cal.png')))
-        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, 'granthaLogo.png')))
+        self.ui.purchaseCal.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
+        self.ui.validCal.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
+        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
         self.ui.show()
         self.ui.cancelButton.clicked.connect(self.closeEvent)
 
@@ -327,7 +327,7 @@ class addWidget():
         self.widget.setLayout(hLay)
         treeView = QTreeView()
         hLay.addWidget(treeView)
-        imageDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
+        imageDir = "/blueprod/STOR2/stor2/grantha/share/temp/"
         self.dirModel = QFileSystemModel()
         self.dirModel.setRootPath(imageDir)
         self.dirModel.setFilter(QDir.NoDotAndDotDot | QDir.Files)
@@ -372,7 +372,7 @@ class addWidget():
         messagebox = TimerMessageBox(1, msg)
         messagebox.exec_()
         slNo = str((self.ui.serialNoBox.currentText()).strip())
-        subprocess.Popen(["python", "Pi_Camera_Preview.py", slNo])
+        subprocess.Popen(["python", os.path.join(projDir, "GUI", "Pi_Camera_Preview.py"), slNo])
 
     def loadDetails(self):
         if self.ui.updateTagButton.isChecked():
