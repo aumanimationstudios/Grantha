@@ -1884,14 +1884,20 @@ QDateEdit::down-arrow:focus {
    </item>
    <item row="1" column="4">
     <widget class="QFrame" name="frame">
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
      <property name="styleSheet">
-      <string notr="true">border:0</string>
+      <string notr="true">border: 0px;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
+     </property>
+     <property name="lineWidth">
+      <number>1</number>
      </property>
     </widget>
    </item>

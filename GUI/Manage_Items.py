@@ -320,6 +320,8 @@ class addWidget():
 
         self.ui.priceBox.setText('0.00')
 
+        self.clearAll()
+
 
     def loadImage(self):
         self.widget = QWidget()
@@ -347,11 +349,12 @@ class addWidget():
         self.widget.close()
         debug.info(path)
 
-        for i in reversed(range(self.layout.count())):
-            self.layout.itemAt(i).widget().setParent(None)
-        imageThumb = ImageWidget(path, 32)
-        imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
-        self.layout.addWidget(imageThumb)
+        self.setImageThumb(path,clickable=True)
+        # for i in reversed(range(self.layout.count())):
+        #     self.layout.itemAt(i).widget().setParent(None)
+        # imageThumb = ImageWidget(path, 32)
+        # imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
+        # self.layout.addWidget(imageThumb)
 
 
     def captureImage(self):
@@ -474,13 +477,18 @@ class addWidget():
         self.ui.imageBox.setText(path)
         debug.info(path)
 
-        for i in reversed(range(self.layout.count())):
-            self.layout.itemAt(i).widget().setParent(None)
+        # for i in reversed(range(self.layout.count())):
+        #     self.layout.itemAt(i).widget().setParent(None)
         if path:
-            imageThumb = ImageWidget(path, 32)
-            imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-            self.layout.addWidget(imageThumb)
-
+            self.setImageThumb(path,clickable=True)
+            # imageThumb = ImageWidget(path, 32)
+            # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+            # self.layout.addWidget(imageThumb)
+        else:
+            path = os.path.join(imageDir, "image.png")
+            self.setImageThumb(path)
+            # imageThumb = ImageWidget(path, 32)
+            # self.layout.addWidget(imageThumb)
 
     def purchaseNone(self):
         self.ui.purchaseBox.setText("0000-00-00")
@@ -495,6 +503,15 @@ class addWidget():
         self.ui.userBox.setCurrentIndex(0)
 
     def clearAll(self):
+        path = os.path.join(imageDir, "image.png")
+        self.setImageThumb(path)
+        # for i in reversed(range(self.layout.count())):
+        #     self.layout.itemAt(i).widget().setParent(None)
+        # imageThumb = ImageWidget(path, 32)
+        # # imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
+        # self.layout.addWidget(imageThumb)
+
+        self.ui.imageBox.clear()
         self.ui.serialNoBox.setCurrentText(" ")
         # self.ui.serialNoBox.setCurrentIndex(0)
         self.ui.tagIdBox.clear()
@@ -688,6 +705,13 @@ class addWidget():
         else:
             messageBox("<b>Update failed</b>","Select a serial number and proceed")
 
+    def setImageThumb(self,path,clickable=False):
+        for i in reversed(range(self.layout.count())):
+            self.layout.itemAt(i).widget().setParent(None)
+        imageThumb = ImageWidget(path, 32)
+        if clickable:
+            imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
+        self.layout.addWidget(imageThumb)
 
     def closeEvent(self):
         self.ui.close()
@@ -761,23 +785,6 @@ class captureThread(QThread):
 
         if (self.socket.closed == True):
             debug.info("Capture Socket closed.")
-
-
-class ImageWidget(QtWidgets.QPushButton):
-  def __init__(self, imagePath, imageSize, parent=None):
-    super(ImageWidget, self).__init__(parent)
-    self.imagePath = imagePath
-    self.picture = QtGui.QPixmap(imagePath)
-    # debug.info (self.imagePath)
-    self.picture  = self.picture.scaledToHeight(imageSize,0)
-
-  def paintEvent(self, event):
-    painter = QtGui.QPainter(self)
-    painter.setPen(QtCore.Qt.NoPen)
-    painter.drawPixmap(0, 0, self.picture)
-
-  def sizeHint(self):
-    return(self.picture.size())
 
 
 

@@ -73,6 +73,30 @@ def messageBox(msg1, msg2="", path=""):
 #     def close(self):
 #         self.close()
 
+
+class ImageWidget(QtWidgets.QPushButton):
+    def __init__(self, imagePath, imageSize, parent=None):
+        """
+        Create an image widget
+        :param imagePath:
+        :param imageSize:
+        :param parent:
+        """
+        super(ImageWidget, self).__init__(parent)
+        self.imagePath = imagePath
+        self.picture = QtGui.QPixmap(imagePath)
+        # debug.info (self.imagePath)
+        self.picture  = self.picture.scaledToHeight(imageSize,0)
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawPixmap(0, 0, self.picture)
+
+    def sizeHint(self):
+        return(self.picture.size())
+
+
 class TimerMessageBox(QtWidgets.QMessageBox):
     def __init__(self, timeout, msg1, msg2="", parent=None):
         """

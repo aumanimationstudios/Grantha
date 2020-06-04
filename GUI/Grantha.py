@@ -597,21 +597,21 @@ class mainWindow():
 
 
 
-class ImageWidget(QtWidgets.QPushButton):
-    def __init__(self, imagePath, imageSize, parent=None):
-        super(ImageWidget, self).__init__(parent)
-        self.imagePath = imagePath
-        self.picture = QtGui.QPixmap(imagePath)
-        # debug.info (self.imagePath)
-        self.picture  = self.picture.scaledToHeight(imageSize,0)
-
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.drawPixmap(0, 0, self.picture)
-
-    def sizeHint(self):
-        return(self.picture.size())
+# class ImageWidget(QtWidgets.QPushButton):
+#     def __init__(self, imagePath, imageSize, parent=None):
+#         super(ImageWidget, self).__init__(parent)
+#         self.imagePath = imagePath
+#         self.picture = QtGui.QPixmap(imagePath)
+#         # debug.info (self.imagePath)
+#         self.picture  = self.picture.scaledToHeight(imageSize,0)
+#
+#     def paintEvent(self, event):
+#         painter = QtGui.QPainter(self)
+#         painter.setPen(QtCore.Qt.NoPen)
+#         painter.drawPixmap(0, 0, self.picture)
+#
+#     def sizeHint(self):
+#         return(self.picture.size())
 
 
 
