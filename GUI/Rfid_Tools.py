@@ -9,6 +9,7 @@ import dbGrantha
 import random
 import zmq
 import debug
+from Utils_Gui import *
 
 filePath = os.path.abspath(__file__)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
@@ -41,6 +42,8 @@ class addWidget():
         self.ui.setWindowTitle('Rfid Tools')
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
         self.ui.show()
+
+        setStyleSheet(self.ui)
 
 
     def readFromRfidTag(self):

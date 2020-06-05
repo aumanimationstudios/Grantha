@@ -116,6 +116,8 @@ class addWidget():
         self.ui.show()
         self.ui.cancelButton.clicked.connect(self.closeEvent)
 
+        setStyleSheet(self.ui)
+
 
     def enableCheckBoxes(self):
         self.ui.serialNoCheckBox.setEnabled(True)
@@ -550,6 +552,7 @@ class addWidget():
     def confirmation(self):
         if (self.ui.addButton.isChecked()):
             confirm = QtWidgets.QMessageBox()
+            setStyleSheet(confirm)
             confirm.setIcon(QtWidgets.QMessageBox.Question)
             confirm.setWindowTitle("Confirmation")
             confirm.setInformativeText("<b>Are you sure you want to add item?</b>")

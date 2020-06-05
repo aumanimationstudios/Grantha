@@ -6,6 +6,7 @@ import sys
 from PyQt5 import QtGui,QtWidgets,uic
 import dbGrantha
 import debug
+from Utils_Gui import *
 
 filePath = os.path.abspath(__file__)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
@@ -44,6 +45,8 @@ class modifyWidget():
 
         self.ui.show()
         self.ui.cancelButton.clicked.connect(self.ui.close)
+
+        setStyleSheet(self.ui)
 
     def load(self):
 

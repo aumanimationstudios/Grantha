@@ -111,7 +111,20 @@ class mainWindow():
         self.center()
         self.ui.showMaximized()
 
+        setStyleSheet(self.ui)
+        # self.ui.checkBox.clicked.connect(self.setStyleSheet)
+
         # self.db = database.DataBase()
+
+    # def setStyleSheet(self):
+    #     if self.ui.checkBox.isChecked():
+    #         qssFile = os.path.join(projDir, "GUI", "styleSheet", "stylesheet.qss")
+    #         with open(qssFile, "r") as sS:
+    #             self.ui.setStyleSheet(sS.read())
+    #     else:
+    #         qssFile = os.path.join(projDir, "GUI", "styleSheet", "default.qss")
+    #         with open(qssFile, "r") as dsS:
+    #             self.ui.setStyleSheet(dsS.read())
 
     def viewParentPopUp(self,pos):
 
@@ -183,6 +196,7 @@ class mainWindow():
         # self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.setRowCount(0)
 
+        self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
 
         self.ui.tableWidget.setColumnCount(len(self.theColumn))

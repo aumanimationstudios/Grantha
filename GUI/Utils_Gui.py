@@ -8,9 +8,16 @@ import os
 
 filePath = os.path.abspath(__file__)
 # currDir = os.sep.join(filePath.split(os.sep)[:-1])
-progPath = os.sep.join(filePath.split(os.sep)[:-2])
-# uiFilePath = os.path.join(progPath,"GUI","uiFiles")
-# imgFilePath = os.path.join(progPath, "GUI","imageFiles")
+projDir = os.sep.join(filePath.split(os.sep)[:-2])
+# uiFilePath = os.path.join(projDir,"GUI","uiFiles")
+# imgFilePath = os.path.join(projDir, "GUI","imageFiles")
+
+
+def setStyleSheet(ui):
+    qssFile = os.path.join(projDir, "GUI", "styleSheet", "stylesheet.qss")
+    with open(qssFile, "r") as sS:
+        ui.setStyleSheet(sS.read())
+
 
 def imageWidgetClicked(path):
     """
@@ -27,9 +34,10 @@ def imageWidgetClicked(path):
     # debug.info(cmdFull)
     # subprocess.Popen(cmdFull, shell=True)
     # cmd = "python " + os.path.join(projDir, "src", "batch_rename.py") + " --path " + path + " --asset " + selectedFiles[0]
-    cmd = "python " + os.path.join(progPath, "GUI", "imageViewerGrantha.py")+" --path "+ image_path
+    cmd = "python " + os.path.join(projDir, "GUI", "imageViewerGrantha.py")+" --path "+ image_path
     debug.info(cmd)
     subprocess.Popen(cmd, shell=True)
+
 
 def messageBox(msg1, msg2="", path=""):
     """
@@ -48,6 +56,7 @@ def messageBox(msg1, msg2="", path=""):
     else:
         msg.setIcon(QtWidgets.QMessageBox.Information)
 
+    setStyleSheet(msg)
     msg.exec_()
 
 # class messageBox(QtWidgets.QMessageBox):
