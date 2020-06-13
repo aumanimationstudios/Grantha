@@ -13,7 +13,7 @@ import argparse
 from PyQt5.QtCore import Qt, QRectF, pyqtSignal, QT_VERSION_STR
 from PyQt5.QtGui import QImage, QPixmap, QPainterPath
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QApplication
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PyQt5 import uic, QtCore, QtGui, QtWidgets, QtSvg
 import debug
 
 filePath = os.path.abspath(__file__)
@@ -122,12 +122,19 @@ class QtImageViewer(QGraphicsView):
         Raises a RuntimeError if the input image has type other than QImage or QPixmap.
         :type image: QImage | QPixmap
         """
+        svG=None
         if type(image) is QPixmap:
+            debug.info("pixmap")
             pixmap = image
         elif type(image) is QImage:
+            debug.info("image")
             pixmap = QPixmap.fromImage(image)
         else:
+            # debug.info(type(image))
+            # svG = QtSvg.QGraphicsSvgItem(image)
             raise RuntimeError("ImageViewer.setImage: Argument must be a QImage or QPixmap.")
+        # if svG:
+        #     self.scene.addItem(svG)
         if self.hasImage():
             self._pixmapHandle.setPixmap(pixmap)
         else:

@@ -114,19 +114,76 @@
 # db.close()'''
 
 
-import sys
-import os
-from bs4 import BeautifulSoup
-import urllib2
-import re
+# import sys
+# import os
+# from bs4 import BeautifulSoup
+# import urllib2
+# import re
+#
+# user = sys.argv[1]
+#
+# htmlPage = urllib2.urlopen("https://gist.github.com/{0}".format(user))
+# soup = BeautifulSoup(htmlPage, 'html.parser')
+#
+# # for link in soup.findAll('a', attrs={'href': re.compile("(?=.*2.8)(?=.*linux-glibc217-x86_64.tar.bz2)")}):
+#
+# for link in soup.findAll('a', attrs={'href': re.compile("(?=.*gist)(?=.*{0})".format(user))}):
+#     fileName = link.get('href')
+#     print(fileName)
+import xml.dom.minidom
+import debug
+import dbGrantha
 
-user = sys.argv[1]
+svgFile = "/home/sanath.shetty/Downloads/Video/map.svg"
 
-htmlPage = urllib2.urlopen("https://gist.github.com/{0}".format(user))
-soup = BeautifulSoup(htmlPage, 'html.parser')
+doc = xml.dom.minidom.parse(svgFile)
+name = doc.getElementsByTagName('tspan')
+# for t in name:
+#     if (t.attributes['id'].value=="aum_r01_workspace_01"):
+#         text = t.childNodes[0].nodeValue
+#         debug.info(str(text))
+#         t.childNodes[0].nodeValue = 'blueeeeee'
+#         text = t.childNodes[0].nodeValue
+#         # text = [x.nodeValue for x in t.childNodes]
+#         debug.info(str(text))
+# f = open(svgFile, "w")
+# f.write(doc.toxml())
+ids = []
+for t in name:
+    id = str(t.attributes['id'].value)
+    ids.append(id)
 
-# for link in soup.findAll('a', attrs={'href': re.compile("(?=.*2.8)(?=.*linux-glibc217-x86_64.tar.bz2)")}):
+debug.info(ids)
 
-for link in soup.findAll('a', attrs={'href': re.compile("(?=.*gist)(?=.*{0})".format(user))}):
-    fileName = link.get('href')
-    print(fileName)
+db = dbGrantha.dbGrantha()
+getLOC = "SELECT * FROM LOCATION"
+
+LOC = db.execute(getLOC, dictionary=True)
+debug.info(LOC)
+
+pLoc = [x['parent_location'] for x in LOC]
+debug.info(pLoc)
+
+loc = [x['location'] for x in LOC]
+debug.info(loc)
+
+for lc in loc:
+    if lc in ids:
+        for x in LOC:
+            if x['location'] == lc:
+                nloc = x['parent_location']
+                for t in name:
+                    if (t.attributes['id'].value==lc):
+                        t.childNodes[0].nodeValue = nloc
+
+for pl in pLoc:
+    if pl in ids:
+        for x in LOC:
+            if x['parent_location'] == pl:
+                bloc = x['location']
+                for t in name:
+                    if (t.attributes['id'].value==pl):
+                        t.childNodes[0].nodeValue = bloc
+
+f = open(svgFile, "w")
+f.write(doc.toxml())

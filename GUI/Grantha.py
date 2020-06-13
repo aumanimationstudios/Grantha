@@ -8,7 +8,7 @@ __email__ = "sanathshetty111@gmail.com"
 
 import os
 import sys
-from PyQt5 import QtGui, QtWidgets, uic, QtCore
+from PyQt5 import QtGui, QtWidgets, uic, QtCore, QtSvg
 from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import QProcess, QThread, pyqtSignal
 import dbGrantha
@@ -20,6 +20,7 @@ from Utils_Gui import *
 import time
 import setproctitle
 import tempfile
+import xml.dom.minidom
 
 filePath = os.path.abspath(__file__)
 # debug.info(filePath)
@@ -45,6 +46,8 @@ user = os.environ['USER']
 context = zmq.Context()
 processes = []
 # tempDir = tempfile.gettempdir()
+mapPath = os.path.join(imageDir, "map.svg")
+
 
 class mainWindow():
     global processes
@@ -108,23 +111,64 @@ class mainWindow():
 
         self.ui.tableWidget.customContextMenuRequested.connect(self.viewParentPopUp)
 
+        self.setMap()
+
         self.center()
         self.ui.showMaximized()
 
         setStyleSheet(self.ui)
-        # self.ui.checkBox.clicked.connect(self.setStyleSheet)
 
-        # self.db = database.DataBase()
+    def loadMap(self):
+        doc = xml.dom.minidom.parse(mapPath)
+        name = doc.getElementsByTagName('tspan')
+        ids = []
+        for t in name:
+            id = str(t.attributes['id'].value)
+            ids.append(id)
 
-    # def setStyleSheet(self):
-    #     if self.ui.checkBox.isChecked():
-    #         qssFile = os.path.join(projDir, "GUI", "styleSheet", "stylesheet.qss")
-    #         with open(qssFile, "r") as sS:
-    #             self.ui.setStyleSheet(sS.read())
-    #     else:
-    #         qssFile = os.path.join(projDir, "GUI", "styleSheet", "default.qss")
-    #         with open(qssFile, "r") as dsS:
-    #             self.ui.setStyleSheet(dsS.read())
+        getLOC = "SELECT * FROM LOCATION"
+        LOC = self.db.execute(getLOC, dictionary=True)
+        pLoc = [x['parent_location'] for x in LOC]
+        loc = [x['location'] for x in LOC]
+
+        for lc in loc:
+            if lc in ids:
+                for x in LOC:
+                    if x['location'] == lc:
+                        nloc = x['parent_location']
+                        for t in name:
+                            if (t.attributes['id'].value == lc):
+                                t.childNodes[0].nodeValue = nloc
+
+        for pl in pLoc:
+            if pl in ids:
+                for x in LOC:
+                    if x['parent_location'] == pl:
+                        bloc = x['location']
+                        for t in name:
+                            if (t.attributes['id'].value == pl):
+                                t.childNodes[0].nodeValue = bloc
+
+        f = open(mapPath, "w")
+        f.write(doc.toxml())
+        f.close()
+
+
+    def setMap(self):
+        self.loadMap()
+        layout = QtWidgets.QVBoxLayout()
+        self.ui.frame.setLayout(layout)
+        for i in reversed(range(layout.count())):
+            layout.itemAt(i).widget().setParent(None)
+        imageThumbMap = ImageWidget(mapPath, 32)
+        # imageThumbMap.clicked.connect(lambda x, imagePath = mapPath: imageWidgetClicked(imagePath))
+        imageThumbMap.clicked.connect(self.showMap)
+        layout.addWidget(imageThumbMap)
+
+    def showMap(self):
+        self.loadMap()
+        imageWidgetClicked(mapPath)
+
 
     def viewParentPopUp(self,pos):
 
