@@ -60,7 +60,7 @@ def GranthaServer(granthaQueue, socketQueue):
                     debug.info (str(sys.exc_info()))
 
         if (msgFrmCli[0] == "READ_MULTI"):
-            granthaQueue.put("READ_MULTI")
+            granthaQueue.put(["READ_MULTI",msgFrmCli[1]])
             sock.send("MULTI_READ_STARTED")
 
         if (msgFrmCli[0] == "STOP"):
@@ -131,8 +131,8 @@ def SocketServer(granthaQueue, socketQueue):
             # Put item into the queue
             socketQueue.put(tagId)
 
-        if (msgRecvd == "READ_MULTI"):
-            sqT = socketQThread(socketQueue)
+        if (msgRecvd[0] == "READ_MULTI"):
+            sqT = socketQThread(socketQueue,msgRecvd[1])
             sqT.start()
 
             debug.info (threads)
@@ -306,16 +306,17 @@ def keyboardInterruptHandler(signal, frame):
 
 
 class socketQThread(threading.Thread):
-    def __init__(self, socketQueue):
+    def __init__(self, socketQueue, ip):
         super(socketQThread, self).__init__()
 
         self.socketQueue = socketQueue
+        self.ip = ip
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         while(True):
             try:
-                self.socket.connect(("192.168.1.39",4695))
+                self.socket.connect((self.ip,4695))
                 break
             except:
                 debug.info(sys.exc_info())

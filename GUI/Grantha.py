@@ -721,24 +721,24 @@ class readMultiThread(QThread):
     def run(self):
         # self.waiting.emit()
 
-        
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+
         debug.info("connecting to rfid Scanner Server...")
         self.socket = context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.1.183:4689")
         debug.info("connected.")
-        self.socket.send("READ_MULTI")
+        self.socket.send_multipart("READ_MULTI",ip)
         rep = self.socket.recv()
         debug.info (rep)
         # self.socket.close()
-        # 
+        #
         # if (context.closed == True) and (self.socket.closed == True):
         #     debug.info "Socket and Context closed."
         #####################################
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        hostname = socket.gethostname()
-        ip = socket.gethostbyname(hostname)
         server_address = (ip, 4695)
         sock.bind(server_address)
         sock.listen(1)

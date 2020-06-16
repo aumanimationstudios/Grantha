@@ -26,6 +26,9 @@ sys.path.append(imageDir)
 
 context = zmq.Context()
 
+imagePicsDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
+imageTempDir = "/blueprod/STOR2/stor2/grantha/share/temp/"
+
 class addWidget():
     # db = database.DataBase()
     db = dbGrantha.dbGrantha()
@@ -331,12 +334,12 @@ class addWidget():
         self.widget.setLayout(hLay)
         treeView = QTreeView()
         hLay.addWidget(treeView)
-        imageDir = "/blueprod/STOR2/stor2/grantha/share/temp/"
+        # imageDir = "/blueprod/STOR2/stor2/grantha/share/temp/"
         self.dirModel = QFileSystemModel()
-        self.dirModel.setRootPath(imageDir)
+        self.dirModel.setRootPath(imageTempDir)
         self.dirModel.setFilter(QDir.NoDotAndDotDot | QDir.Files)
         treeView.setModel(self.dirModel)
-        treeView.setRootIndex(self.dirModel.index(imageDir))
+        treeView.setRootIndex(self.dirModel.index(imageTempDir))
         treeView.hideColumn(1)
         treeView.hideColumn(2)
         treeView.hideColumn(3)
@@ -346,11 +349,14 @@ class addWidget():
 
     def fileClicked(self, index):
         path = (self.dirModel.fileInfo(index).absoluteFilePath()).strip()
-        self.ui.imageBox.clear()
-        self.ui.imageBox.setText(path)
-        self.widget.close()
         debug.info(path)
+        imageName = str(path.split(os.sep)[-1:][0])
+        finalPath = imagePicsDir+imageName
+        debug.info(finalPath)
+        self.ui.imageBox.clear()
+        self.ui.imageBox.setText(finalPath)
 
+        self.widget.close()
         self.setImageThumb(path,clickable=True)
         # for i in reversed(range(self.layout.count())):
         #     self.layout.itemAt(i).widget().setParent(None)
@@ -404,6 +410,7 @@ class addWidget():
             self.slNoGen()
         else:
             self.ui.serialNoBox.setCurrentText(slNo)
+            self.ui.imageBox.clear()
 
 
     def slNoGenerator(self, size=10, chars=string.ascii_uppercase + string.digits):
@@ -604,10 +611,12 @@ class addWidget():
             keys.append(key)
             values.append(userInput[key])
 
+        slNo = userInput["serial_no"]
+        imagePath = userInput["image"]
+
         queryAddItem = "INSERT INTO ITEMS (" + ','.join(keys) + ") VALUES %r" %(tuple(values),)
 
         debug.info(queryAddItem)
-        slNo = userInput["serial_no"]
         if slNo:
             tagId = str(self.ui.tagIdBox.text().strip())
             if tagId:
@@ -623,6 +632,14 @@ class addWidget():
                 # addItem = self.db.insertItem(queryAddItem)
                 addItem = self.db.execute(queryAddItem)
                 if (addItem == 1):
+                    if imagePath:
+                        imageTempPath = imageTempDir + slNo + ".jpg"
+                        if os.path.exists(imageTempPath):
+                            cmd = "rsync -av " + imageTempPath + " " + imagePicsDir
+                            debug.info(cmd)
+                            os.system(cmd)
+                    else:
+                        pass
                     messageBox("Item Added Successfully", "Serial No added successfully")
                     self.load()
                 else:
