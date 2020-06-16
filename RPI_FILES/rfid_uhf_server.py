@@ -272,8 +272,8 @@ def writeEpc(connection,tagId):
                                     ack = "ack_pass"
                                     return ack
                                 else:
-                                    # raise ValueError('unable to write!')
                                     debug.info("Unable to write!")
+                                    raise ValueError('unable to write!')
                             except:
                                 print ("Trying Again!" + str(sys.exc_info()))
             else:

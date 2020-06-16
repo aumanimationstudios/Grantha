@@ -728,7 +728,7 @@ class readMultiThread(QThread):
         self.socket = context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.1.183:4689")
         debug.info("connected.")
-        self.socket.send_multipart("READ_MULTI",ip)
+        self.socket.send_multipart(["READ_MULTI",ip])
         rep = self.socket.recv()
         debug.info (rep)
         # self.socket.close()
