@@ -27,19 +27,19 @@ try:
     # camera.rotation = 90
     camera.awb_mode = 'incandescent'
 
-    i = args.filename
+    i = str(args.filename)
     debug.info(i)
 
     tempFolder = "/blueprod/STOR2/stor2/grantha/share/temp/" + i +"/"
 
     n = 1
-    while os.path.exists('/home/pi/Pictures/%s_%s.jpg' %(i,str(n))):
+    while os.path.exists("/home/pi/Pictures/{0}_{1}.jpg".format(i,str(n))):
         n+=1
     # camera.capture('/home/pi/Pictures/image0%s.jpg' %n)
     # camera.capture('/home/pi/Pictures/%s.jpg' %i)
-    camera.capture('/home/pi/Pictures/%s_%s.jpg' %(i,str(n)))
+    camera.capture("/home/pi/Pictures/{0}_{1}.jpg".format(i,str(n)))
 
-    os.system("rsync -av /home/pi/Pictures/%s_%s.jpg bluepixels@blue0666:"+tempFolder %(i,str(n)))
+    os.system("rsync -av /home/pi/Pictures/{0}_{1}.jpg bluepixels@blue0666:".format(i,str(n))+tempFolder)
 
 except:
     debug.info(str(sys.exc_info()))
