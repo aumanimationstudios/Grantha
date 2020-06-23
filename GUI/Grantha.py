@@ -48,6 +48,15 @@ processes = []
 # tempDir = tempfile.gettempdir()
 mapPath = os.path.join(imageDir, "map.svg")
 
+authUsers = None
+LOC = None
+theColumn = None
+slList = None
+itList = None
+locList = None
+usrList = None
+sn = None
+pLocs = None
 
 class mainWindow():
     global processes
@@ -55,32 +64,35 @@ class mainWindow():
     # Database query execution function
     db = dbGrantha.dbGrantha()
 
+
     # List Authorized users to access modify functions
-    getAuthUsers = "SELECT * FROM AUTH_USERS"
-    aU = db.execute(getAuthUsers,dictionary=True)
-    authUsers = [x['auth_users'] for x in aU]
-
-    getLOC = "SELECT location FROM LOCATION"
-    loc = db.execute(getLOC, dictionary=True)
-    LOC = [x['location'] for x in loc]
-
-    queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
-    column = db.execute(queryCol, dictionary=True)
-    theColumn = [x['COLUMN_NAME'] for x in column]
-
-    completer = "SELECT serial_no,item_type,location,user FROM ITEMS"
-    theList = db.execute(completer, dictionary=True)
-    slList = [x['serial_no'] for x in theList]
-    itList = list(set([x['item_type'] for x in theList]))
-    locList = list(set([x['location'] for x in theList]))
-    usrList = list(set([x['user'] for x in theList]))
-
-    getSN = "SELECT * FROM SERIAL_NO"
-    sn = db.execute(getSN, dictionary=True)
-    # slNoList = [x['serial_no'] for x in sn]
+    # getAuthUsers = "SELECT * FROM AUTH_USERS"
+    # aU = db.execute(getAuthUsers,dictionary=True)
+    # authUsers = [x['auth_users'] for x in aU]
+    #
+    # getLOC = "SELECT location FROM LOCATION"
+    # loc = db.execute(getLOC, dictionary=True)
+    # LOC = [x['location'] for x in loc]
+    #
+    # queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
+    # column = db.execute(queryCol, dictionary=True)
+    # theColumn = [x['COLUMN_NAME'] for x in column]
+    #
+    # completer = "SELECT serial_no,item_type,location,user FROM ITEMS"
+    # theList = db.execute(completer, dictionary=True)
+    # slList = [x['serial_no'] for x in theList]
+    # itList = list(set([x['item_type'] for x in theList]))
+    # locList = list(set([x['location'] for x in theList]))
+    # usrList = list(set([x['user'] for x in theList]))
+    #
+    # getSN = "SELECT * FROM SERIAL_NO"
+    # sn = db.execute(getSN, dictionary=True)
+    # # slNoList = [x['serial_no'] for x in sn]
 
     def __init__(self):
         # super(myWindow, self).__init__()
+        self.reloadVars()
+
         self.rfidMultiCount = 0
         self.rfidMultiUniqSlno = {}
         self.ui = uic.loadUi(os.path.join(uiDir, 'Grantha.ui'))
@@ -90,10 +102,11 @@ class mainWindow():
         self.ui.itemTypeButton.pressed.connect(self.itBtnClick)
         self.ui.locationButton.pressed.connect(self.locBtnClick)
         self.ui.userButton.pressed.connect(self.usrBtnClick)
+        self.ui.reloadButton.pressed.connect(self.reloadBtnClick)
 
         self.ui.comboBox.currentIndexChanged.connect(self.search)
 
-        if user in self.authUsers:
+        if user in authUsers:
             self.ui.manageItemsButton.clicked.connect(self.manageItems)
             self.ui.rfidToolsButton.clicked.connect(self.rfidTools)
             # self.ui.updateButton.clicked.connect(self.update)
@@ -112,11 +125,51 @@ class mainWindow():
         self.ui.tableWidget.customContextMenuRequested.connect(self.viewParentPopUp)
 
         self.setMap()
-
         self.center()
         self.ui.showMaximized()
 
         setStyleSheet(self.ui)
+
+    def reloadVars(self):
+        global authUsers
+        global LOC
+        global theColumn
+        global slList
+        global itList
+        global locList
+        global usrList
+        global sn
+        global pLocs
+        # List Authorized users to access modify functions
+        getAuthUsers = "SELECT * FROM AUTH_USERS"
+        aU = self.db.execute(getAuthUsers, dictionary=True)
+        authUsers = [x['auth_users'] for x in aU]
+
+        getLOC = "SELECT location FROM LOCATION"
+        loc = self.db.execute(getLOC, dictionary=True)
+        LOC = [x['location'] for x in loc]
+
+        queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
+        column = self.db.execute(queryCol, dictionary=True)
+        theColumn = [x['COLUMN_NAME'] for x in column]
+
+        completer = "SELECT serial_no,item_type,location,user FROM ITEMS"
+        theList = self.db.execute(completer, dictionary=True)
+        slList = [x['serial_no'] for x in theList]
+        itList = list(set([x['item_type'] for x in theList]))
+        usrList = list(set([x['user'] for x in theList]))
+
+        getLocs = "SELECT location FROM LOCATION"
+        locs = self.db.execute(getLocs, dictionary=True)
+        locList = list(set([x['location'] for x in locs]))
+
+        getSN = "SELECT * FROM SERIAL_NO"
+        sn = self.db.execute(getSN, dictionary=True)
+        # slNoList = [x['serial_no'] for x in sn]
+        getParentLocs = "SELECT parent_location FROM LOCATION "
+        pL = self.db.execute(getParentLocs, dictionary=True)
+        pLocs = list(set([x['parent_location'] for x in pL]))
+        # debug.info(pLL)
 
     def loadMap(self):
         doc = xml.dom.minidom.parse(mapPath)
@@ -189,7 +242,7 @@ class mainWindow():
 
                 if(selected):
                     viewParentAction = menu.addAction("View Parent Location")
-                    if user in self.authUsers:
+                    if user in authUsers:
                         modifyLocationAction = menu.addAction("Modify Location")
 
                 action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
@@ -210,7 +263,7 @@ class mainWindow():
         selectedText = self.ui.tableWidget.currentItem().text()
         # debug.info selectedText
 
-        if selectedText in self.LOC:
+        if selectedText in LOC:
             getParentLocation = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(selectedText)
             # pL = self.db.getParentLocation(query)
             pL = self.db.execute(getParentLocation,dictionary=True)
@@ -243,8 +296,8 @@ class mainWindow():
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
 
-        self.ui.tableWidget.setColumnCount(len(self.theColumn))
-        self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+        self.ui.tableWidget.setColumnCount(len(theColumn))
+        self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
 
         queryAll = "SELECT * FROM ITEMS ORDER BY item_type"
         theRows = self.db.execute(queryAll,dictionary=True)
@@ -257,7 +310,7 @@ class mainWindow():
                 break
             primaryResult = theRows[row]
             col = 0
-            for n in self.theColumn:
+            for n in theColumn:
                 result = primaryResult[n]
                 self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
                 col +=1
@@ -287,17 +340,18 @@ class mainWindow():
 
 
     def search(self):
+        self.ui.tableWidget.setSortingEnabled(False)
         self.ui.tableWidget.setRowCount(0)
 
-        self.ui.tableWidget.setColumnCount(len(self.theColumn))
-        self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+        self.ui.tableWidget.setColumnCount(len(theColumn))
+        self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
 
         currTxt = self.ui.comboBox.currentText().strip()
         # debug.info currTxt
 
         if self.ui.serialNoButton.isChecked():
-            if (currTxt in self.slList):
-                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
+            if (currTxt in slList):
+                getRows = "SELECT " + ','.join(theColumn) + " FROM ITEMS WHERE serial_no='%s' " %(currTxt)
                 # rows = self.db.getRows(self.query)
                 rows = self.db.execute(getRows, dictionary=True)
                 # debug.info rows
@@ -307,8 +361,8 @@ class mainWindow():
                 pass
 
         if self.ui.itemTypeButton.isChecked():
-            if (currTxt in self.itList):
-                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE item_type='%s' " %(currTxt)
+            if (currTxt in itList):
+                getRows = "SELECT " + ','.join(theColumn) + " FROM ITEMS WHERE item_type='%s' " %(currTxt)
                 # rows = self.db.getRows(self.query)
                 rows = self.db.execute(getRows, dictionary=True)
                 self.ui.tableWidget.setRowCount(len(rows))
@@ -317,18 +371,60 @@ class mainWindow():
                 pass
 
         if self.ui.locationButton.isChecked():
-            if (currTxt in self.locList):
-                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE location='%s' " %(currTxt)
+            if (currTxt in locList):
+                getRows = "SELECT " + ','.join(theColumn) + " FROM ITEMS WHERE location='%s' " %(currTxt)
                 # rows = self.db.getRows(self.query)
                 rows = self.db.execute(getRows, dictionary=True)
-                self.ui.tableWidget.setRowCount(len(rows))
-                self.fillTable(rows)
+                # debug.info(rows)
+                if rows != 0:
+                    self.ui.tableWidget.setRowCount(len(rows))
+                    self.fillTable(rows)
+
+                if currTxt in pLocs:
+                    getLocation = "SELECT location FROM LOCATION WHERE parent_location='%s' " % (currTxt)
+                    bL = self.db.execute(getLocation, dictionary=True)
+                    # debug.info(bPL)
+                    self.butts = {}
+                    self.buttsLoc = {}
+                    try:
+                        rowCount = len(rows)
+                    except:
+                        rowCount = 0
+                    n = 0
+                    for loc in bL:
+                        self.ui.tableWidget.insertRow(rowCount+n)
+                        bl = str(loc["location"])
+
+                        self.butts["blueButt"+str(n)] = QtWidgets.QPushButton()
+                        self.butts["blueButt"+str(n)].setText(bl)
+
+                        # debug.info(bpL)
+                        # blueBtn = QtWidgets.QPushButton()
+                        # blueBtn.setText(bl)
+                        # BL = str(blueBtn.text()).strip()
+                        # blueBtn.clicked.connect(lambda x, rows=rows: self.extraTable(BL))
+                        # butts["blueButt" + str(n)].clicked.connect(lambda x, rows=rows: self.extraTable(bl))
+                        # self.blueBtnNoPressed = 0
+                        self.ui.tableWidget.setCellWidget(rowCount+n, 0, self.butts["blueButt"+str(n)])
+                        self.buttsLoc["blueButt"+str(n)] = rowCount+n
+                        n+=1
+                    debug.info(self.butts)
+                    debug.info(self.buttsLoc)
+
+                    self.buttsPress = {}
+                    for butt in self.butts.keys():
+                        debug.info(self.butts[butt].text())
+                        # bl = self.butts[butt].text()
+                        self.butts[butt].clicked.connect(lambda x, BL=butt: self.extraTable(BL))
+                        self.buttsPress[butt] = 0
+                        # self.blueBtnNoPressed = 0
+                    debug.info(self.buttsPress)
             else:
                 pass
 
         if self.ui.userButton.isChecked():
-            if (currTxt in self.usrList):
-                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE user='%s' " %(currTxt)
+            if (currTxt in usrList):
+                getRows = "SELECT " + ','.join(theColumn) + " FROM ITEMS WHERE user='%s' " %(currTxt)
                 # rows = self.db.getRows(self.query)
                 rows = self.db.execute(getRows, dictionary=True)
                 self.ui.tableWidget.setRowCount(len(rows))
@@ -336,6 +432,91 @@ class mainWindow():
             else:
                 pass
 
+
+    def extraTable(self,BL):
+        debug.info(BL)
+        bl = self.butts[BL].text()
+        getRows = "SELECT " + ','.join(theColumn) + " FROM ITEMS WHERE location='%s' " % (bl)
+        rows = self.db.execute(getRows, dictionary=True)
+
+        rowLoc = self.buttsLoc[BL]
+        debug.info(rowLoc)
+
+        buttNo = int(BL[8:])
+        debug.info(buttNo)
+        totalButts = len(self.butts)
+        debug.info(totalButts)
+
+        if rows!=0:
+            # self.blueBtnNoPressed +=1
+            # debug.info(self.blueBtnNoPressed)
+            debug.info(rowLoc)
+            debug.info(self.buttsPress[BL])
+            self.buttsPress[BL] +=1
+            if (self.buttsPress[BL]%2) == 0:
+                for n in range(0,len(rows)):
+                    # rowLoc = self.buttsLoc[BL]
+                    # rowCount = self.ui.tableWidget.rowCount()
+                    # self.ui.tableWidget.removeRow(rowCount-1)
+                    self.ui.tableWidget.removeRow(rowLoc+1)
+
+                for n in range(buttNo+1,totalButts):
+                    currLoc = self.buttsLoc["blueButt"+str(n)]
+                    self.buttsLoc["blueButt"+str(n)] = currLoc-len(rows)
+
+            else:
+                # rowLoc = self.buttsLoc[BL]
+                debug.info(rowLoc)
+
+                row = 0
+
+                while True:
+                    if (row == len(rows)):
+                        break
+                    primaryResult = rows[row]
+                    # debug.info(primaryResult)
+
+                    # rowCount = self.ui.tableWidget.rowCount()
+                    self.ui.tableWidget.insertRow(rowLoc+row+1)
+
+                    col = 0
+                    for n in theColumn:
+                        result = primaryResult[n]
+                        self.ui.tableWidget.setItem(rowLoc+row+1, col, QtWidgets.QTableWidgetItem(str(result)))
+                        imgCell = self.ui.tableWidget.item(rowLoc+row+1, 10)
+                        path = ""
+                        try:
+                            path = str(imgCell.text())
+                        except:
+                            pass
+                        if path:
+                            self.ui.tableWidget.takeItem(rowLoc+row+1, 10)
+                            imageThumb = ImageWidget(path, 32)
+                            imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                            self.ui.tableWidget.setCellWidget(rowLoc+row+1, 10, imageThumb)
+
+                        col += 1
+                    row += 1
+
+                # numRows = self.ui.tableWidget.rowCount()
+                # for row in range(numRows):
+                #     imgCell = self.ui.tableWidget.item(row, 10)
+                #     if imgCell:
+                #         path = str(imgCell.text())
+                #         # debug.info(path)
+                #         self.ui.tableWidget.takeItem(row, 10)
+                #         imageThumb = ImageWidget(path, 32)
+                #         imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                #         self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+
+                for n in range(buttNo+1,totalButts):
+                    currLoc = self.buttsLoc["blueButt"+str(n)]
+                    self.buttsLoc["blueButt"+str(n)] = currLoc+len(rows)
+
+
+
+        self.ui.tableWidget.resizeColumnsToContents()
+        self.ui.tableWidget.resizeRowsToContents()
 
     def fillTable(self,rows):
         row = 0
@@ -344,7 +525,7 @@ class mainWindow():
                 break
             primaryResult = rows[row]
             col = 0
-            for n in self.theColumn:
+            for n in theColumn:
                 result = primaryResult[n]
                 self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
                 col += 1
@@ -354,8 +535,9 @@ class mainWindow():
 
         numRows = self.ui.tableWidget.rowCount()
         for row in range(numRows):
-            path = str(self.ui.tableWidget.item(row, 10).text())
-            if path:
+            imgCell = self.ui.tableWidget.item(row, 10)
+            if imgCell:
+                path = str(imgCell.text())
                 # debug.info(path)
                 self.ui.tableWidget.takeItem(row, 10)
                 imageThumb = ImageWidget(path, 32)
@@ -372,8 +554,8 @@ class mainWindow():
         # # theList = self.db.Completer()
         # theList = self.db.execute(completer,dictionary=True)
         # slList = [x['serial_no'] for x in theList]
-        self.slList.sort()
-        self.ui.comboBox.addItems(self.slList)
+        slList.sort()
+        self.ui.comboBox.addItems(slList)
         # self.model = QtCore.QStringListModel()
         # self.model.setStringList(slList)
         # self.completer()
@@ -381,24 +563,25 @@ class mainWindow():
     def itBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
-        self.itList.sort()
-        self.ui.comboBox.addItems(self.itList)
+        itList.sort()
+        self.ui.comboBox.addItems(itList)
 
     def locBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
-        self.locList.sort()
-        self.ui.comboBox.addItems(self.locList)
+        locList.sort()
+        self.ui.comboBox.addItems(locList)
 
     def usrBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
-        self.usrList.sort()
-        self.ui.comboBox.addItems(self.usrList)
+        usrList.sort()
+        self.ui.comboBox.addItems(usrList)
 
+    def reloadBtnClick(self):
+        self.reloadVars()
 
     # Processes to start when respective buttons are clicked
-
     def manageItems(self):
         debug.info("Opening manage items Menu")
         p = QProcess(parent=self.ui)
@@ -511,7 +694,7 @@ class mainWindow():
             debug.info (str(sys.exc_info()))
             pass
 
-        TI = [x['tag_id'] for x in self.sn]
+        TI = [x['tag_id'] for x in sn]
         # debug.info  (TI)
         if tagId in TI:
             # slno = self.db.getSlFrmTid(tagId)
@@ -523,12 +706,12 @@ class mainWindow():
             debug.info ("received sl.no: "+slNo)
             self.ui.comboBox.setEditText(slNo)
 
-            self.ui.tableWidget.setColumnCount(len(self.theColumn))
-            self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+            self.ui.tableWidget.setColumnCount(len(theColumn))
+            self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
 
             currTxt = self.ui.comboBox.currentText().strip()
 
-            getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
+            getRows = "SELECT " + ','.join(theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
             rows = self.db.execute(getRows, dictionary=True)
 
             self.ui.tableWidget.setRowCount(len(rows))
@@ -574,7 +757,7 @@ class mainWindow():
 
         else:
 
-            TI = [x['tag_id'] for x in self.sn]
+            TI = [x['tag_id'] for x in sn]
             if tagId in TI:
                 # slno = self.db.getSlFrmTid(tagId)
                 getSlFrmTid = "SELECT serial_no FROM SERIAL_NO WHERE tag_id=\"{}\" ".format(tagId)
@@ -593,47 +776,53 @@ class mainWindow():
                 self.ui.comboBox.setEditText(slNo)
 
                 # column = self.db.getColumns()
-                # self.theColumn = [x['COLUMN_NAME'] for x in column]
+                # theColumn = [x['COLUMN_NAME'] for x in column]
 
-                self.ui.tableWidget.setColumnCount(len(self.theColumn))
-                self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
+                self.ui.tableWidget.setColumnCount(len(theColumn))
+                self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
 
                 self.ui.tableWidget.setRowCount(self.rfidMultiCount)
 
                 currTxt = self.ui.comboBox.currentText()
-                getRows = "SELECT " + ','.join(self.theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
+                getRows = "SELECT " + ','.join(theColumn) + " FROM ITEMS WHERE serial_no='%s' " % (currTxt)
                 rows = self.db.execute(getRows, dictionary=True)
                 # debug.info(rows)
                 # rows = self.db.getRows(self.query)
                 # self.ui.tableWidget.setRowCount(len(rows))
 
-                rowCount = self.ui.tableWidget.rowCount()
+                if rows:
+                    rowCount = self.ui.tableWidget.rowCount()
 
 
-                row = rowCount -1
-                while True:
-                    primaryResult = rows[0]
-                    # debug.info(primaryResult)
-                    col = 0
-                    for n in self.theColumn:
-                        result = primaryResult[n]
-                        self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
-                        col += 1
-                    row += 1
-                    break
+                    row = rowCount -1
+                    while True:
+                        try:
+                            primaryResult = rows[0]
+                        except:
+                            break
+                        # debug.info(primaryResult)
+                        col = 0
+                        for n in theColumn:
+                            result = primaryResult[n]
+                            self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                            col += 1
+                        row += 1
+                        break
 
-                numRow = self.rfidMultiCount -1
-                path = str(self.ui.tableWidget.item(numRow, 10).text())
-                if path:
-                    # debug.info(path)
-                    self.ui.tableWidget.takeItem(numRow, 10)
-                    imageThumb = ImageWidget(path, 32)
-                    imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-                    self.ui.tableWidget.setCellWidget(numRow, 10, imageThumb)
+                    numRow = self.rfidMultiCount -1
+                    imgCell = self.ui.tableWidget.item(numRow, 10)
+                    if imgCell:
+                        path = str(imgCell.text())
+                        # debug.info(path)
+                        self.ui.tableWidget.takeItem(numRow, 10)
+                        imageThumb = ImageWidget(path, 32)
+                        imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                        self.ui.tableWidget.setCellWidget(numRow, 10, imageThumb)
 
-                self.ui.tableWidget.resizeRowsToContents()
-                self.ui.tableWidget.resizeColumnsToContents()
-
+                    self.ui.tableWidget.resizeRowsToContents()
+                    self.ui.tableWidget.resizeColumnsToContents()
+                else:
+                    pass
             else:
                 pass
 
@@ -729,7 +918,7 @@ class readMultiThread(QThread):
         self.socket.connect("tcp://192.168.1.183:4689")
         debug.info("connected.")
         self.socket.send_multipart(["READ_MULTI",ip])
-        rep = self.socket.recv()
+        rep = self.socket.recv_multipart()
         debug.info (rep)
         # self.socket.close()
         #

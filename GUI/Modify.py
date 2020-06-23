@@ -19,7 +19,7 @@ sys.path.append(imageDir)
 class modifyWidget():
     db = dbGrantha.dbGrantha()
 
-    queryLoc = "SELECT location FROM LOCATION WHERE location NOT LIKE 'aum%' AND location NOT LIKE 'REPAIR' "
+    queryLoc = "SELECT location FROM LOCATION WHERE location NOT LIKE 'aum%' AND location NOT LIKE 'REPAIR' AND location NOT LIKE 'OUTDATED' "
     loc = db.execute(queryLoc, dictionary=True)
     LOC = [x['location'] for x in loc]
 

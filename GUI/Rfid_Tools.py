@@ -83,9 +83,9 @@ class addWidget():
         if tagId in TIL:
             tagIdStatus = TIL[tagId]
             debug.info(tagIdStatus)
-            self.disableWriteButtons()
 
             if (tagIdStatus == 1):
+                self.disableWriteButtons()
                 self.ui.statusBox.setText("ACTIVE")
                 if tagId in TI:
                     getSlFrmTid = "SELECT serial_no FROM SERIAL_NO WHERE tag_id=\"{}\" ".format(tagId)
@@ -204,8 +204,8 @@ class addWidget():
         if (ack=="ack_pass"):
             self.ui.textEdit.append("Writing Done")
             self.addTagIdToDb()
-        if (ack=="ack_fail"):
-            self.ui.textEdit.append("Writing Failed")
+        else:
+            self.ui.textEdit.append(ack)
 
     def addTagIdToDb(self):
         tagId = str(self.ui.randomHexBox.text())
@@ -277,10 +277,10 @@ class writeThread(QThread):
         try:
             ack = self.socket.recv_multipart()
             debug.info(ack)
-            if (ack[0]=="ack_pass"):
-                self.ackReceived.emit(ack[0])
-            else:
-                self.ackReceived.emit("ack_fail")
+            # if (ack[0]=="ack_pass"):
+            self.ackReceived.emit(ack[0])
+            # else:
+                # self.ackReceived.emit("ack_fail")
         except:
             debug.info(str(sys.exc_info()))
 

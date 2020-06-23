@@ -252,6 +252,11 @@ if __name__ == '__main__':
     # viewer.show()
     ui.setWindowTitle('IMAGE VIEWER')
     ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, "granthaLogo.png")))
-    ui.showMaximized()
+    # ui.showMaximized()
+    qr = ui.frameGeometry()
+    cp = QtWidgets.QDesktopWidget().availableGeometry().center()
+    qr.moveCenter(cp)
+    ui.move(qr.topLeft())
+    ui.show()
     sys.exit(app.exec_())
 

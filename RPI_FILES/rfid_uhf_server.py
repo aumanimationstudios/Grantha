@@ -275,11 +275,17 @@ def writeEpc(connection,tagId):
                                     debug.info("Unable to write!")
                                     raise ValueError('unable to write!')
                             except:
-                                print ("Trying Again!" + str(sys.exc_info()))
+                                # print ("Trying Again!" + str(sys.exc_info()))
+                                ack = str(sys.exc_info())
+                                print ("Write Failed!" + ack)
+                                return ack
             else:
+                debug.info("Unable to set select!")
                 raise ValueError('Unable to set select.')
         except:
-            print ("Trying Again!" + str(sys.exc_info()))
+            ack = str(sys.exc_info())
+            print ("Write Failed!" + ack)
+            return ack
 
 
 

@@ -383,6 +383,16 @@ class addWidget():
         messagebox = TimerMessageBox(1, msg)
         messagebox.exec_()
         slNo = str((self.ui.serialNoBox.currentText()).strip())
+        slNoDir = imageTempDir+slNo
+        cmd = "mkdir "+ slNoDir
+        debug.info(cmd)
+        if os.path.exists(slNoDir):
+            debug.info("Folder exists " + slNoDir)
+        else:
+            try:
+                os.system(cmd)
+            except:
+                debug.info(str(sys.exc_info()))
         subprocess.Popen(["python", os.path.join(projDir, "GUI", "Pi_Camera_Preview.py"), slNo])
 
     def loadDetails(self):

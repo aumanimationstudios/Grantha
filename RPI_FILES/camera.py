@@ -29,9 +29,17 @@ try:
 
     i = args.filename
     debug.info(i)
-    camera.capture('/home/pi/Pictures/%s.jpg' %i)
 
-    os.system("rsync -av /home/pi/Pictures/%s.jpg bluepixels@blue0666:/blueprod/STOR2/stor2/grantha/share/temp/" %i)
+    tempFolder = "/blueprod/STOR2/stor2/grantha/share/temp/" + i +"/"
+
+    n = 1
+    while os.path.exists('/home/pi/Pictures/%s_%d.jpg' %(i,n)):
+        n+=1
+    # camera.capture('/home/pi/Pictures/image0%s.jpg' %n)
+    # camera.capture('/home/pi/Pictures/%s.jpg' %i)
+    camera.capture('/home/pi/Pictures/%s_%d.jpg' %(i,n))
+
+    os.system("rsync -av /home/pi/Pictures/%s_%d.jpg bluepixels@blue0666:"+tempFolder %(i,n))
 
 except:
     debug.info(str(sys.exc_info()))
