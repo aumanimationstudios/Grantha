@@ -33,13 +33,13 @@ try:
     tempFolder = "/blueprod/STOR2/stor2/grantha/share/temp/" + i +"/"
 
     n = 1
-    while os.path.exists('/home/pi/Pictures/%s_%d.jpg' %(i,n)):
+    while os.path.exists('/home/pi/Pictures/%s_%s.jpg' %(i,str(n))):
         n+=1
     # camera.capture('/home/pi/Pictures/image0%s.jpg' %n)
     # camera.capture('/home/pi/Pictures/%s.jpg' %i)
-    camera.capture('/home/pi/Pictures/%s_%d.jpg' %(i,n))
+    camera.capture('/home/pi/Pictures/%s_%s.jpg' %(i,str(n)))
 
-    os.system("rsync -av /home/pi/Pictures/%s_%d.jpg bluepixels@blue0666:"+tempFolder %(i,n))
+    os.system("rsync -av /home/pi/Pictures/%s_%s.jpg bluepixels@blue0666:"+tempFolder %(i,str(n)))
 
 except:
     debug.info(str(sys.exc_info()))
