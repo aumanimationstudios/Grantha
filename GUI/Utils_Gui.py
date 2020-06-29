@@ -18,6 +18,12 @@ def setStyleSheet(ui):
     with open(qssFile, "r") as sS:
         ui.setStyleSheet(sS.read())
 
+def getFileSize(fileSize):
+    for count in ['Bytes', 'KB', 'MB']:
+        if fileSize > -1024.0 and fileSize < 1024.0:
+            size = "%3.1f%s" % (fileSize, count)
+        fileSize /= 1024.0
+    return str(size)
 
 def imageWidgetClicked(path):
     """
@@ -35,6 +41,7 @@ def imageWidgetClicked(path):
     # subprocess.Popen(cmdFull, shell=True)
     # cmd = "python " + os.path.join(projDir, "src", "batch_rename.py") + " --path " + path + " --asset " + selectedFiles[0]
     cmd = "python " + os.path.join(projDir, "GUI", "imageViewerGrantha.py")+" --path "+ image_path
+    # cmd = "xdg-open " + image_path
     debug.info(cmd)
     subprocess.Popen(cmd, shell=True)
 

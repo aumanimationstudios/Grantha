@@ -15,6 +15,8 @@ import zmq
 import debug
 import subprocess
 from Utils_Gui import *
+import glob
+import json
 
 filePath = os.path.abspath(__file__)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
@@ -29,11 +31,15 @@ context = zmq.Context()
 imagePicsDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
 imageTempDir = "/blueprod/STOR2/stor2/grantha/share/temp/"
 
+# vLayImages = QtWidgets.QVBoxLayout()
+# hLayImages = QtWidgets.QHBoxLayout()
+imageNames = {}
+
 class addWidget():
     # db = database.DataBase()
     db = dbGrantha.dbGrantha()
 
-    # getSN = "SELECT * FROM SERIAL_NO"
+    getSN = "SELECT * FROM SERIAL_NO"
     getIT = "SELECT * FROM ITEM_TYPE"
     getDESC = "SELECT * FROM DESCRIPTION"
     getMK = "SELECT * FROM MAKE"
@@ -41,9 +47,13 @@ class addWidget():
     getLOC = "SELECT location FROM LOCATION"
     getUSR = "SELECT * FROM USER"
 
-    # sn = db.execute(getSN,dictionary=True)
-    # slNoList = [x['serial_no'] for x in sn]
+    sn = db.execute(getSN,dictionary=True)
+    slNoList = [x['serial_no'] for x in sn]
 
+    # getSN = "SELECT * FROM SERIAL_NO"
+    # self.sn = self.db.execute(getSN, dictionary=True)
+    # self.slNoList = [x['serial_no'] for x in self.sn]
+    #
     it = db.execute(getIT,dictionary=True)
     itemTypeList = [x['item_type'] for x in it]
 
@@ -67,8 +77,14 @@ class addWidget():
 
     def __init__(self):
         self.ui = uic.loadUi(os.path.join(uiDir, 'Manage_Items.ui'))
+        # self.ui = uic.loadUi(os.path.join(projDir, "Test", 'Manage_Items_Test.ui'))
 
         # self.db = database.DataBase()
+        self.ui.hideButton.hide()
+        # self.ui.imagesFrame.hide()
+        self.ui.listWidget.hide()
+
+
         self.ui.frame.setLayout(self.layout)
         self.load()
         self.ui.serialNoBox.setCurrentText(" ")
@@ -86,6 +102,7 @@ class addWidget():
         self.ui.updateTagButton.pressed.connect(self.disableCheckboxesAndBoxes)
 
 
+        self.ui.imageCheckBox.clicked.connect(self.enableImageBox)
         self.ui.serialNoCheckBox.clicked.connect(self.enableSerialNoBox)
         self.ui.tagIdCheckBox.clicked.connect(self.enableTagIdBox)
         self.ui.itemTypeCheckBox.clicked.connect(self.enableItemTypeBox)
@@ -100,6 +117,7 @@ class addWidget():
 
         self.ui.captureButton.clicked.connect(self.captureImage)
         self.ui.loadButton.clicked.connect(self.loadImage)
+        self.ui.hideButton.clicked.connect(self.hideImage)
         self.ui.serialNoBox.currentIndexChanged.connect(self.loadDetails)
         self.ui.generateButton.clicked.connect(self.slNoGen)
         self.ui.readButton.clicked.connect(self.readFromRfidTag)
@@ -116,15 +134,21 @@ class addWidget():
         self.ui.purchaseCal.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
         self.ui.validCal.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
+        self.center()
         self.ui.show()
+        # self.ui.resize(656,500)
+        self._contract()
         self.ui.cancelButton.clicked.connect(self.closeEvent)
 
         setStyleSheet(self.ui)
 
 
     def enableCheckBoxes(self):
+        self.hideImage()
+        self.loadDetails()
+        self.ui.imageCheckBox.setEnabled(True)
         self.ui.serialNoCheckBox.setEnabled(True)
-        self.ui.tagIdCheckBox.setEnabled(True)
+        # self.ui.tagIdCheckBox.setEnabled(True)
         self.ui.itemTypeCheckBox.setEnabled(True)
         self.ui.descriptionCheckBox.setEnabled(True)
         self.ui.makeCheckBox.setEnabled(True)
@@ -164,8 +188,12 @@ class addWidget():
 
 
     def disableCheckboxes(self):
+        self.hideImage()
+        self.loadDetails()
         self.ui.imageCheckBox.setEnabled(False)
         self.ui.frame.setEnabled(True)
+        self.ui.imageCheckBox.setEnabled(False)
+        self.ui.imageCheckBox.setChecked(False)
         self.ui.serialNoCheckBox.setEnabled(False)
         self.ui.serialNoCheckBox.setChecked(False)
         self.ui.tagIdCheckBox.setEnabled(False)
@@ -213,8 +241,21 @@ class addWidget():
         self.ui.userNoneButton.setEnabled(True)
 
     def disableCheckboxesAndBoxes(self):
+        self.hideImage()
         self.disableCheckboxes()
         self.disableItToUsrBoxes()
+
+    def enableImageBox(self):
+        if (self.ui.imageCheckBox.isChecked()):
+            self.ui.imageBox.setEnabled(True)
+            self.ui.captureButton.setEnabled(True)
+            self.ui.loadButton.setEnabled(True)
+            self.ui.hideButton.setEnabled(True)
+        else:
+            self.ui.imageBox.setEnabled(False)
+            self.ui.captureButton.setEnabled(False)
+            self.ui.loadButton.setEnabled(False)
+            self.ui.hideButton.setEnabled(False)
 
     def enableSerialNoBox(self):
         if (self.ui.serialNoCheckBox.isChecked()):
@@ -298,10 +339,19 @@ class addWidget():
             self.ui.userBox.setEnabled(False)
             self.ui.userNoneButton.setEnabled(False)
 
+    def center(self):
+        qr = self.ui.frameGeometry()
+        cp = QtWidgets.QDesktopWidget().availableGeometry().center()
+        debug.info(cp)
+        # qr.moveCenter(cp)
+        qr.moveCenter(QtCore.QPoint(cp.x(), 250))
+        self.ui.move(qr.topLeft())
+
     def load(self):
-        getSN = "SELECT * FROM SERIAL_NO"
-        self.sn = self.db.execute(getSN, dictionary=True)
-        self.slNoList = [x['serial_no'] for x in self.sn]
+        # getSN = "SELECT * FROM SERIAL_NO"
+        # self.sn = self.db.execute(getSN, dictionary=True)
+        # self.slNoList = [x['serial_no'] for x in self.sn]
+        self.slNoList.sort()
         self.ui.serialNoBox.clear()
         self.ui.serialNoBox.addItems(self.slNoList)
 
@@ -327,25 +377,180 @@ class addWidget():
 
         self.clearAll()
 
+    def convert_keys_to_string(self,dictionary):
+        """Recursively converts dictionary keys to strings."""
+        if not isinstance(dictionary, dict):
+            return dictionary
+        return dict((str(k), str(v))
+            for k, v in dictionary.items())
 
     def loadImage(self):
-        self.widget = QWidget()
-        hLay = QHBoxLayout()
-        self.widget.setLayout(hLay)
-        treeView = QTreeView()
-        hLay.addWidget(treeView)
-        # imageDir = "/blueprod/STOR2/stor2/grantha/share/temp/"
-        self.dirModel = QFileSystemModel()
-        self.dirModel.setRootPath(imageTempDir)
-        self.dirModel.setFilter(QDir.NoDotAndDotDot | QDir.Files)
-        treeView.setModel(self.dirModel)
-        treeView.setRootIndex(self.dirModel.index(imageTempDir))
-        treeView.hideColumn(1)
-        treeView.hideColumn(2)
-        treeView.hideColumn(3)
-        treeView.clicked.connect(self.fileClicked)
-        self.widget.resize(250,400)
-        self.widget.show()
+        global imageNames
+        slNo = str((self.ui.serialNoBox.currentText()).strip())
+        # slNoDir = ""
+        if slNo:
+            slNoDir = imagePicsDir + slNo
+        else:
+            return
+        if (self.ui.addButton.isChecked()):
+            # self.ui.imageBox.clear()
+            if imageNames:
+                debug.info(imageNames)
+                imageNames.clear()
+            else:
+                debug.info("no image names")
+
+
+            # if slNo in self.slNoList:
+            #     slNoDir = imagePicsDir + slNo
+            # else:
+            #     self.ui.imageBox.clear()
+            #     slNoDir = imageTempDir + slNo
+
+        elif (self.ui.updateButton.isChecked()):
+            if slNo in self.slNoList:
+            # slNoDir = imageTempDir + slNo
+            # slNo = self.ui.serialNoBox.currentText().strip()
+                getImages = "SELECT image FROM ITEMS WHERE serial_no='%s' " % (slNo)
+                # details = self.db.getDetails(query)
+                im = self.db.execute(getImages, dictionary=True)
+                imFDb = [x['image'] for x in im][0].replace("\'", "\"")
+                debug.info(imFDb)
+                imageFrmDb = {}
+                try:
+                    imageFrmDb = json.loads(imFDb)
+                except:
+                    debug.info(str(sys.exc_info()))
+                debug.info(imageFrmDb)
+                debug.info(self.convert_keys_to_string(imageFrmDb))
+                # imageNames = imageFrmDb
+                imageNames = self.convert_keys_to_string(imageFrmDb)
+        # self.ui.resize(656,800)
+
+        # self.widget = QtWidgets.QWidget()
+        # vLay = QtWidgets.QVBoxLayout()
+        # self.widget.setLayout(vLay)
+
+        # imageListUi = uic.loadUi(os.path.join(projDir,"Test", "imageList.ui"))
+        # slNo = str((self.ui.serialNoBox.currentText()).strip())
+        # slNoDir = imageTempDir + slNo
+        # formats = ("jpg","png")
+        images = []
+        # for format in formats:
+        #     images.extend(glob.glob(slNoDir.rstrip(os.sep) + os.sep + "*.%s" % format))
+        # (_, _, filenames) = next(os.walk(slNoDir))
+        if os.path.exists(slNoDir):
+            (dirpath, dirnames, filenames) = next(os.walk(slNoDir))
+            images.extend(os.path.join(dirpath, filename) for filename in filenames)
+            images.sort()
+
+        debug.info(images)
+        # vLayImages = QtWidgets.QVBoxLayout()
+        # self.ui.imagesFrame.setLayout(vLayImages)
+        # for i in reversed(range(hLayImages.count())):
+        #     hLayImages.itemAt(i).widget().setParent(None)
+        if images:
+            self._expand()
+            self.ui.listWidget.show()
+            self.ui.listWidget.clear()
+            for i in images:
+                label = (i.split(os.sep)[-1:][0]).split('.')[0]
+                debug.info(label)
+                checkbox = QtWidgets.QCheckBox(i)
+                checkbox.setText(label)
+                if label in imageNames.keys():
+                    # checkbox.setEnabled(False)
+                    checkbox.setChecked(True)
+                # checkbox.clicked.connect(self.addImageNames)
+                checkbox.clicked.connect(lambda x, button=checkbox,image=i: self.addImageNames(button,image))
+
+                # imageListUi.verticalLayout.addWidget(checkbox)
+                # vLay.addWidget(checkbox)
+                # vLayImages.addWidget(checkbox)
+
+                imageThumb = ImageWidget(i, 32)
+                imageThumb.clicked.connect(lambda x, imagePath=i: imageWidgetClicked(imagePath))
+
+                itemWidget = QtWidgets.QWidget()
+                hl = QtWidgets.QHBoxLayout()
+                itemWidget.setLayout(hl)
+                hl.addWidget(checkbox)
+                hl.addWidget(imageThumb)
+
+                item = QListWidgetItemSort()
+                item.setSizeHint(itemWidget.sizeHint() + QtCore.QSize(10, 10))
+                self.ui.listWidget.addItem(item)
+                self.ui.listWidget.setItemWidget(item,itemWidget)
+            # textBox = QtWidgets.QTextEdit()
+            # vLay.addWidget(textBox)
+            # self.widget.resize(250,200)
+            # self.widget.show()
+            # setStyleSheet(self.widget)
+
+            self.ui.loadButton.hide()
+            self.ui.hideButton.show()
+        # self.ui.imagesFrame.show()
+
+        # self.widget = QWidget()
+        # hLay = QHBoxLayout()
+        # self.widget.setLayout(hLay)
+        # treeView = QTreeView()
+        # hLay.addWidget(treeView)
+        # # imageDir = "/blueprod/STOR2/stor2/grantha/share/temp/"
+        # self.dirModel = QFileSystemModel()
+        # # self.dirModel.setRootPath(imageTempDir)
+        # self.dirModel.setRootPath(slNoDir)
+        # self.dirModel.setFilter(QDir.NoDotAndDotDot | QDir.Files)
+        # treeView.setModel(self.dirModel)
+        # # treeView.setRootIndex(self.dirModel.index(imageTempDir))
+        # treeView.setRootIndex(self.dirModel.index(slNoDir))
+        # treeView.hideColumn(1)
+        # treeView.hideColumn(2)
+        # treeView.hideColumn(3)
+        # treeView.clicked.connect(self.fileClicked)
+        # self.widget.resize(250,400)
+        # self.widget.show()
+
+    def hideImage(self):
+        self._contract()
+        # self.ui.resize(656,500)
+        self.ui.hideButton.hide()
+        # self.ui.imagesFrame.hide()
+        self.ui.loadButton.show()
+        self.ui.listWidget.hide()
+
+    def addImageNames(self, button,image):
+        if button.isChecked():
+            imageNames[str(button.text())] = str(image)
+            debug.info(imageNames)
+            # imageNames.append(str(button.text()))
+            # imNStr = "  :  ".join(x.split('.')[0] for x in imageNames)
+            imNStr = "  :  ".join((x) for x in imageNames.keys())
+            # for iL in imageNames.keys():
+            #     self.ui.imageBox.setText(iL)
+            self.ui.imageBox.setText(imNStr)
+
+        else:
+            try:
+                del imageNames[str(button.text())]
+            except:
+                (debug.info(str(sys.exc_info())))
+            debug.info(imageNames)
+            imNStr = "  :  ".join((x) for x in imageNames.keys())
+            # for iL in imageNames.keys():
+            #     self.ui.imageBox.setText(iL)
+            self.ui.imageBox.setText(imNStr)
+            # imageNames.remove(str(button.text()))
+            # # imNStr = ",".join(imageNames)
+            # imNStr = "  :  ".join(x.split('.')[0] for x in imageNames)
+            # self.ui.imageBox.setText(imNStr)
+            pass
+
+    def _expand(self):
+        self.ui.resize(656, 800)
+
+    def _contract(self):
+        self.ui.resize(656, 500)
 
     def fileClicked(self, index):
         path = (self.dirModel.fileInfo(index).absoluteFilePath()).strip()
@@ -383,7 +588,8 @@ class addWidget():
         messagebox = TimerMessageBox(1, msg)
         messagebox.exec_()
         slNo = str((self.ui.serialNoBox.currentText()).strip())
-        slNoDir = imageTempDir+slNo
+        # slNoDir = imageTempDir+slNo
+        slNoDir = imagePicsDir+slNo
         cmd = "mkdir "+ slNoDir
         debug.info(cmd)
         if os.path.exists(slNoDir):
@@ -401,6 +607,7 @@ class addWidget():
         else:
             slNo = self.ui.serialNoBox.currentText().strip()
             # print slNo
+            self.hideImage()
 
             if slNo in self.slNoList:
                 getTidFrmSl = "SELECT tag_id FROM SERIAL_NO WHERE serial_no=\"{}\" ".format(slNo)
@@ -491,21 +698,27 @@ class addWidget():
         self.ui.locationBox.setCurrentText(lOC)
         self.ui.userBox.setCurrentText(uSR)
 
-        path = details["image"]
+        imagePaths = {}
+        try:
+            imagePaths = json.loads(details["image"].replace("\'", "\""))
+        except:
+            debug.info(str(sys.exc_info()))
+        debug.info(imagePaths)
+
         self.ui.imageBox.clear()
-        self.ui.imageBox.setText(path)
-        debug.info(path)
+        self.ui.imageBox.setText("  :  ".join((str(x)) for x in imagePaths.keys()))
+        # debug.info(path)
 
         # for i in reversed(range(self.layout.count())):
         #     self.layout.itemAt(i).widget().setParent(None)
-        if path:
-            self.setImageThumb(path,clickable=True)
-            # imageThumb = ImageWidget(path, 32)
-            # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-            # self.layout.addWidget(imageThumb)
-        else:
-            path = os.path.join(imageDir, "image.png")
-            self.setImageThumb(path)
+        # if path:
+        #     self.setImageThumb(path,clickable=True)
+        #     # imageThumb = ImageWidget(path, 32)
+        #     # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+        #     # self.layout.addWidget(imageThumb)
+        # else:
+        #     path = os.path.join(imageDir, "image.png")
+        #     self.setImageThumb(path)
             # imageThumb = ImageWidget(path, 32)
             # self.layout.addWidget(imageThumb)
 
@@ -529,7 +742,8 @@ class addWidget():
         # imageThumb = ImageWidget(path, 32)
         # # imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
         # self.layout.addWidget(imageThumb)
-
+        imageNames.clear()
+        self.hideImage()
         self.ui.imageBox.clear()
         self.ui.serialNoBox.setCurrentText(" ")
         # self.ui.serialNoBox.setCurrentIndex(0)
@@ -613,7 +827,7 @@ class addWidget():
         userInput["warranty_valid_till"] = str(self.ui.validBox.text().strip())
         userInput["location"] = str(self.ui.locationBox.currentText().strip())
         userInput["user"] = str(self.ui.userBox.currentText().strip())
-        userInput["image"] = str(self.ui.imageBox.text().strip())
+        userInput["image"] = str(imageNames)
 
         keys = []
         values = []
@@ -622,7 +836,7 @@ class addWidget():
             values.append(userInput[key])
 
         slNo = userInput["serial_no"]
-        imagePath = userInput["image"]
+        # imagePath = userInput["image"]
 
         queryAddItem = "INSERT INTO ITEMS (" + ','.join(keys) + ") VALUES %r" %(tuple(values),)
 
@@ -642,14 +856,26 @@ class addWidget():
                 # addItem = self.db.insertItem(queryAddItem)
                 addItem = self.db.execute(queryAddItem)
                 if (addItem == 1):
-                    if imagePath:
-                        imageTempPath = imageTempDir + slNo + ".jpg"
-                        if os.path.exists(imageTempPath):
-                            cmd = "rsync -av " + imageTempPath + " " + imagePicsDir
-                            debug.info(cmd)
-                            os.system(cmd)
-                    else:
-                        pass
+                    # slNoDir = imagePicsDir + slNo
+                    # mkSlDirCmd = "mkdir " + slNoDir
+                    # debug.info(mkSlDirCmd)
+                    # if os.path.exists(slNoDir):
+                    #     debug.info("Folder exists " + slNoDir)
+                    # else:
+                    #     try:
+                    #         os.system(mkSlDirCmd)
+                    #     except:
+                    #         debug.info(str(sys.exc_info()))
+
+                    # if imageNames:
+                    #     debug.info(imageNames)
+                    #     for i in imageNames.values():
+                    #         mvCmd = "rsync -av " + i + " " + slNoDir + os.sep
+                    #         if os.path.exists(i) and os.path.exists(slNoDir):
+                    #             debug.info(mvCmd)
+                    #             os.system(mvCmd)
+                    # else:
+                    #     pass
                     messageBox("Item Added Successfully", "Serial No added successfully")
                     self.load()
                 else:
@@ -671,9 +897,11 @@ class addWidget():
         slNo =  str(self.ui.serialNoBox.currentText().strip())
         debug.info(slNo)
 
+        if (self.ui.imageCheckBox.isChecked()):
+            # userInput["image"] = str(self.ui.imageBox.text().strip())
+            userInput["image"] = str(imageNames)
         if (self.ui.itemTypeCheckBox.isChecked()):
             userInput["item_type"] = str(self.ui.itemTypeBox.currentText().strip())
-
         if (self.ui.descriptionCheckBox.isChecked()):
             userInput["description"] = str(self.ui.descriptionBox.currentText().strip())
         if (self.ui.makeCheckBox.isChecked()):
@@ -706,6 +934,34 @@ class addWidget():
             updated = self.db.execute(query)
             debug.info(updated)
             if (updated == 1):
+                # slNoDir = imagePicsDir + slNo
+                # mkSlDirCmd = "mkdir " + slNoDir
+                # debug.info(mkSlDirCmd)
+                # if os.path.exists(slNoDir):
+                #     debug.info("Folder exists " + slNoDir)
+                # else:
+                #     try:
+                #         os.system(mkSlDirCmd)
+                #     except:
+                #         debug.info(str(sys.exc_info()))
+                #
+                # if imageNames:
+                #     debug.info(imageNames)
+                #     for i in imageNames.values():
+                #         mvCmd = "rsync -av " + i + " " + slNoDir + os.sep
+                #         if os.path.exists(i) and os.path.exists(slNoDir):
+                #             debug.info(mvCmd)
+                #             os.system(mvCmd)
+                # if imageNames:
+                #     debug.info(imageNames)
+                #     slNoTempDir = imageTempDir + slNo
+                #     for i in imageNames:
+                #         mvCmd = "rsync -av " + slNoTempDir + os.sep + i + " " + slNoDir + os.sep
+                #         if os.path.exists(slNoTempDir) and os.path.exists(slNoDir):
+                #             debug.info(mvCmd)
+                #             os.system(mvCmd)
+                # else:
+                #     pass
                 messageBox("Updated Successfully")
             else:
                 messageBox("<b>Update failed</b>")
@@ -816,7 +1072,13 @@ class captureThread(QThread):
         if (self.socket.closed == True):
             debug.info("Capture Socket closed.")
 
+class QListWidgetItemSort(QtWidgets.QListWidgetItem):
 
+  def __lt__(self, other):
+    return self.data(QtCore.Qt.UserRole) < other.data(QtCore.Qt.UserRole)
+
+  def __ge__(self, other):
+    return self.data(QtCore.Qt.UserRole) > other.data(QtCore.Qt.UserRole)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

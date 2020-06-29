@@ -30,7 +30,8 @@ try:
     i = str(args.filename)
     debug.info(i)
 
-    tempFolder = "/blueprod/STOR2/stor2/grantha/share/temp/" + i +"/"
+    # tempFolder = "/blueprod/STOR2/stor2/grantha/share/temp/" + i +"/"
+    picsFolder = "/blueprod/STOR2/stor2/grantha/share/pics/" + i +"/"
 
     n = 1
     while os.path.exists("/home/pi/Pictures/{0}_{1}.jpg".format(i,str(n))):
@@ -39,7 +40,7 @@ try:
     # camera.capture('/home/pi/Pictures/%s.jpg' %i)
     camera.capture("/home/pi/Pictures/{0}_{1}.jpg".format(i,str(n)))
 
-    os.system("rsync -av /home/pi/Pictures/{0}_{1}.jpg bluepixels@blue0666:".format(i,str(n))+tempFolder)
+    os.system("rsync -av /home/pi/Pictures/{0}_{1}.jpg bluepixels@blue0666:".format(i,str(n))+picsFolder)
 
 except:
     debug.info(str(sys.exc_info()))

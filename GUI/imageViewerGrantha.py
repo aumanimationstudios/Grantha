@@ -127,7 +127,7 @@ class QtImageViewer(QGraphicsView):
             debug.info("pixmap")
             pixmap = image
         elif type(image) is QImage:
-            debug.info("image")
+            # debug.info("image")
             pixmap = QPixmap.fromImage(image)
         else:
             # debug.info(type(image))
@@ -250,7 +250,8 @@ if __name__ == '__main__':
 
     # Show viewer and run application.
     # viewer.show()
-    ui.setWindowTitle('IMAGE VIEWER')
+    # ui.setWindowTitle('IMAGE VIEWER')
+    ui.setWindowTitle(args.path)
     ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, "granthaLogo.png")))
     # ui.showMaximized()
     qr = ui.frameGeometry()

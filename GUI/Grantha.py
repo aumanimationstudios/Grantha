@@ -21,6 +21,9 @@ import time
 import setproctitle
 import tempfile
 import xml.dom.minidom
+import glob
+import datetime
+import json
 
 filePath = os.path.abspath(__file__)
 # debug.info(filePath)
@@ -57,6 +60,12 @@ locList = None
 usrList = None
 sn = None
 pLocs = None
+
+imagePicsDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
+# imageFormats = ("jpg", "png")
+
+os.environ['QT_LOGGING_RULES'] = "qt5ct.debug=false"
+
 
 class mainWindow():
     global processes
@@ -123,6 +132,10 @@ class mainWindow():
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
 
         self.ui.tableWidget.customContextMenuRequested.connect(self.viewParentPopUp)
+        self.ui.tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+
+        # self.ui.splitter.setStretchFactor(2,0.25)
+        self.ui.splitter.setSizes((1100, 50))
 
         self.setMap()
         self.center()
@@ -289,6 +302,7 @@ class mainWindow():
 
 
     def allBtnClick(self):
+        self.ui.messages.setText("loading")
         self.ui.tableWidget.setSortingEnabled(False)
         # self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.setRowCount(0)
@@ -316,28 +330,126 @@ class mainWindow():
                 col +=1
             row +=1
 
-        numRows = self.ui.tableWidget.rowCount()
-        paths = {}
-        for row in range(numRows):
-            path = str(self.ui.tableWidget.item(row, 10).text())
-            paths[row]=path
+        # numRows = self.ui.tableWidget.rowCount()
+        # paths = {}
+        # for row in range(numRows):
+        #     path = str(self.ui.tableWidget.item(row, 10).text())
+        #     paths[row]=path
+        #
+        # if paths:
+        #     for x in paths.keys():
+        #         if paths[x]:
+        #             # debug.info(paths[x])
+        #             self.ui.tableWidget.takeItem(x, 10)
+        #             slNo = self.ui.tableWidget.item(x, 0).text()
+        #             # imageThumb = ImageWidget(paths[x], 32)
+        #             imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+        #             # imageThumb.clicked.connect(lambda x, imagePath=paths[x]: imageWidgetClicked(imagePath))
+        #             imageThumb.clicked.connect(lambda x, slNo=slNo, rowId=x: self.loadImageThumbs(slNo,rowId))
+        #             self.ui.tableWidget.setCellWidget(x, 10, imageThumb)
+        #         else:
+        #             pass
 
-        if paths:
-            for x in paths.keys():
-                if paths[x]:
-                    # debug.info(paths[x])
-                    self.ui.tableWidget.takeItem(x, 10)
-                    imageThumb = ImageWidget(paths[x], 32)
-                    imageThumb.clicked.connect(lambda x, imagePath=paths[x]: imageWidgetClicked(imagePath))
-                    self.ui.tableWidget.setCellWidget(x, 10, imageThumb)
-                else:
-                    pass
+        numRows = self.ui.tableWidget.rowCount()
+        debug.info(numRows)
+        if numRows:
+            for row in range(numRows):
+                imgCell = self.ui.tableWidget.item(row, 10)
+                if imgCell:
+                    self.ui.tableWidget.takeItem(row, 10)
+                    path = str(imgCell.text())
+                    if path:
+                        # slNo = self.ui.tableWidget.item(row, 0).text()
+                        # imageThumb = ImageWidget(path, 32)
+                        imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+                        # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                        imageThumb.clicked.connect(lambda x,path=path, rowId=row: self.loadImageThumbs(path, rowId))
+                        self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+
+
         # self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.resizeRowsToContents()
         self.ui.tableWidget.resizeColumnsToContents()
-        debug.info( "Loaded list of all items.")
+        debug.info("Loaded list of all items.")
+        self.ui.messages.setText("Loaded list of all items.")
         self.ui.tableWidget.setSortingEnabled(True)
 
+    def loadImageThumbs(self,path,rowId):
+        # debug.info(slNo)
+        debug.info(rowId)
+        self.ui.listWidget.clear()
+        # self.ui.tableWidget.selectRow(rowId)
+        imageNames = {}
+        try:
+            imageNames = json.loads(str(path).replace("\'", "\""))
+        except:
+            debug.info(str(sys.exc_info()))
+        debug.info(imageNames)
+        if imageNames:
+            for keys in imageNames:
+                imPath = str(imageNames[keys])
+                debug.info(imPath)
+
+                imageThumb = ImageWidget(imPath, 64)
+                imageThumb.clicked.connect(lambda x, imagePath=imPath: imageWidgetClicked(imagePath))
+
+                label = QtWidgets.QLabel()
+
+                picName = str(imPath.split(os.sep)[-1:][0])
+                size = getFileSize(os.path.getsize(imPath))
+                # timeModified = str(time.ctime(os.path.getmtime(imageName)))
+                timeModified = datetime.datetime.fromtimestamp(os.path.getmtime(imPath)).strftime('%d-%m-%Y %H:%M:%S')
+
+                label.setText("Name: " + picName + "\n" + "Size: " + size + "\n" + "Modified: " + timeModified)
+
+                itemWidget = QtWidgets.QWidget()
+                hl = QtWidgets.QHBoxLayout()
+                itemWidget.setLayout(hl)
+                # hl.addWidget(checkbox)
+                hl.addWidget(imageThumb)
+                hl.addWidget(label)
+
+                item = QListWidgetItemSort()
+                item.setSizeHint(itemWidget.sizeHint() + QtCore.QSize(10, 10))
+                self.ui.listWidget.addItem(item)
+                self.ui.listWidget.setItemWidget(item, itemWidget)
+            self.ui.messages.setText("Loaded images")
+        else:
+            self.ui.messages.setText("No images")
+        # slNoDir = imagePicsDir + slNo
+        # # formats = ("jpg", "png")
+        # images = []
+        # for format in imageFormats:
+        #     images.extend(glob.glob(slNoDir.rstrip(os.sep) + os.sep + "*.%s" % format))
+        # images.sort()
+        # debug.info(images)
+        # if images:
+        #     for i in images:
+        #         imageName = str(i)
+        #
+        #         imageThumb = ImageWidget(i, 64)
+        #         imageThumb.clicked.connect(lambda x, imagePath=imageName: imageWidgetClicked(imagePath))
+        #
+        #         label = QtWidgets.QLabel()
+        #
+        #         picName = imageName.split(os.sep)[-1:][0]
+        #         size = getFileSize(os.path.getsize(imageName))
+        #         # timeModified = str(time.ctime(os.path.getmtime(imageName)))
+        #         timeModified = datetime.datetime.fromtimestamp(os.path.getmtime(imageName)).strftime('%d-%m-%Y %H:%M:%S')
+        #
+        #         label.setText("Name: "+picName+"\n"+"Size: "+size+"\n"+"Modified: "+timeModified)
+        #
+        #         itemWidget = QtWidgets.QWidget()
+        #         hl = QtWidgets.QHBoxLayout()
+        #         itemWidget.setLayout(hl)
+        #         # hl.addWidget(checkbox)
+        #         hl.addWidget(imageThumb)
+        #         hl.addWidget(label)
+        #
+        #         item = QListWidgetItemSort()
+        #         item.setSizeHint(itemWidget.sizeHint() + QtCore.QSize(10, 10))
+        #         self.ui.listWidget.addItem(item)
+        #         self.ui.listWidget.setItemWidget(item,itemWidget)
 
     def search(self):
         self.ui.tableWidget.setSortingEnabled(False)
@@ -490,9 +602,13 @@ class mainWindow():
                         except:
                             pass
                         if path:
+                            # slNo = self.ui.tableWidget.item(rowLoc+row+1, 0).text()
                             self.ui.tableWidget.takeItem(rowLoc+row+1, 10)
-                            imageThumb = ImageWidget(path, 32)
-                            imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                            # imageThumb = ImageWidget(path, 32)
+                            # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                            imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+                            # imageThumb.clicked.connect(lambda x, slNo=slNo, rowId=rowLoc+row+1: self.loadImageThumbs(slNo, rowId))
+                            imageThumb.clicked.connect(lambda x, path=path, rowId=rowLoc+row+1: self.loadImageThumbs(path, rowId))
                             self.ui.tableWidget.setCellWidget(rowLoc+row+1, 10, imageThumb)
 
                         col += 1
@@ -534,15 +650,21 @@ class mainWindow():
         # self.ui.tableWidget.resizeColumnsToContents()
 
         numRows = self.ui.tableWidget.rowCount()
-        for row in range(numRows):
-            imgCell = self.ui.tableWidget.item(row, 10)
-            if imgCell:
-                path = str(imgCell.text())
-                # debug.info(path)
-                self.ui.tableWidget.takeItem(row, 10)
-                imageThumb = ImageWidget(path, 32)
-                imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-                self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+        debug.info(numRows)
+        if numRows:
+            for row in range(numRows):
+                imgCell = self.ui.tableWidget.item(row, 10)
+                if imgCell:
+                    self.ui.tableWidget.takeItem(row, 10)
+                    path = str(imgCell.text())
+                    if path:
+                        # slNo = self.ui.tableWidget.item(row,0).text()
+                        # imageThumb = ImageWidget(path, 32)
+                        imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+                        # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                        # imageThumb.clicked.connect(lambda x, slNo=slNo, rowId=row: self.loadImageThumbs(slNo,rowId))
+                        imageThumb.clicked.connect(lambda x, path=path, rowId=row: self.loadImageThumbs(path, rowId))
+                        self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
 
         self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.resizeRowsToContents()
@@ -815,8 +937,10 @@ class mainWindow():
                         path = str(imgCell.text())
                         # debug.info(path)
                         self.ui.tableWidget.takeItem(numRow, 10)
-                        imageThumb = ImageWidget(path, 32)
-                        imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                        # imageThumb = ImageWidget(path, 32)
+                        imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+                        imageThumb.clicked.connect(lambda x, path=path, rowId=row: self.loadImageThumbs(path, rowId))
+                        # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
                         self.ui.tableWidget.setCellWidget(numRow, 10, imageThumb)
 
                     self.ui.tableWidget.resizeRowsToContents()
@@ -978,7 +1102,13 @@ class stopReadThread(QThread):
         if (self.socket.closed == True):
             debug.info( "stop Read Socket closed.")
 
+class QListWidgetItemSort(QtWidgets.QListWidgetItem):
 
+  def __lt__(self, other):
+    return self.data(QtCore.Qt.UserRole) < other.data(QtCore.Qt.UserRole)
+
+  def __ge__(self, other):
+    return self.data(QtCore.Qt.UserRole) > other.data(QtCore.Qt.UserRole)
 
 if __name__ == '__main__':
     setproctitle.setproctitle("GRANTHA")
