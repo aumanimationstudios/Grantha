@@ -361,10 +361,16 @@ class mainWindow():
                     if path:
                         # slNo = self.ui.tableWidget.item(row, 0).text()
                         # imageThumb = ImageWidget(path, 32)
-                        imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
-                        # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-                        imageThumb.clicked.connect(lambda x,path=path, rowId=row: self.loadImageThumbs(path, rowId))
-                        self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+                        imageButton = QtWidgets.QPushButton()
+                        imageButton.setText("Image")
+
+                        # imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+                        # # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                        # imageThumb.clicked.connect(lambda x,path=path, rowId=row: self.loadImageThumbs(path, rowId))
+                        # index = QtCore.QPersistentModelIndex(self.ui.tableWidget.model().index(row, 10))
+                        imageButton.clicked.connect(lambda x,path=path, button=imageButton: self.loadImageThumbs(path, button))
+                        # self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+                        self.ui.tableWidget.setCellWidget(row, 10, imageButton)
 
 
         # self.ui.tableWidget.resizeColumnsToContents()
@@ -374,11 +380,15 @@ class mainWindow():
         self.ui.messages.setText("Loaded list of all items.")
         self.ui.tableWidget.setSortingEnabled(True)
 
-    def loadImageThumbs(self,path,rowId):
+    def loadImageThumbs(self,path, button):
         # debug.info(slNo)
-        debug.info(rowId)
+        # debug.info(rowId)
+        # buttonClicked = self.sender()
+        index = self.ui.tableWidget.indexAt(button.pos())
+        debug.info(index.row())
+        self.ui.tableWidget.selectRow(index.row())
+
         self.ui.listWidget.clear()
-        # self.ui.tableWidget.selectRow(rowId)
         imageNames = {}
         try:
             imageNames = json.loads(str(path).replace("\'", "\""))
@@ -606,10 +616,15 @@ class mainWindow():
                             self.ui.tableWidget.takeItem(rowLoc+row+1, 10)
                             # imageThumb = ImageWidget(path, 32)
                             # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-                            imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
-                            # imageThumb.clicked.connect(lambda x, slNo=slNo, rowId=rowLoc+row+1: self.loadImageThumbs(slNo, rowId))
-                            imageThumb.clicked.connect(lambda x, path=path, rowId=rowLoc+row+1: self.loadImageThumbs(path, rowId))
-                            self.ui.tableWidget.setCellWidget(rowLoc+row+1, 10, imageThumb)
+                            # imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+                            # # imageThumb.clicked.connect(lambda x, slNo=slNo, rowId=rowLoc+row+1: self.loadImageThumbs(slNo, rowId))
+                            # imageThumb.clicked.connect(lambda x, path=path, rowId=rowLoc+row+1: self.loadImageThumbs(path, rowId))
+                            # self.ui.tableWidget.setCellWidget(rowLoc+row+1, 10, imageThumb)
+
+                            imageButton = QtWidgets.QPushButton()
+                            imageButton.setText("Image")
+                            imageButton.clicked.connect(lambda x, path=path, button=imageButton: self.loadImageThumbs(path, button))
+                            self.ui.tableWidget.setCellWidget(rowLoc+row+1, 10, imageButton)
 
                         col += 1
                     row += 1
@@ -660,11 +675,16 @@ class mainWindow():
                     if path:
                         # slNo = self.ui.tableWidget.item(row,0).text()
                         # imageThumb = ImageWidget(path, 32)
-                        imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
-                        # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-                        # imageThumb.clicked.connect(lambda x, slNo=slNo, rowId=row: self.loadImageThumbs(slNo,rowId))
-                        imageThumb.clicked.connect(lambda x, path=path, rowId=row: self.loadImageThumbs(path, rowId))
-                        self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+                        # imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+                        # # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                        # # imageThumb.clicked.connect(lambda x, slNo=slNo, rowId=row: self.loadImageThumbs(slNo,rowId))
+                        # imageThumb.clicked.connect(lambda x, path=path, rowId=row: self.loadImageThumbs(path, rowId))
+                        # self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
+
+                        imageButton = QtWidgets.QPushButton()
+                        imageButton.setText("Image")
+                        imageButton.clicked.connect(lambda x, path=path, button=imageButton: self.loadImageThumbs(path, button))
+                        self.ui.tableWidget.setCellWidget(row, 10, imageButton)
 
         self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.resizeRowsToContents()
@@ -842,7 +862,8 @@ class mainWindow():
             self.ui.readMultiButton.setEnabled(True)
 
         else:
-            messageBox("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>","",os.path.join(imageDir,"oh.png"))
+            # messageBox("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>","",os.path.join(imageDir,"oh.png"))
+            self.ui.messages.setText("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>","",os.path.join(imageDir,"oh.png"))
             self.ui.readSingleButton.setEnabled(True)
             self.ui.readMultiButton.setEnabled(True)
             # self.wrongTagMessage()
@@ -935,13 +956,19 @@ class mainWindow():
                     imgCell = self.ui.tableWidget.item(numRow, 10)
                     if imgCell:
                         path = str(imgCell.text())
-                        # debug.info(path)
-                        self.ui.tableWidget.takeItem(numRow, 10)
-                        # imageThumb = ImageWidget(path, 32)
-                        imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
-                        imageThumb.clicked.connect(lambda x, path=path, rowId=row: self.loadImageThumbs(path, rowId))
-                        # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-                        self.ui.tableWidget.setCellWidget(numRow, 10, imageThumb)
+                        if path:
+                            # debug.info(path)
+                            self.ui.tableWidget.takeItem(numRow, 10)
+                            # imageThumb = ImageWidget(path, 32)
+                            # imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
+                            # imageThumb.clicked.connect(lambda x, path=path, rowId=row: self.loadImageThumbs(path, rowId))
+                            # # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
+                            # self.ui.tableWidget.setCellWidget(numRow, 10, imageThumb)
+                            imageButton = QtWidgets.QPushButton()
+                            imageButton.setText("Image")
+                            imageButton.clicked.connect(
+                                lambda x, path=path, button=imageButton: self.loadImageThumbs(path, button))
+                            self.ui.tableWidget.setCellWidget(numRow, 10, imageButton)
 
                     self.ui.tableWidget.resizeRowsToContents()
                     self.ui.tableWidget.resizeColumnsToContents()

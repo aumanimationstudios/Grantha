@@ -72,7 +72,7 @@ class addWidget():
     usr = db.execute(getUSR,dictionary=True)
     userList = [x['user'] for x in usr]
 
-    layout = QVBoxLayout()
+    # layout = QVBoxLayout()
 
 
     def __init__(self):
@@ -85,7 +85,7 @@ class addWidget():
         self.ui.listWidget.hide()
 
 
-        self.ui.frame.setLayout(self.layout)
+        # self.ui.frame.setLayout(self.layout)
         self.load()
         self.ui.serialNoBox.setCurrentText(" ")
         self.ui.itemTypeBox.setCurrentText(" ")
@@ -165,7 +165,7 @@ class addWidget():
         self.disableItToUsrBoxes()
 
     def disableItToUsrBoxes(self):
-        self.ui.frame.setEnabled(False)
+        # self.ui.frame.setEnabled(False)
         self.ui.imageBox.setEnabled(False)
         self.ui.captureButton.setEnabled(False)
         self.ui.loadButton.setEnabled(False)
@@ -191,7 +191,7 @@ class addWidget():
         self.hideImage()
         self.loadDetails()
         self.ui.imageCheckBox.setEnabled(False)
-        self.ui.frame.setEnabled(True)
+        # self.ui.frame.setEnabled(True)
         self.ui.imageCheckBox.setEnabled(False)
         self.ui.imageCheckBox.setChecked(False)
         self.ui.serialNoCheckBox.setEnabled(False)
@@ -552,22 +552,22 @@ class addWidget():
     def _contract(self):
         self.ui.resize(656, 500)
 
-    def fileClicked(self, index):
-        path = (self.dirModel.fileInfo(index).absoluteFilePath()).strip()
-        debug.info(path)
-        imageName = str(path.split(os.sep)[-1:][0])
-        finalPath = imagePicsDir+imageName
-        debug.info(finalPath)
-        self.ui.imageBox.clear()
-        self.ui.imageBox.setText(finalPath)
-
-        self.widget.close()
-        self.setImageThumb(path,clickable=True)
-        # for i in reversed(range(self.layout.count())):
-        #     self.layout.itemAt(i).widget().setParent(None)
-        # imageThumb = ImageWidget(path, 32)
-        # imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
-        # self.layout.addWidget(imageThumb)
+    # def fileClicked(self, index):
+    #     path = (self.dirModel.fileInfo(index).absoluteFilePath()).strip()
+    #     debug.info(path)
+    #     imageName = str(path.split(os.sep)[-1:][0])
+    #     finalPath = imagePicsDir+imageName
+    #     debug.info(finalPath)
+    #     self.ui.imageBox.clear()
+    #     self.ui.imageBox.setText(finalPath)
+    #
+    #     self.widget.close()
+    #     self.setImageThumb(path,clickable=True)
+    #     # for i in reversed(range(self.layout.count())):
+    #     #     self.layout.itemAt(i).widget().setParent(None)
+    #     # imageThumb = ImageWidget(path, 32)
+    #     # imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
+    #     # self.layout.addWidget(imageThumb)
 
 
     def captureImage(self):
@@ -735,8 +735,8 @@ class addWidget():
         self.ui.userBox.setCurrentIndex(0)
 
     def clearAll(self):
-        path = os.path.join(imageDir, "image.png")
-        self.setImageThumb(path)
+        # path = os.path.join(imageDir, "image.png")
+        # self.setImageThumb(path)
         # for i in reversed(range(self.layout.count())):
         #     self.layout.itemAt(i).widget().setParent(None)
         # imageThumb = ImageWidget(path, 32)
@@ -842,6 +842,10 @@ class addWidget():
 
         debug.info(queryAddItem)
         if slNo:
+            if slNo in self.slNoList:
+                messageBox("Sl No exists!!!")
+                return
+
             tagId = str(self.ui.tagIdBox.text().strip())
             if tagId:
                 queryAddSlNo = "INSERT INTO SERIAL_NO (serial_no, tag_id) VALUES (\"{0}\",\"{1}\") ".format(slNo,tagId)
@@ -991,13 +995,13 @@ class addWidget():
         else:
             messageBox("<b>Update failed</b>","Select a serial number and proceed")
 
-    def setImageThumb(self,path,clickable=False):
-        for i in reversed(range(self.layout.count())):
-            self.layout.itemAt(i).widget().setParent(None)
-        imageThumb = ImageWidget(path, 32)
-        if clickable:
-            imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
-        self.layout.addWidget(imageThumb)
+    # def setImageThumb(self,path,clickable=False):
+    #     for i in reversed(range(self.layout.count())):
+    #         self.layout.itemAt(i).widget().setParent(None)
+    #     imageThumb = ImageWidget(path, 32)
+    #     if clickable:
+    #         imageThumb.clicked.connect(lambda x, imagePath = path: imageWidgetClicked(imagePath))
+    #     self.layout.addWidget(imageThumb)
 
     def closeEvent(self):
         self.ui.close()
