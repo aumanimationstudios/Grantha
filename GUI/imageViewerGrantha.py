@@ -15,6 +15,8 @@ from PyQt5.QtGui import QImage, QPixmap, QPainterPath
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QApplication
 from PyQt5 import uic, QtCore, QtGui, QtWidgets, QtSvg
 import debug
+from Utils_Gui import *
+
 
 filePath = os.path.abspath(__file__)
 progPath = os.sep.join(filePath.split(os.sep)[:-2])
@@ -122,7 +124,7 @@ class QtImageViewer(QGraphicsView):
         Raises a RuntimeError if the input image has type other than QImage or QPixmap.
         :type image: QImage | QPixmap
         """
-        svG=None
+        # svG=None
         if type(image) is QPixmap:
             debug.info("pixmap")
             pixmap = image
@@ -169,14 +171,14 @@ class QtImageViewer(QGraphicsView):
         """ Start mouse pan or zoom mode.
         """
         scenePos = self.mapToScene(event.pos())
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.RightButton:
             if self.canPan:
                 self.setDragMode(QGraphicsView.ScrollHandDrag)
-            self.leftMouseButtonPressed.emit(scenePos.x(), scenePos.y())
-        elif event.button() == Qt.RightButton:
+            self.rightMouseButtonPressed.emit(scenePos.x(), scenePos.y())
+        elif event.button() == Qt.LeftButton:
             if self.canZoom:
                 self.setDragMode(QGraphicsView.RubberBandDrag)
-            self.rightMouseButtonPressed.emit(scenePos.x(), scenePos.y())
+            self.leftMouseButtonPressed.emit(scenePos.x(), scenePos.y())
         QGraphicsView.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
@@ -184,10 +186,10 @@ class QtImageViewer(QGraphicsView):
         """
         QGraphicsView.mouseReleaseEvent(self, event)
         scenePos = self.mapToScene(event.pos())
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.RightButton:
             self.setDragMode(QGraphicsView.NoDrag)
-            self.leftMouseButtonReleased.emit(scenePos.x(), scenePos.y())
-        elif event.button() == Qt.RightButton:
+            self.rightMouseButtonReleased.emit(scenePos.x(), scenePos.y())
+        elif event.button() == Qt.LeftButton:
             if self.canZoom:
                 viewBBox = self.zoomStack[-1] if len(self.zoomStack) else self.sceneRect()
                 # debug.info(viewBBox)
@@ -198,19 +200,19 @@ class QtImageViewer(QGraphicsView):
                     self.zoomStack.append(selectionBBox)
                     self.updateViewer()
             self.setDragMode(QGraphicsView.NoDrag)
-            self.rightMouseButtonReleased.emit(scenePos.x(), scenePos.y())
+            self.leftMouseButtonReleased.emit(scenePos.x(), scenePos.y())
 
     def mouseDoubleClickEvent(self, event):
         """ Show entire image.
         """
         scenePos = self.mapToScene(event.pos())
-        if event.button() == Qt.LeftButton:
-            self.leftMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
-        elif event.button() == Qt.RightButton:
+        if event.button() == Qt.RightButton:
+            self.rightMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
+        elif event.button() == Qt.LeftButton:
             if self.canZoom:
                 self.zoomStack = []  # Clear zoom stack.
                 self.updateViewer()
-            self.rightMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
+            self.leftMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
         QGraphicsView.mouseDoubleClickEvent(self, event)
 
 
@@ -253,6 +255,12 @@ if __name__ == '__main__':
     # ui.setWindowTitle('IMAGE VIEWER')
     ui.setWindowTitle(args.path)
     ui.setWindowIcon(QtGui.QIcon(os.path.join(imgFilePath, "granthaLogo.png")))
+    try:
+        theme = os.environ['GRANTHA_THEME']
+        debug.info(theme)
+        setStyleSheet(ui, theme)
+    except:
+        pass
     # ui.showMaximized()
     qr = ui.frameGeometry()
     cp = QtWidgets.QDesktopWidget().availableGeometry().center()

@@ -10,6 +10,7 @@ import random
 import zmq
 import debug
 from Utils_Gui import *
+import setproctitle
 
 filePath = os.path.abspath(__file__)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
@@ -43,8 +44,13 @@ class addWidget():
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
         self.ui.show()
 
-        setStyleSheet(self.ui)
-
+        # setStyleSheet(self.ui)
+        try:
+            theme = os.environ['GRANTHA_THEME']
+            debug.info(theme)
+            setStyleSheet(self.ui, theme)
+        except:
+            pass
 
     def readFromRfidTag(self):
         rT = readThread(app)
@@ -293,6 +299,7 @@ class writeThread(QThread):
 
 
 if __name__ == '__main__':
+    setproctitle.setproctitle("RFID_TOOLS")
     app = QtWidgets.QApplication(sys.argv)
     window = addWidget()
     sys.exit(app.exec_())

@@ -13,8 +13,10 @@ projDir = os.sep.join(filePath.split(os.sep)[:-2])
 # imgFilePath = os.path.join(projDir, "GUI","imageFiles")
 
 
-def setStyleSheet(ui):
-    qssFile = os.path.join(projDir, "GUI", "styleSheet", "stylesheet.qss")
+def setStyleSheet(ui,theme="light"):
+    Theme = theme+".qss"
+    debug.info(Theme)
+    qssFile = os.path.join(projDir, "GUI", "styleSheet", Theme)
     with open(qssFile, "r") as sS:
         ui.setStyleSheet(sS.read())
 
@@ -63,7 +65,10 @@ def messageBox(msg1, msg2="", path=""):
     else:
         msg.setIcon(QtWidgets.QMessageBox.Information)
 
-    setStyleSheet(msg)
+    # setStyleSheet(msg)
+    theme = os.environ['GRANTHA_THEME']
+    debug.info(theme)
+    setStyleSheet(msg, theme)
     msg.exec_()
 
 # class messageBox(QtWidgets.QMessageBox):

@@ -40,8 +40,8 @@ QCheckBox:disabled {
 
 QCheckBox::indicator,
 QGroupBox::indicator {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 5px
 }
 
@@ -1136,11 +1136,14 @@ QHeaderView::section:checked {
 /* style the sort indicator */
 
 QHeaderView::down-arrow {
-    image: url(:/qss_icons/rc/down_arrow.png);
+    /* image: url(:/qss_icons/rc/down_arrow.png); */
+    image: url(/usr/share/icons/Adwaita/16x16/actions/go-down-symbolic.symbolic.png);
 }
 
 QHeaderView::up-arrow {
-    image: url(:/qss_icons/rc/up_arrow.png);
+    /* image: url(:/qss_icons/rc/up_arrow.png); */
+    image: url(/usr/share/icons/Adwaita/16x16/actions/go-up-symbolic.symbolic.png);
+
 }
 
 QTableCornerButton::section {
@@ -1248,3 +1251,26 @@ QDateEdit::down-arrow:hover,
 QDateEdit::down-arrow:focus {
     image: url(:/qss_icons/rc/down_arrow.png);
 }
+
+QListWidget::item {
+    border: 1px solid #76797C;
+    margin: 0.5px 0.5px 0px 0.5px;
+
+}
+
+QMenu {
+    color: #eff0f1;
+    background-color: #31363b;
+    border: 1px solid #76797C;
+    border-radius: 2px;
+    outline: none;
+}
+
+QMenu::item {
+    background-color: transparent;
+}
+
+QMenu::item:selected {
+    background-color: #3daee9;
+}
+

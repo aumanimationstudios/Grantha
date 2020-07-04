@@ -8,6 +8,7 @@ __email__ = "sanathshetty111@gmail.com"
 
 import os
 import sys
+import psutil
 from PyQt5 import QtGui, QtWidgets, uic, QtCore, QtSvg
 from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import QProcess, QThread, pyqtSignal
@@ -52,20 +53,23 @@ processes = []
 mapPath = os.path.join(imageDir, "map.svg")
 
 authUsers = None
-LOC = None
+LOCS = None
+locs = None
+pLocs = None
 theColumn = None
 slList = None
 itList = None
-locList = None
+# locList = None
 usrList = None
 sn = None
-pLocs = None
+blues = []
 
 imagePicsDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
 # imageFormats = ("jpg", "png")
 
 os.environ['QT_LOGGING_RULES'] = "qt5ct.debug=false"
 
+hiddenColumns = ["serial_no","model","price","purchased_on","warranty_valid_till","user"]
 
 class mainWindow():
     global processes
@@ -106,12 +110,37 @@ class mainWindow():
         self.rfidMultiUniqSlno = {}
         self.ui = uic.loadUi(os.path.join(uiDir, 'Grantha.ui'))
 
-        self.ui.allButton.pressed.connect(self.allBtnClick)
-        self.ui.serialNoButton.pressed.connect(self.slNoBtnClick)
-        self.ui.itemTypeButton.pressed.connect(self.itBtnClick)
-        self.ui.locationButton.pressed.connect(self.locBtnClick)
-        self.ui.userButton.pressed.connect(self.usrBtnClick)
-        self.ui.reloadButton.pressed.connect(self.reloadBtnClick)
+        self.allBtnClick()
+
+        lay = QtWidgets.QHBoxLayout()
+        self.ui.frame_2.setLayout(lay)
+        verticalSpacer = QtWidgets.QSpacerItem(400, 20)
+        lay.addItem(verticalSpacer)
+
+        for header in theColumn:
+            butt = QtWidgets.QCheckBox(header)
+            butt.setText(header)
+            lay.addWidget(butt)
+            if header not in hiddenColumns:
+                butt.setChecked(True)
+            else:
+                butt.setChecked(False)
+            butt.pressed.connect(lambda butt=butt: self.showHideColumns(butt))
+            # imageThumbMap.clicked.connect(lambda x, imagePath = mapPath: imageWidgetClicked(imagePath))
+            self.showHideColumnsInit(butt)
+
+        lay.addItem(verticalSpacer)
+
+        self.ui.frame_2.hide()
+
+        self.ui.simpleButton.clicked.connect(self.simpleView)
+        self.ui.allButton.clicked.connect(self.allBtnClick)
+        self.ui.serialNoButton.clicked.connect(self.slNoBtnClick)
+        self.ui.itemTypeButton.clicked.connect(self.itBtnClick)
+        self.ui.locationButton.clicked.connect(self.locBtnClick)
+        self.ui.userButton.clicked.connect(self.usrBtnClick)
+        self.ui.reloadButton.clicked.connect(self.reloadBtnClick)
+        self.ui.relaunchButton.clicked.connect(self.relaunch)
 
         self.ui.comboBox.currentIndexChanged.connect(self.search)
 
@@ -131,36 +160,95 @@ class mainWindow():
         self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
 
-        self.ui.tableWidget.customContextMenuRequested.connect(self.viewParentPopUp)
+        self.ui.tableWidget.customContextMenuRequested.connect(self.ItemPopUp)
         self.ui.tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
         # self.ui.splitter.setStretchFactor(2,0.25)
-        self.ui.splitter.setSizes((1100, 50))
+        self.ui.splitter.setSizes((900, 50))
 
         self.setMap()
         self.center()
         self.ui.showMaximized()
 
-        setStyleSheet(self.ui)
+        # setStyleSheet(self.ui)
+        Themes = ["dark", "light", "default"]
+        self.ui.themeBox.addItems(Themes)
+        self.changeStyleSheet()
+        self.ui.themeBox.currentIndexChanged.connect(self.changeStyleSheet)
+
+    def changeStyleSheet(self):
+        ui = self.ui
+        theme = self.ui.themeBox.currentText().strip()
+        setStyleSheet(ui, theme)
+        os.environ['GRANTHA_THEME'] = theme
+
+    def simpleView(self):
+        if self.ui.frame_2.isHidden() == True:
+            self.ui.frame_2.setHidden(False)
+        else:
+            self.ui.frame_2.setHidden(True)
+
+    def showHideColumnsInit(self,butt):
+        if butt.isChecked() == True:
+            buttText = butt.text()
+            for x in range(0, len(theColumn)):
+                headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
+                # debug.info(headertext)
+                if headertext == buttText:
+                    self.ui.tableWidget.setColumnHidden(x, False)
+            self.ui.tableWidget.resizeRowsToContents()
+            self.ui.tableWidget.resizeColumnsToContents()
+        else:
+            buttText = butt.text()
+            for x in range(0, len(theColumn)):
+                headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
+                # debug.info(headertext)
+                if headertext == buttText:
+                    self.ui.tableWidget.setColumnHidden(x, True)
+            self.ui.tableWidget.resizeRowsToContents()
+            self.ui.tableWidget.resizeColumnsToContents()
+
+    def showHideColumns(self,butt):
+        if butt.isChecked() == False:
+            buttText = butt.text()
+            for x in range(0, len(theColumn)):
+                headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
+                # debug.info(headertext)
+                if headertext == buttText:
+                    self.ui.tableWidget.setColumnHidden(x, False)
+            self.ui.tableWidget.resizeRowsToContents()
+            self.ui.tableWidget.resizeColumnsToContents()
+        else:
+            buttText = butt.text()
+            for x in range(0, len(theColumn)):
+                headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
+                # debug.info(headertext)
+                if headertext == buttText:
+                    self.ui.tableWidget.setColumnHidden(x, True)
+            self.ui.tableWidget.resizeRowsToContents()
+            self.ui.tableWidget.resizeColumnsToContents()
+
 
     def reloadVars(self):
         global authUsers
-        global LOC
+        global LOCS
+        global locs
+        global pLocs
         global theColumn
         global slList
         global itList
-        global locList
+        # global locList
         global usrList
         global sn
-        global pLocs
+        global blues
         # List Authorized users to access modify functions
         getAuthUsers = "SELECT * FROM AUTH_USERS"
         aU = self.db.execute(getAuthUsers, dictionary=True)
         authUsers = [x['auth_users'] for x in aU]
 
-        getLOC = "SELECT location FROM LOCATION"
-        loc = self.db.execute(getLOC, dictionary=True)
-        LOC = [x['location'] for x in loc]
+        # getLOC = "SELECT location FROM LOCATION"
+        # loc = self.db.execute(getLOC, dictionary=True)
+        # LOC = [x['location'] for x in loc]
 
         queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
         column = self.db.execute(queryCol, dictionary=True)
@@ -172,19 +260,38 @@ class mainWindow():
         itList = list(set([x['item_type'] for x in theList]))
         usrList = list(set([x['user'] for x in theList]))
 
-        getLocs = "SELECT location FROM LOCATION"
-        locs = self.db.execute(getLocs, dictionary=True)
-        locList = list(set([x['location'] for x in locs]))
+        # getLocs = "SELECT location FROM LOCATION"
+        # locs = self.db.execute(getLocs, dictionary=True)
+        # locList = list(set([x['location'] for x in locs]))
 
         getSN = "SELECT * FROM SERIAL_NO"
         sn = self.db.execute(getSN, dictionary=True)
         # slNoList = [x['serial_no'] for x in sn]
-        getParentLocs = "SELECT parent_location FROM LOCATION "
-        pL = self.db.execute(getParentLocs, dictionary=True)
-        pLocs = list(set([x['parent_location'] for x in pL]))
+        # getParentLocs = "SELECT parent_location FROM LOCATION "
+        # pL = self.db.execute(getParentLocs, dictionary=True)
+        # pLocs = list(set([x['parent_location'] for x in pL]))
         # debug.info(pLL)
 
+        getLOC = "SELECT * FROM LOCATION"
+        LOCS = self.db.execute(getLOC, dictionary=True)
+        locs = [x['location'] for x in LOCS]
+        pLocs = [x['parent_location'] for x in LOCS]
+
+        for pl in pLocs:
+            if pl != None:
+                for x in LOCS:
+                    if x['parent_location'] == pl:
+                        bloc = x['location']
+                        blues.append(bloc)
+        blues = list(set(blues))
+        blues.sort()
+        # debug.info(blues)
+
     def loadMap(self):
+        global LOCS
+        global locs
+        global pLocs
+
         doc = xml.dom.minidom.parse(mapPath)
         name = doc.getElementsByTagName('tspan')
         ids = []
@@ -192,23 +299,23 @@ class mainWindow():
             id = str(t.attributes['id'].value)
             ids.append(id)
 
-        getLOC = "SELECT * FROM LOCATION"
-        LOC = self.db.execute(getLOC, dictionary=True)
-        pLoc = [x['parent_location'] for x in LOC]
-        loc = [x['location'] for x in LOC]
+        # getLOC = "SELECT * FROM LOCATION"
+        # LOC = self.db.execute(getLOC, dictionary=True)
+        # pLoc = [x['parent_location'] for x in LOC]
+        # loc = [x['location'] for x in LOC]
 
-        for lc in loc:
+        for lc in locs:
             if lc in ids:
-                for x in LOC:
+                for x in LOCS:
                     if x['location'] == lc:
                         nloc = x['parent_location']
                         for t in name:
                             if (t.attributes['id'].value == lc):
                                 t.childNodes[0].nodeValue = nloc
 
-        for pl in pLoc:
+        for pl in pLocs:
             if pl in ids:
-                for x in LOC:
+                for x in LOCS:
                     if x['parent_location'] == pl:
                         bloc = x['location']
                         for t in name:
@@ -236,7 +343,7 @@ class mainWindow():
         imageWidgetClicked(mapPath)
 
 
-    def viewParentPopUp(self,pos):
+    def ItemPopUp(self,pos):
 
         selectedCellIndex = self.ui.tableWidget.selectedIndexes()
         for index in selectedCellIndex:
@@ -247,6 +354,8 @@ class mainWindow():
 
             if (selectedColumnLabel == "location"):
                 menu = QtWidgets.QMenu()
+                theme = os.environ['GRANTHA_THEME']
+                setStyleSheet(menu, theme)
 
                 try:
                     selected = self.ui.tableWidget.selectedItems()
@@ -254,20 +363,27 @@ class mainWindow():
                     selected = None
 
                 if(selected):
-                    viewParentAction = menu.addAction("View Parent Location")
-                    if user in authUsers:
-                        modifyLocationAction = menu.addAction("Modify Location")
+                    selectedText = str(self.ui.tableWidget.currentItem().text().strip())
+                    if selectedText in blues:
+                        self.messages('white','')
+                        viewParentAction = menu.addAction("View Parent Location")
+                        if user in authUsers:
+                            modifyLocationAction = menu.addAction("Modify Location")
 
-                action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
+                        action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
 
-                if(selected):
-                    if (action == viewParentAction):
-                        self.viewParent()
-                    try:
-                        if (action == modifyLocationAction):
-                            self.modify()
-                    except:
-                        pass
+                        # if(selected):
+                        #     selectedText = str(self.ui.tableWidget.currentItem().text().strip())
+
+                        if (action == viewParentAction):
+                            self.viewParent()
+                        try:
+                            if (action == modifyLocationAction):
+                                self.modify(selectedText)
+                        except:
+                            pass
+                    else:
+                        self.messages('red','Selection is a parent location')
             else:
                 pass
 
@@ -276,7 +392,7 @@ class mainWindow():
         selectedText = self.ui.tableWidget.currentItem().text()
         # debug.info selectedText
 
-        if selectedText in LOC:
+        if selectedText in locs:
             getParentLocation = "SELECT parent_location FROM LOCATION WHERE location='%s' " %(selectedText)
             # pL = self.db.getParentLocation(query)
             pL = self.db.execute(getParentLocation,dictionary=True)
@@ -288,7 +404,8 @@ class mainWindow():
                 parentMessage = "No Parent Location"
             else:
                 parentMessage = self.parentLocation
-            messageBox(parentMessage)
+            # messageBox(parentMessage,path=os.path.join(imageDir, "info-icon-1.png"))
+            self.messages('yellow',parentMessage)
             # self.viewParentMessage()
         else:
             debug.info ("not valid location")
@@ -302,7 +419,8 @@ class mainWindow():
 
 
     def allBtnClick(self):
-        self.ui.messages.setText("loading")
+        global theColumn
+        self.messages('white','Loading')
         self.ui.tableWidget.setSortingEnabled(False)
         # self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.setRowCount(0)
@@ -312,6 +430,12 @@ class mainWindow():
 
         self.ui.tableWidget.setColumnCount(len(theColumn))
         self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
+
+        # for x in range(0, len(theColumn)):
+        #     headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
+        #     debug.info(headertext)
+        #     if headertext in hiddenColumns:
+        #         self.ui.tableWidget.setColumnHidden(x, True)
 
         queryAll = "SELECT * FROM ITEMS ORDER BY item_type"
         theRows = self.db.execute(queryAll,dictionary=True)
@@ -377,7 +501,9 @@ class mainWindow():
         self.ui.tableWidget.resizeRowsToContents()
         self.ui.tableWidget.resizeColumnsToContents()
         debug.info("Loaded list of all items.")
-        self.ui.messages.setText("Loaded list of all items.")
+        self.messages('white','Loaded list of all items')
+        # self.ui.messages.setStyleSheet('color: white')
+        # self.ui.messages.setText("Loaded list of all items.")
         self.ui.tableWidget.setSortingEnabled(True)
 
     def loadImageThumbs(self,path, button):
@@ -410,7 +536,7 @@ class mainWindow():
                 # timeModified = str(time.ctime(os.path.getmtime(imageName)))
                 timeModified = datetime.datetime.fromtimestamp(os.path.getmtime(imPath)).strftime('%d-%m-%Y %H:%M:%S')
 
-                label.setText("Name: " + picName + "\n" + "Size: " + size + "\n" + "Modified: " + timeModified)
+                label.setText("<b>Name: </b>" + picName + "<br />" + "<b>Size: </b>" + size + "<br />" + "<b>Modified: </b>" + timeModified)
 
                 itemWidget = QtWidgets.QWidget()
                 hl = QtWidgets.QHBoxLayout()
@@ -423,9 +549,12 @@ class mainWindow():
                 item.setSizeHint(itemWidget.sizeHint() + QtCore.QSize(10, 10))
                 self.ui.listWidget.addItem(item)
                 self.ui.listWidget.setItemWidget(item, itemWidget)
-            self.ui.messages.setText("Loaded images")
+            # self.ui.messages.setText("Loaded images")
+            self.messages('white','Loaded images')
         else:
-            self.ui.messages.setText("No images")
+            # self.ui.messages.setText("No images")
+            self.messages('red','No images')
+
         # slNoDir = imagePicsDir + slNo
         # # formats = ("jpg", "png")
         # images = []
@@ -493,7 +622,7 @@ class mainWindow():
                 pass
 
         if self.ui.locationButton.isChecked():
-            if (currTxt in locList):
+            if (currTxt in locs):
                 getRows = "SELECT " + ','.join(theColumn) + " FROM ITEMS WHERE location='%s' " %(currTxt)
                 # rows = self.db.getRows(self.query)
                 rows = self.db.execute(getRows, dictionary=True)
@@ -527,7 +656,7 @@ class mainWindow():
                         # blueBtn.clicked.connect(lambda x, rows=rows: self.extraTable(BL))
                         # butts["blueButt" + str(n)].clicked.connect(lambda x, rows=rows: self.extraTable(bl))
                         # self.blueBtnNoPressed = 0
-                        self.ui.tableWidget.setCellWidget(rowCount+n, 0, self.butts["blueButt"+str(n)])
+                        self.ui.tableWidget.setCellWidget(rowCount+n, 8, self.butts["blueButt"+str(n)])
                         self.buttsLoc["blueButt"+str(n)] = rowCount+n
                         n+=1
                     debug.info(self.butts)
@@ -698,6 +827,7 @@ class mainWindow():
         # slList = [x['serial_no'] for x in theList]
         slList.sort()
         self.ui.comboBox.addItems(slList)
+        self.search()
         # self.model = QtCore.QStringListModel()
         # self.model.setStringList(slList)
         # self.completer()
@@ -707,18 +837,24 @@ class mainWindow():
         self.ui.comboBox.clearEditText()
         itList.sort()
         self.ui.comboBox.addItems(itList)
+        self.search()
+
 
     def locBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
-        locList.sort()
-        self.ui.comboBox.addItems(locList)
+        locs.sort()
+        self.ui.comboBox.addItems(locs)
+        self.search()
+
 
     def usrBtnClick(self):
         self.ui.comboBox.clear()
         self.ui.comboBox.clearEditText()
         usrList.sort()
         self.ui.comboBox.addItems(usrList)
+        self.search()
+
 
     def reloadBtnClick(self):
         self.reloadVars()
@@ -758,7 +894,8 @@ class mainWindow():
     #     p = QProcess(parent=self.ui)
     #     p.start(sys.executable, Update_Tag.split())
 
-    def modify(self):
+    def modify(self,loc=""):
+        debug.info(loc)
         debug.info("Opening Modify Menu")
         p = QProcess(parent=self.ui)
         processes.append(p)
@@ -767,7 +904,10 @@ class mainWindow():
         p.readyReadStandardOutput.connect(self.read_out)
         p.readyReadStandardError.connect(self.read_err)
         p.finished.connect(self.enableButtons)
-        p.start(sys.executable, Modify.split())
+        if loc:
+            p.start(sys.executable + " " + Modify + " --name " + loc)
+        else:
+            p.start(sys.executable + " " + Modify)
 
     def log(self):
         pass
@@ -863,7 +1003,8 @@ class mainWindow():
 
         else:
             # messageBox("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>","",os.path.join(imageDir,"oh.png"))
-            self.ui.messages.setText("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>","",os.path.join(imageDir,"oh.png"))
+            # self.ui.messages.setText("<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>")
+            self.messages('red','<b>This Serial No. does not exists in Database</b> \n And/Or \n <b>Tag was not scanned properly!</b>')
             self.ui.readSingleButton.setEnabled(True)
             self.ui.readMultiButton.setEnabled(True)
             # self.wrongTagMessage()
@@ -992,6 +1133,20 @@ class mainWindow():
             self.ui.readSingleButton.setEnabled(True)
             self.ui.readMultiButton.setEnabled(True)
 
+    def messages(self, color, msg):
+        self.ui.messages.setStyleSheet("color: %s" % color)
+        self.ui.messages.setText("%s" % msg)
+
+    def relaunch(self):
+        try:
+            p = psutil.Process(os.getpid())
+            for handler in p.open_files() + p.connections():
+                os.close(handler.fd)
+        except:
+            debug.info(str(sys.exc_info()))
+
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
 
 
 

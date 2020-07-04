@@ -7,6 +7,8 @@ from PyQt5 import QtGui,QtWidgets,uic
 import dbGrantha
 import debug
 from Utils_Gui import *
+import argparse
+import setproctitle
 
 filePath = os.path.abspath(__file__)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
@@ -15,6 +17,11 @@ imageDir = os.path.join(projDir, "GUI","imageFiles")
 
 sys.path.append(uiDir)
 sys.path.append(imageDir)
+
+parser = argparse.ArgumentParser(description="Utility to modify location")
+parser.add_argument("-n","--name",dest="name",help="name of location")
+args = parser.parse_args()
+
 
 class modifyWidget():
     db = dbGrantha.dbGrantha()
@@ -34,6 +41,9 @@ class modifyWidget():
         # self.db = database.DataBase()
 
         self.load()
+        if args.name:
+            self.ui.locationBox.setEditText(str(args.name))
+            self.loadParentLocation()
 
         self.ui.locationBox.currentIndexChanged.connect(self.loadParentLocation)
         self.ui.clearButton.clicked.connect(self.clearAll)
@@ -44,9 +54,15 @@ class modifyWidget():
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
 
         self.ui.show()
-        self.ui.cancelButton.clicked.connect(self.ui.close)
+        self.ui.cancelButton.clicked.connect(self.closeEvent)
 
-        setStyleSheet(self.ui)
+        # setStyleSheet(self.ui
+        try:
+            theme = os.environ['GRANTHA_THEME']
+            debug.info(theme)
+            setStyleSheet(self.ui, theme)
+        except:
+            pass
 
     def load(self):
 
@@ -109,7 +125,11 @@ class modifyWidget():
         self.ui.locationBox.setCurrentIndex(0)
         self.ui.newParentLocationBox.setCurrentIndex(0)
 
+    def closeEvent(self):
+        self.ui.close()
+
 if __name__ == '__main__':
+    setproctitle.setproctitle("MODIFY")
     app = QtWidgets.QApplication(sys.argv)
     window = modifyWidget()
     sys.exit(app.exec_())

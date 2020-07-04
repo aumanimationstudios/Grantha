@@ -17,6 +17,7 @@ import subprocess
 from Utils_Gui import *
 import glob
 import json
+import setproctitle
 
 filePath = os.path.abspath(__file__)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
@@ -140,8 +141,12 @@ class addWidget():
         self._contract()
         self.ui.cancelButton.clicked.connect(self.closeEvent)
 
-        setStyleSheet(self.ui)
-
+        try:
+            theme = os.environ['GRANTHA_THEME']
+            debug.info(theme)
+            setStyleSheet(self.ui, theme)
+        except:
+            pass
 
     def enableCheckBoxes(self):
         self.hideImage()
@@ -1085,6 +1090,7 @@ class QListWidgetItemSort(QtWidgets.QListWidgetItem):
     return self.data(QtCore.Qt.UserRole) > other.data(QtCore.Qt.UserRole)
 
 if __name__ == '__main__':
+    setproctitle.setproctitle("MANAGE_ITEMS")
     app = QtWidgets.QApplication(sys.argv)
     window = addWidget()
     sys.exit(app.exec_())
