@@ -9,6 +9,8 @@ import debug
 from Utils_Gui import *
 import argparse
 import setproctitle
+from collections import OrderedDict
+import time
 
 filePath = os.path.abspath(__file__)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
@@ -36,7 +38,7 @@ class modifyWidget():
 
 
     def __init__(self):
-        self.ui = uic.loadUi(os.path.join(uiDir, 'Modify.ui'))
+        self.ui = uic.loadUi(os.path.join(uiDir, 'Modify_Location.ui'))
 
         # self.db = database.DataBase()
 
@@ -95,6 +97,14 @@ class modifyWidget():
             pass
 
     def update(self):
+        userInput = OrderedDict()
+
+        userInput["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+        userInput["location"] = str(self.ui.locationBox.currentText().strip())
+        userInput["old_parent_location"] = str(self.ui.currentParentLocationBox.text().strip())
+        userInput["new_parent_location"] = str(self.ui.newParentLocationBox.currentText().strip())
+        userInput["user"] = os.environ['USER']
+
         loc = self.ui.locationBox.currentText().strip()
         if loc:
             newPLoc = self.ui.newParentLocationBox.currentText().strip()
@@ -105,7 +115,17 @@ class modifyWidget():
                 updated = self.db.execute(query)
                 debug.info(updated)
                 if (updated==1):
-                    self.message("Update Successful")
+                    values = []
+                    for key in userInput.keys():
+                        values.append(userInput[key])
+                    columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'LOCATION_UPDATE_LOG' \
+                                   AND COLUMN_NAME NOT IN ('no')"
+                    column = self.db.execute(columnQuery,dictionary=True)
+                    self.theColumn = [x['COLUMN_NAME'] for x in column]
+                    updateLogQuery = "INSERT INTO LOCATION_UPDATE_LOG (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
+                    logUpdated = self.db.execute(updateLogQuery)
+                    if (logUpdated == 1):
+                        self.message("Update Successful")
                 else:
                     self.message(updated)
             else:
@@ -129,7 +149,7 @@ class modifyWidget():
         self.ui.close()
 
 if __name__ == '__main__':
-    setproctitle.setproctitle("MODIFY")
+    setproctitle.setproctitle("MODIFY_LOCATION")
     app = QtWidgets.QApplication(sys.argv)
     window = modifyWidget()
     sys.exit(app.exec_())

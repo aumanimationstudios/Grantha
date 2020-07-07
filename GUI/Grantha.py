@@ -42,7 +42,7 @@ Manage_Items = os.path.join(fileDir, "Manage_Items.py")
 Rfid_Tools = os.path.join(fileDir, "Rfid_Tools.py")
 # Update = "Update.py"
 # Update_Tag = "Update_Tag.py"
-Modify = os.path.join(fileDir, "Modify.py")
+Modify = os.path.join(fileDir, "Modify_Location.py")
 Log = os.path.join(fileDir, "Log.py")
 Find_Tag = os.path.join(fileDir, "Find_Tag.py")
 
@@ -350,7 +350,7 @@ class mainWindow():
             selectedColumnIndex = index.column()
 
             selectedColumnLabel = self.ui.tableWidget.horizontalHeaderItem(selectedColumnIndex).text()
-            # debug.info selectedColumnLabel
+            # debug.info (selectedColumnLabel)
 
             if (selectedColumnLabel == "location"):
                 menu = QtWidgets.QMenu()
@@ -363,27 +363,35 @@ class mainWindow():
                     selected = None
 
                 if(selected):
-                    selectedText = str(self.ui.tableWidget.currentItem().text().strip())
-                    if selectedText in blues:
-                        self.messages('white','')
-                        viewParentAction = menu.addAction("View Parent Location")
-                        if user in authUsers:
-                            modifyLocationAction = menu.addAction("Modify Location")
+                    selectedText = ""
+                    try:
+                        selectedText = str(self.ui.tableWidget.currentItem().text().strip())
+                    except:
+                        pass
+                    if selectedText:
+                        # debug.info(selectedText)
+                        if selectedText in blues:
+                            self.messages('white','')
+                            viewParentAction = menu.addAction("View Parent Location")
+                            if user in authUsers:
+                                modifyLocationAction = menu.addAction("Modify Location")
 
-                        action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
+                            action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
 
-                        # if(selected):
-                        #     selectedText = str(self.ui.tableWidget.currentItem().text().strip())
-
-                        if (action == viewParentAction):
-                            self.viewParent()
-                        try:
-                            if (action == modifyLocationAction):
-                                self.modify(selectedText)
-                        except:
-                            pass
-                    else:
-                        self.messages('red','Selection is a parent location')
+                            # if(selected):
+                            #     selectedText = str(self.ui.tableWidget.currentItem().text().strip())
+                            try:
+                                if (action == viewParentAction):
+                                    self.viewParent()
+                            except:
+                                pass
+                            try:
+                                if (action == modifyLocationAction):
+                                    self.modify(selectedText)
+                            except:
+                                pass
+                        else:
+                            self.messages('white','')
             else:
                 pass
 
@@ -405,7 +413,11 @@ class mainWindow():
             else:
                 parentMessage = self.parentLocation
             # messageBox(parentMessage,path=os.path.join(imageDir, "info-icon-1.png"))
-            self.messages('yellow',parentMessage)
+            theme = os.environ['GRANTHA_THEME']
+            if theme == "dark":
+                self.messages('yellow',parentMessage)
+            else:
+                self.messages('blue',parentMessage)
             # self.viewParentMessage()
         else:
             debug.info ("not valid location")

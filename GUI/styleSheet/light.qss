@@ -294,7 +294,7 @@ QHeaderView::up-arrow {
 
 QFrame {
     border-radius: 2px;
-    border: 1px solid #31363b;
+    border: 1px solid #76797C;
 }
 
 QFrame[frameShape="0"] {

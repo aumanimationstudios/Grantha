@@ -15,7 +15,7 @@ projDir = os.sep.join(filePath.split(os.sep)[:-2])
 
 def setStyleSheet(ui,theme="light"):
     Theme = theme+".qss"
-    debug.info(Theme)
+    # debug.info(Theme)
     qssFile = os.path.join(projDir, "GUI", "styleSheet", Theme)
     with open(qssFile, "r") as sS:
         ui.setStyleSheet(sS.read())
