@@ -43,6 +43,7 @@ Rfid_Tools = os.path.join(fileDir, "Rfid_Tools.py")
 # Update = "Update.py"
 # Update_Tag = "Update_Tag.py"
 Modify = os.path.join(fileDir, "Modify_Location.py")
+Repair = os.path.join(fileDir, "Repair.py")
 Log = os.path.join(fileDir, "Log.py")
 Find_Tag = os.path.join(fileDir, "Find_Tag.py")
 
@@ -70,6 +71,7 @@ imagePicsDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
 os.environ['QT_LOGGING_RULES'] = "qt5ct.debug=false"
 
 hiddenColumns = ["serial_no","model","price","purchased_on","warranty_valid_till","user"]
+# hiddenColumns = ["serial_no","item_type","description","make","model","price","purchased_on","warranty_valid_till","location","user","image"]
 
 class mainWindow():
     global processes
@@ -77,63 +79,59 @@ class mainWindow():
     # Database query execution function
     db = dbGrantha.dbGrantha()
 
-
-    # List Authorized users to access modify functions
-    # getAuthUsers = "SELECT * FROM AUTH_USERS"
-    # aU = db.execute(getAuthUsers,dictionary=True)
-    # authUsers = [x['auth_users'] for x in aU]
-    #
-    # getLOC = "SELECT location FROM LOCATION"
-    # loc = db.execute(getLOC, dictionary=True)
-    # LOC = [x['location'] for x in loc]
-    #
-    # queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
-    # column = db.execute(queryCol, dictionary=True)
-    # theColumn = [x['COLUMN_NAME'] for x in column]
-    #
-    # completer = "SELECT serial_no,item_type,location,user FROM ITEMS"
-    # theList = db.execute(completer, dictionary=True)
-    # slList = [x['serial_no'] for x in theList]
-    # itList = list(set([x['item_type'] for x in theList]))
-    # locList = list(set([x['location'] for x in theList]))
-    # usrList = list(set([x['user'] for x in theList]))
-    #
-    # getSN = "SELECT * FROM SERIAL_NO"
-    # sn = db.execute(getSN, dictionary=True)
-    # # slNoList = [x['serial_no'] for x in sn]
-
     def __init__(self):
         # super(myWindow, self).__init__()
         self.reloadVars()
 
         self.rfidMultiCount = 0
         self.rfidMultiUniqSlno = {}
-        self.ui = uic.loadUi(os.path.join(uiDir, 'Grantha.ui'))
+        self.ui = uic.loadUi(os.path.join(uiDir,"Grantha.ui"))
 
         self.allBtnClick()
+        # self.ui.mainSplitter.setSizes([50, 50])
 
-        lay = QtWidgets.QHBoxLayout()
-        self.ui.frame_2.setLayout(lay)
-        verticalSpacer = QtWidgets.QSpacerItem(400, 20)
-        lay.addItem(verticalSpacer)
+        # lay = QtWidgets.QHBoxLayout()
+        # self.ui.moreButtFrame.setLayout(lay)
+        # horizontalSpacer = QtWidgets.QSpacerItem(400, 20)
+        # lay.addItem(horizontalSpacer)
+        #
+        # for header in theColumn:
+        #     butt = QtWidgets.QCheckBox(header)
+        #     butt.setText(header)
+        #     lay.addWidget(butt)
+        #     if header not in hiddenColumns:
+        #         butt.setChecked(True)
+        #     else:
+        #         butt.setChecked(False)
+        #     butt.pressed.connect(lambda butt=butt: self.showHideColumns(butt))
+        #     self.showHideColumnsInit(butt)
+        #
+        # lay.addItem(horizontalSpacer)
+        #
+        # self.ui.moreButtFrame.hide()
 
+
+        layV = QtWidgets.QVBoxLayout()
+        self.ui.filterFrame.setLayout(layV)
+        filtLabel = QtWidgets.QLabel()
+        filtLabel.setText("Filter:")
+        layV.addWidget(filtLabel)
         for header in theColumn:
             butt = QtWidgets.QCheckBox(header)
             butt.setText(header)
-            lay.addWidget(butt)
+            layV.addWidget(butt)
             if header not in hiddenColumns:
                 butt.setChecked(True)
             else:
                 butt.setChecked(False)
             butt.pressed.connect(lambda butt=butt: self.showHideColumns(butt))
-            # imageThumbMap.clicked.connect(lambda x, imagePath = mapPath: imageWidgetClicked(imagePath))
             self.showHideColumnsInit(butt)
+        # verticalSpacer = QtWidgets.QSpacerItem(20, 600)
+        # layV.addItem(verticalSpacer)
 
-        lay.addItem(verticalSpacer)
 
-        self.ui.frame_2.hide()
-
-        self.ui.simpleButton.clicked.connect(self.simpleView)
+        self.ui.mapButton.clicked.connect(self.viewMap)
+        self.ui.moreButton.clicked.connect(self.moreView)
         self.ui.allButton.clicked.connect(self.allBtnClick)
         self.ui.serialNoButton.clicked.connect(self.slNoBtnClick)
         self.ui.itemTypeButton.clicked.connect(self.itBtnClick)
@@ -150,8 +148,9 @@ class mainWindow():
             # self.ui.updateButton.clicked.connect(self.update)
             # self.ui.updateTagButton.clicked.connect(self.updateTag)
             self.ui.modifyButton.clicked.connect(self.modify)
-            self.ui.findTagButton.clicked.connect(self.findTag)
+            self.ui.repairButton.clicked.connect(self.repair)
             self.ui.logButton.clicked.connect(self.log)
+            self.ui.findTagButton.clicked.connect(self.findTag)
             self.ui.readSingleButton.clicked.connect(self.readFromRfidTag)
             self.ui.readMultiButton.clicked.connect(self.readMultiFromRfidTag)
             self.ui.stopReadButton.setEnabled(False)
@@ -163,10 +162,19 @@ class mainWindow():
         self.ui.tableWidget.customContextMenuRequested.connect(self.ItemPopUp)
         self.ui.tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
-        # self.ui.splitter.setStretchFactor(2,0.25)
-        self.ui.splitter.setSizes((900, 50))
+        # self.ui.tableWidget.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
 
-        self.setMap()
+        # self.ui.splitter.setStretchFactor(2,0.25)
+        # self.ui.splitter.setSizes([900, 50])
+        self.ui.tableSplitter.setSizes([800, 50])
+
+        # self.ui.tableWidget.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        # header = self.ui.tableWidget.horizontalHeader()
+        # self.ui.tableWidget.setMaximumWidth(header.length())
+        # self.ui.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.ui.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+        # self.setMap()
         self.center()
         self.ui.showMaximized()
 
@@ -182,11 +190,12 @@ class mainWindow():
         setStyleSheet(ui, theme)
         os.environ['GRANTHA_THEME'] = theme
 
-    def simpleView(self):
-        if self.ui.frame_2.isHidden() == True:
-            self.ui.frame_2.setHidden(False)
-        else:
-            self.ui.frame_2.setHidden(True)
+    def moreView(self):
+        # if self.ui.moreButtFrame.isHidden() == True:
+        #     self.ui.moreButtFrame.setHidden(False)
+        # else:
+        #     self.ui.moreButtFrame.setHidden(True)
+        pass
 
     def showHideColumnsInit(self,butt):
         if butt.isChecked() == True:
@@ -227,6 +236,9 @@ class mainWindow():
                     self.ui.tableWidget.setColumnHidden(x, True)
             self.ui.tableWidget.resizeRowsToContents()
             self.ui.tableWidget.resizeColumnsToContents()
+        self.search()
+        # header = self.ui.tableWidget.horizontalHeader()
+        # self.ui.tableWidget.setMaximumWidth(header.length())
 
 
     def reloadVars(self):
@@ -279,10 +291,12 @@ class mainWindow():
 
         for pl in pLocs:
             if pl != None:
-                for x in LOCS:
-                    if x['parent_location'] == pl:
-                        bloc = x['location']
-                        blues.append(bloc)
+                bloc = next(x['location'] for x in LOCS if x['parent_location'] == pl)
+                # for x in LOCS:
+                #     if x['parent_location'] == pl:
+                #         bloc = x['location']
+                blues.append(bloc)
+        # debug.info(blues)
         blues = list(set(blues))
         blues.sort()
         # debug.info(blues)
@@ -327,18 +341,19 @@ class mainWindow():
         f.close()
 
 
-    def setMap(self):
-        self.loadMap()
-        layout = QtWidgets.QVBoxLayout()
-        self.ui.frame.setLayout(layout)
-        for i in reversed(range(layout.count())):
-            layout.itemAt(i).widget().setParent(None)
-        imageThumbMap = ImageWidget(mapPath, 32)
-        # imageThumbMap.clicked.connect(lambda x, imagePath = mapPath: imageWidgetClicked(imagePath))
-        imageThumbMap.clicked.connect(self.showMap)
-        layout.addWidget(imageThumbMap)
+    # def setMap(self):
+    #     self.loadMap()
+    #     layout = QtWidgets.QVBoxLayout()
+    #     self.ui.frame.setLayout(layout)
+    #     for i in reversed(range(layout.count())):
+    #         layout.itemAt(i).widget().setParent(None)
+    #     imageThumbMap = ImageWidget(mapPath, 32)
+    #     # imageThumbMap.clicked.connect(lambda x, imagePath = mapPath: imageWidgetClicked(imagePath))
+    #     imageThumbMap.clicked.connect(self.showMap)
+    #     layout.addWidget(imageThumbMap)
 
-    def showMap(self):
+    def viewMap(self):
+        self.reloadVars()
         self.loadMap()
         imageWidgetClicked(mapPath)
 
@@ -392,6 +407,39 @@ class mainWindow():
                                 pass
                         else:
                             self.messages('white','')
+
+            elif (selectedColumnLabel == "serial_no"):
+                menu = QtWidgets.QMenu()
+                theme = os.environ['GRANTHA_THEME']
+                setStyleSheet(menu, theme)
+
+                try:
+                    selected = self.ui.tableWidget.selectedItems()
+                except:
+                    selected = None
+
+                if (selected):
+                    selectedText = ""
+                    try:
+                        selectedText = str(self.ui.tableWidget.currentItem().text().strip())
+                    except:
+                        pass
+                    if selectedText:
+                        # debug.info(selectedText)
+                        if selectedText in slList:
+                            self.messages('white', '')
+                            if user in authUsers:
+                                manageItemAction = menu.addAction("Manage Item")
+
+                            action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
+
+                            try:
+                                if (action == manageItemAction):
+                                    self.manageItems(selectedText)
+                            except:
+                                pass
+                        else:
+                            self.messages('white', '')
             else:
                 pass
 
@@ -603,6 +651,7 @@ class mainWindow():
         #         self.ui.listWidget.setItemWidget(item,itemWidget)
 
     def search(self):
+        global theColumn
         self.ui.tableWidget.setSortingEnabled(False)
         self.ui.tableWidget.setRowCount(0)
 
@@ -611,6 +660,9 @@ class mainWindow():
 
         currTxt = self.ui.comboBox.currentText().strip()
         # debug.info currTxt
+
+        if self.ui.allButton.isChecked():
+            self.allBtnClick()
 
         if self.ui.serialNoButton.isChecked():
             if (currTxt in slList):
@@ -668,7 +720,11 @@ class mainWindow():
                         # blueBtn.clicked.connect(lambda x, rows=rows: self.extraTable(BL))
                         # butts["blueButt" + str(n)].clicked.connect(lambda x, rows=rows: self.extraTable(bl))
                         # self.blueBtnNoPressed = 0
-                        self.ui.tableWidget.setCellWidget(rowCount+n, 8, self.butts["blueButt"+str(n)])
+                        colIndex = 0
+                        for x in range(0, len(theColumn)):
+                            if self.ui.tableWidget.isColumnHidden(colIndex) == True:
+                                colIndex+=1
+                        self.ui.tableWidget.setCellWidget(rowCount+n, colIndex, self.butts["blueButt"+str(n)])
                         self.buttsLoc["blueButt"+str(n)] = rowCount+n
                         n+=1
                     debug.info(self.butts)
@@ -872,7 +928,8 @@ class mainWindow():
         self.reloadVars()
 
     # Processes to start when respective buttons are clicked
-    def manageItems(self):
+    def manageItems(self,serialno=""):
+        debug.info(serialno)
         debug.info("Opening manage items Menu")
         p = QProcess(parent=self.ui)
         processes.append(p)
@@ -883,7 +940,10 @@ class mainWindow():
         # p.setStandardOutputFile(tempDir + os.sep + "Grantha_ManageItems_" + user + ".log")
         # p.setStandardErrorFile(tempDir + os.sep + "Grantha_ManageItems_" + user + ".err")
         p.finished.connect(self.enableButtons)
-        p.start(sys.executable, Manage_Items.split())
+        if serialno:
+            p.start(sys.executable + " " + Manage_Items + " --serialno " + serialno)
+        else:
+            p.start(sys.executable + " " + Manage_Items)
 
     def rfidTools(self):
         debug.info("Opening Rfid Tools Menu")
@@ -921,10 +981,27 @@ class mainWindow():
         else:
             p.start(sys.executable + " " + Modify)
 
+    def repair(self):
+        debug.info("Opening Repair Menu")
+        p = QProcess(parent=self.ui)
+        processes.append(p)
+        debug.info(processes)
+        p.started.connect(self.disableButtons)
+        p.readyReadStandardOutput.connect(self.read_out)
+        p.readyReadStandardError.connect(self.read_err)
+        p.finished.connect(self.enableButtons)
+        p.start(sys.executable, Repair.split())
+
     def log(self):
-        pass
-        # p = QProcess(parent=self.ui)
-        # p.start(sys.executable, Log.split())
+        debug.info("Opening Logs")
+        p = QProcess(parent=self.ui)
+        processes.append(p)
+        debug.info(processes)
+        p.started.connect(self.disableButtons)
+        p.readyReadStandardOutput.connect(self.read_out)
+        p.readyReadStandardError.connect(self.read_err)
+        p.finished.connect(self.enableButtons)
+        p.start(sys.executable, Log.split())
 
     def findTag(self,process):
         pass
@@ -948,6 +1025,7 @@ class mainWindow():
         self.ui.manageItemsButton.setEnabled(False)
         self.ui.rfidToolsButton.setEnabled(False)
         self.ui.modifyButton.setEnabled(False)
+        self.ui.repairButton.setEnabled(False)
         self.ui.logButton.setEnabled(False)
         self.ui.findTagButton.setEnabled(False)
 
@@ -958,6 +1036,7 @@ class mainWindow():
         self.ui.manageItemsButton.setEnabled(True)
         self.ui.rfidToolsButton.setEnabled(True)
         self.ui.modifyButton.setEnabled(True)
+        self.ui.repairButton.setEnabled(True)
         self.ui.logButton.setEnabled(True)
         self.ui.findTagButton.setEnabled(True)
         del processes[:]

@@ -6,7 +6,8 @@ QLineEdit:hover,
 QTextEdit:hover,
 QPlainTextEdit:hover,
 QAbstractView:hover,
-QTreeView:hover {
+QTreeView:hover,
+QToolButton:hover {
     border: 1px solid #31363b;
 }
 
@@ -386,7 +387,9 @@ QCheckBox::indicator:unchecked:disabled {
     border: 2px solid #cec9c4;
 }
 
-/* QMenu */
+
+
+/* Menu */
 
 QMenu {
     border: 1px solid #76797C;
@@ -396,5 +399,32 @@ QMenu {
 
 QMenu::item {
     background-color: transparent;
+}
+
+
+
+/* Splitter */
+
+QSplitter::handle:hover {
+    background-color: #9fa0a0;
+    border: 1px solid #9fa0a0;
+}
+
+
+
+/* ToolButton */
+
+QToolButton {
+    background-color: transparent;
+    border: 1px transparent #76797C;
+    border-radius: 2px;
+    margin: 3px;
+    padding: 5px;
+}
+
+QToolButton:checked,
+QToolButton:pressed,
+QToolButton::menu-button:pressed {
+    background-color: #c25116;
 }
 

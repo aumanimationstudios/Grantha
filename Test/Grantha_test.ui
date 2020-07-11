@@ -161,13 +161,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="repairButton">
-        <property name="text">
-         <string>REPAIR</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="logButton">
         <property name="text">
          <string>LOG</string>
@@ -262,7 +255,7 @@
         <bool>true</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>

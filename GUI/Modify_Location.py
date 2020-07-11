@@ -118,11 +118,11 @@ class modifyWidget():
                     values = []
                     for key in userInput.keys():
                         values.append(userInput[key])
-                    columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'LOCATION_UPDATE_LOG' \
+                    columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'location_update_log' \
                                    AND COLUMN_NAME NOT IN ('no')"
                     column = self.db.execute(columnQuery,dictionary=True)
                     self.theColumn = [x['COLUMN_NAME'] for x in column]
-                    updateLogQuery = "INSERT INTO LOCATION_UPDATE_LOG (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
+                    updateLogQuery = "INSERT INTO location_update_log (" + ','.join(self.theColumn) + ") VALUES %r" %(tuple(values),)
                     logUpdated = self.db.execute(updateLogQuery)
                     if (logUpdated == 1):
                         self.message("Update Successful")

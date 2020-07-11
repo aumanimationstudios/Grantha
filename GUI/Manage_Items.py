@@ -18,6 +18,8 @@ from Utils_Gui import *
 import glob
 import json
 import setproctitle
+import time
+import argparse
 
 filePath = os.path.abspath(__file__)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
@@ -36,7 +38,12 @@ imageTempDir = "/blueprod/STOR2/stor2/grantha/share/temp/"
 # hLayImages = QtWidgets.QHBoxLayout()
 imageNames = {}
 
-class addWidget():
+parser = argparse.ArgumentParser(description="Utility to manage items")
+parser.add_argument("-s","--serialno",dest="serialno",help="serial number")
+args = parser.parse_args()
+
+
+class manageItemsWidget():
     # db = database.DataBase()
     db = dbGrantha.dbGrantha()
 
@@ -130,6 +137,10 @@ class addWidget():
         self.ui.userNoneButton.clicked.connect(self.userNone)
         self.ui.clearButton.clicked.connect(self.clearAll)
         self.ui.saveButton.clicked.connect(self.confirmation)
+
+        if args.serialno:
+            self.ui.serialNoBox.setEditText(str(args.serialno))
+            self.loadDetails()
 
         self.ui.setWindowTitle('Manage Items')
         self.ui.purchaseCal.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
@@ -552,7 +563,7 @@ class addWidget():
             pass
 
     def _expand(self):
-        self.ui.resize(656, 800)
+        self.ui.resize(656, 786)
 
     def _contract(self):
         self.ui.resize(656, 500)
@@ -865,6 +876,8 @@ class addWidget():
                 # addItem = self.db.insertItem(queryAddItem)
                 addItem = self.db.execute(queryAddItem)
                 if (addItem == 1):
+                    logAdded = self.addUpdateLog("Add", ",".join(str(key) +"=\""+ str(userInput[key]) +"\"" for key in userInput.keys()))
+                    if (logAdded == 1):
                     # slNoDir = imagePicsDir + slNo
                     # mkSlDirCmd = "mkdir " + slNoDir
                     # debug.info(mkSlDirCmd)
@@ -885,8 +898,10 @@ class addWidget():
                     #             os.system(mvCmd)
                     # else:
                     #     pass
-                    messageBox("Item Added Successfully", "Serial No added successfully")
-                    self.load()
+                        messageBox("Item Added Successfully", "Serial No added successfully")
+                        self.load()
+                    else:
+                        messageBox("Log add failed")
                 else:
                     queryRemoveSlNo = "DELETE FROM SERIAL_NO WHERE serial_no=\"{0}\"".format(slNo)
                     debug.info(queryRemoveSlNo)
@@ -942,7 +957,10 @@ class addWidget():
             # updated = self.db.update(query)
             updated = self.db.execute(query)
             debug.info(updated)
+
             if (updated == 1):
+                logUpdated = self.addUpdateLog("Update",",".join(dbvalues))
+                if (logUpdated == 1):
                 # slNoDir = imagePicsDir + slNo
                 # mkSlDirCmd = "mkdir " + slNoDir
                 # debug.info(mkSlDirCmd)
@@ -971,7 +989,9 @@ class addWidget():
                 #             os.system(mvCmd)
                 # else:
                 #     pass
-                messageBox("Updated Successfully")
+                    messageBox("Updated Successfully")
+                else:
+                    messageBox("Log Update Failed")
             else:
                 messageBox("<b>Update failed</b>")
         if not dbvalues:
@@ -991,14 +1011,39 @@ class addWidget():
                 updated = self.db.execute(query)
                 debug.info(updated)
                 if (updated == 1):
-                    messageBox("Updated Successfully")
-                    self.load()
+                    logTagUpdated = self.addUpdateLog("Update_Tag", "tag_id" +"=\""+ tagId +"\"")
+                    if (logTagUpdated == 1):
+                        messageBox("Updated Successfully")
+                        self.load()
+                    else:
+                        messageBox("Log Update failed")
                 else:
                     messageBox("<b>Update failed</b>",updated)
             else:
                 messageBox("<b>Update failed</b>","Scan a tag and proceed")
         else:
             messageBox("<b>Update failed</b>","Select a serial number and proceed")
+
+    def addUpdateLog(self,action,details):
+        log = OrderedDict()
+
+        log["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+        log["serial_no"] = str(self.ui.serialNoBox.currentText().strip())
+        log["user"] = os.environ['USER']
+        log["action"] = action + ": " + details
+
+        # debug.info(log["action"])
+
+        logValues = []
+        for key in log.keys():
+            logValues.append(log[key])
+        columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'add_update_log' \
+                       AND COLUMN_NAME NOT IN ('no')"
+        column = self.db.execute(columnQuery, dictionary=True)
+        self.logColumn = [x['COLUMN_NAME'] for x in column]
+        LogQuery = "INSERT INTO add_update_log (" + ','.join(self.logColumn) + ") VALUES %r" % (tuple(logValues),)
+        logAddUpdate = self.db.execute(LogQuery)
+        return logAddUpdate
 
     # def setImageThumb(self,path,clickable=False):
     #     for i in reversed(range(self.layout.count())):
@@ -1092,6 +1137,6 @@ class QListWidgetItemSort(QtWidgets.QListWidgetItem):
 if __name__ == '__main__':
     setproctitle.setproctitle("MANAGE_ITEMS")
     app = QtWidgets.QApplication(sys.argv)
-    window = addWidget()
+    window = manageItemsWidget()
     sys.exit(app.exec_())
 

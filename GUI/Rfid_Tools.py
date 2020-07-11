@@ -22,7 +22,7 @@ sys.path.append(imageDir)
 
 context = zmq.Context()
 
-class addWidget():
+class rfidToolsWidget():
     db = dbGrantha.dbGrantha()
 
     getSN = "SELECT * FROM SERIAL_NO"
@@ -301,7 +301,7 @@ class writeThread(QThread):
 if __name__ == '__main__':
     setproctitle.setproctitle("RFID_TOOLS")
     app = QtWidgets.QApplication(sys.argv)
-    window = addWidget()
+    window = rfidToolsWidget()
     sys.exit(app.exec_())
 
 
