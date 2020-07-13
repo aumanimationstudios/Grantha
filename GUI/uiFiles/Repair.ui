@@ -240,17 +240,26 @@
    <item row="1" column="0">
     <widget class="QLabel" name="label03">
      <property name="text">
-      <string>Location:</string>
+      <string>Current Location:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="1" column="1" colspan="2">
-    <widget class="QComboBox" name="locationBox">
-     <property name="editable">
-      <bool>true</bool>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="locationBox">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="maxLength">
+      <number>10000</number>
+     </property>
+     <property name="readOnly">
+      <bool>false</bool>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
      </property>
     </widget>
    </item>

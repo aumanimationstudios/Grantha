@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>728</width>
+    <width>748</width>
     <height>488</height>
    </rect>
   </property>
@@ -31,7 +31,7 @@
         <item>
          <widget class="QRadioButton" name="allItemsLog">
           <property name="text">
-           <string>all items</string>
+           <string>all items log</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -54,7 +54,27 @@
         <item>
          <widget class="QRadioButton" name="locationLog">
           <property name="text">
-           <string>location update</string>
+           <string>location update log</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="repairLog">
+          <property name="text">
+           <string>repair log</string>
           </property>
          </widget>
         </item>

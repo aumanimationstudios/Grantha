@@ -23,6 +23,7 @@ import xml.dom.minidom
 import glob
 import datetime
 import json
+from collections import OrderedDict
 
 filePath = os.path.abspath(__file__)
 # debug.info(filePath)
@@ -52,6 +53,10 @@ class repairWidget():
         self.ui.expectedDateButton.clicked.connect(self.showExpectedCal)
         self.ui.submissionNoneButton.clicked.connect(self.submissionNone)
         self.ui.expectedNoneButton.clicked.connect(self.expectedNone)
+        self.ui.cancelButton.clicked.connect(self.closeEvent)
+        self.ui.clearButton.clicked.connect(self.clearAll)
+        self.ui.saveButton.clicked.connect(self.confirmation)
+
 
 
         self.ui.setWindowTitle('Repair')
@@ -79,7 +84,7 @@ class repairWidget():
 
         getLOC = "SELECT * FROM LOCATION"
         LOCS = db.execute(getLOC, dictionary=True)
-        locs = [x['location'] for x in LOCS]
+        # locs = [x['location'] for x in LOCS]
         pLocs = [x['parent_location'] for x in LOCS]
 
         for pl in pLocs:
@@ -110,12 +115,7 @@ class repairWidget():
         if item in blues:
             getLoc = "SELECT parent_location FROM LOCATION WHERE location='%s' " % (item)
             loc = db.execute(getLoc, dictionary=True)[0]['parent_location']
-        # loc = ""
-        # try:
-        #     loc = db.execute(getLoc, dictionary=True)[0]['location']
-        # except:
-        #     pass
-        # loc = loc[0]
+        self.ui.locationBox.setText(loc)
         debug.info(loc)
 
     def showSubmissionCal(self):
@@ -143,6 +143,66 @@ class repairWidget():
 
     def expectedNone(self):
         self.ui.expectedDateBox.setText("0000-00-00")
+
+
+    def confirmation(self):
+        confirm = QtWidgets.QMessageBox()
+        confirm.setIcon(QtWidgets.QMessageBox.Question)
+        confirm.setWindowTitle("Confirmation")
+        confirm.setInformativeText("Are you sure you want to save?")
+        confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        cnfrm = confirm.exec_()
+        if cnfrm == QtWidgets.QMessageBox.Ok:
+            self.update()
+        else:
+            pass
+
+    def update(self):
+        userInput = OrderedDict()
+
+        userInput["item"] = str(self.ui.itemBox.currentText().strip())
+        userInput["location"] = str(self.ui.locationBox.text().strip())
+        userInput["symptoms"] = str(self.ui.symptomsBox.text().strip())
+        userInput["submission_date"] = str(self.ui.submissionDateBox.text().strip())
+        userInput["expected_completion_date"] = str(self.ui.expectedDateBox.text().strip())
+        userInput["user"] = os.environ['USER']
+
+        keys = []
+        values = []
+        for key in userInput.keys():
+            keys.append(key)
+            values.append(userInput[key])
+
+        item = str(self.ui.itemBox.currentText().strip())
+        # loc = str(self.ui.locationBox.text().strip())
+        # newLoc = "REPAIR"
+        queryRepair = ""
+        if item in slNos:
+            queryRepair = "UPDATE ITEMS SET location = 'REPAIR' WHERE serial_no = '%s'" % (item)
+        if item in blues:
+            queryRepair = "UPDATE LOCATION SET parent_location = 'REPAIR' WHERE location = '%s'" % (item)
+
+        queryRepairLog = "INSERT INTO repair_log (" + ','.join(keys) + ") VALUES %r" % (tuple(values),)
+        debug.info(queryRepairLog)
+
+        addRepair = db.execute(queryRepair)
+        if addRepair == 1:
+            addRepairLog = db.execute(queryRepairLog)
+            if (addRepairLog == 1):
+                messageBox("item moved to repair")
+
+
+
+
+    def clearAll(self):
+        self.ui.itemBox.setCurrentText(" ")
+        self.ui.locationBox.clear()
+        self.ui.symptomsBox.clear()
+        self.submissionNone()
+        self.expectedNone()
+
+    def closeEvent(self):
+        self.ui.close()
 
 if __name__ == '__main__':
     setproctitle.setproctitle("REPAIR")

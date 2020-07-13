@@ -33,6 +33,7 @@ class logWidget():
         self.loadLog("add_update_log")
         self.ui.allItemsLog.clicked.connect(lambda x, log="add_update_log": self.loadLog(log))
         self.ui.locationLog.clicked.connect(lambda x, log="location_update_log": self.loadLog(log))
+        self.ui.repairLog.clicked.connect(lambda x, log="repair_log": self.loadLog(log))
         self.ui.searchBox.currentIndexChanged.connect(self.searchLog)
 
         self.ui.setWindowTitle('Log')
@@ -58,59 +59,36 @@ class logWidget():
             self.SN.sort()
             self.ui.searchBox.clear()
             self.ui.searchBox.addItems(self.SN)
+
         elif self.ui.locationLog.isChecked():
             self.ui.label.setText("location:")
-            ln = db.execute("SELECT location FROM LOCATION WHERE location NOT LIKE 'aum%' AND location NOT LIKE 'REPAIR' AND location NOT LIKE 'OUTDATED' ", dictionary=True)
+            ln = db.execute("SELECT location FROM LOCATION WHERE location NOT LIKE 'aum%' AND location NOT LIKE \
+                            'REPAIR' AND location NOT LIKE 'OUTDATED' ", dictionary=True)
             # debug.info(ln)
             self.LN = [x['location'] for x in ln]
             self.ui.searchBox.clear()
             self.ui.searchBox.addItems(self.LN)
 
-
-    # def allLog(self):
-    #     self.ui.tableWidget.clearContents()
-    #     self.ui.tableWidget.setRowCount(0)
-    #     # column = self.db.getColumnsOfLog()
-    #     column = db.execute("SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'UPDATE_LOG' \
-    #                         AND COLUMN_NAME NOT IN ('no')", dictionary=True)
-    #     self.theColumn = [x['COLUMN_NAME'] for x in column]
-    #     debug.info(self.theColumn)
-    #     self.ui.tableWidget.setColumnCount(len(self.theColumn))
-    #     self.ui.tableWidget.setHorizontalHeaderLabels(self.theColumn)
-    #
-    #     self.query = "SELECT " + ','.join(self.theColumn) + " FROM UPDATE_LOG"
-    #     rows = db.execute(self.query,dictionary=True)
-    #     self.ui.tableWidget.setRowCount(len(rows))
-    #
-    #     # row = 0
-    #     # db.execute(self.query,dictionary=True)
-    #     # while True:
-    #     #     primaryResult = db.execute(self.query,dictionary=True)
-    #     #     debug.info(primaryResult)
-    #     #     if (not primaryResult):
-    #     #         break
-    #     #     col = 0
-    #     #     for n in self.theColumn:
-    #     #         result = primaryResult[n]
-    #     #         self.ui.tableWidget.setItem(row,col,QtWidgets.QTableWidgetItem(str(result)))
-    #     #         col +=1
-    #     #     row +=1
-    #
-    #     row = 0
-    #     while True:
-    #         if (row == len(rows)):
-    #             break
-    #         primaryResult = rows[row]
-    #         col = 0
-    #         for n in self.theColumn:
-    #             result = primaryResult[n]
-    #             self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
-    #             col += 1
-    #         row += 1
-    #
-    #     self.ui.tableWidget.resizeColumnsToContents()
-
-
+        elif self.ui.repairLog.isChecked():
+            self.ui.label.setText("item:")
+            # getSN = "SELECT * FROM SERIAL_NO"
+            sn = db.execute("SELECT * FROM SERIAL_NO", dictionary=True)
+            slNos = [x['serial_no'] for x in sn]
+            slNos.sort()
+            # getLOC = "SELECT * FROM LOCATION"
+            LOCS = db.execute("SELECT * FROM LOCATION", dictionary=True)
+            # locs = [x['location'] for x in LOCS]
+            pLocs = [x['parent_location'] for x in LOCS]
+            blues=[]
+            for pl in pLocs:
+                if pl != None:
+                    bloc = next(x['location'] for x in LOCS if x['parent_location'] == pl)
+                    blues.append(bloc)
+            blues = list(set(blues))
+            blues.sort()
+            self.ui.searchBox.clear()
+            self.ui.searchBox.addItems(slNos)
+            self.ui.searchBox.addItems(blues)
 
 
     def loadLog(self,tablename):
@@ -120,7 +98,8 @@ class logWidget():
         self.ui.tableWidget.setRowCount(0)
         self.ui.tableWidget.setColumnCount(0)
         # column = self.db.getColumnsOfLog()
-        columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s' AND COLUMN_NAME NOT IN ('no')" %(tablename)
+        columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s' AND \
+                       COLUMN_NAME NOT IN ('no')" %(tablename)
         column = db.execute(columnQuery, dictionary=True)
         theColumn = [x['COLUMN_NAME'] for x in column]
         self.ui.tableWidget.setColumnCount(len(theColumn))
@@ -152,83 +131,43 @@ class logWidget():
     def searchLog(self):
         self.ui.tableWidget.clearContents()
         self.ui.tableWidget.setRowCount(0)
-        # self.ui.tableWidget.setColumnCount(0)
 
-        # tableName = ''
-        # if self.ui.allItemsLog.isChecked():
-        #     tableName = 'add_update_log'
-        # elif self.ui.locationLog.isChecked():
-        #     tableName = 'location_update_log'
-        #
-        # columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s' AND COLUMN_NAME NOT IN ('no')" %(tableName)
-        # column = db.execute(columnQuery, dictionary=True)
-        # theColumn = [x['COLUMN_NAME'] for x in column]
-        #
-        # searchText = str(self.ui.searchBox.currentText().strip())
-
-        # query = ""
-        # if self.ui.allItemsLog.isChecked():
-        #     query = "SELECT " + ','.join(theColumn) + " FROM '%s' " %(tableName)
-        #     query = query.replace("\'", "")
-        #     query = query + "WHERE serial_no='%s' " %(searchText)
-        # elif self.ui.locationLog.isChecked():
-        #     query = "SELECT " + ','.join(theColumn) + " FROM '%s' " %(tableName)
-        #     query = query.replace("\'", "")
-        #     query = query + "WHERE location='%s' " % (searchText)
-        # query = "SELECT " + ','.join(theColumn) + " FROM '%s' WHERE serial_no='%s' or location='%s " % (tableName,searchText,searchText)
-        # query = "SELECT " + ','.join(self.theColumn) + " FROM '%s' " % (tablename)
-        # query = query.replace("\'", "")
+        tableName = ''
+        item = ''
         if self.ui.allItemsLog.isChecked():
             tableName = 'add_update_log'
-            columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s' AND COLUMN_NAME NOT IN ('no')" % (tableName)
-            column = db.execute(columnQuery, dictionary=True)
-            theColumn = [x['COLUMN_NAME'] for x in column]
-            searchText = str(self.ui.searchBox.currentText().strip())
-            query = "SELECT " + ','.join(theColumn) + " FROM '%s' " % (tableName)
-            query = query.replace("\'", "")
-            query = query + "WHERE serial_no='%s' " % (searchText)
-            rows = db.execute(query, dictionary=True)
-            # debug.info(rows)
-            if rows != 0:
-                self.ui.tableWidget.setRowCount(len(rows))
-
-                row = 0
-                while True:
-                    if (row == len(rows)):
-                        break
-                    primaryResult = rows[row]
-                    col = 0
-                    for n in theColumn:
-                        result = primaryResult[n]
-                        self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
-                        col += 1
-                    row += 1
-
+            item = 'serial_no'
         elif self.ui.locationLog.isChecked():
             tableName = 'location_update_log'
-            columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s' AND COLUMN_NAME NOT IN ('no')" % (tableName)
-            column = db.execute(columnQuery, dictionary=True)
-            theColumn = [x['COLUMN_NAME'] for x in column]
-            searchText = str(self.ui.searchBox.currentText().strip())
-            query = "SELECT " + ','.join(theColumn) + " FROM '%s' " % (tableName)
-            query = query.replace("\'", "")
-            query = query + "WHERE location='%s' " % (searchText)
-            rows = db.execute(query, dictionary=True)
-            # debug.info(rows)
-            if rows != 0:
-                self.ui.tableWidget.setRowCount(len(rows))
+            item = 'location'
+        elif self.ui.repairLog.isChecked():
+            tableName = 'repair_log'
+            item = 'item'
 
-                row = 0
-                while True:
-                    if (row == len(rows)):
-                        break
-                    primaryResult = rows[row]
-                    col = 0
-                    for n in theColumn:
-                        result = primaryResult[n]
-                        self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
-                        col += 1
-                    row += 1
+        columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s' AND \
+                       COLUMN_NAME NOT IN ('no')" % (tableName)
+        column = db.execute(columnQuery, dictionary=True)
+        theColumn = [x['COLUMN_NAME'] for x in column]
+        searchText = str(self.ui.searchBox.currentText().strip())
+        query = "SELECT " + ','.join(theColumn) + " FROM '%s' " % (tableName)
+        query = query.replace("\'", "")
+        query = query + "WHERE "+item+"='%s' " % (searchText)
+        rows = db.execute(query, dictionary=True)
+        # debug.info(rows)
+        if rows != 0:
+            self.ui.tableWidget.setRowCount(len(rows))
+
+            row = 0
+            while True:
+                if (row == len(rows)):
+                    break
+                primaryResult = rows[row]
+                col = 0
+                for n in theColumn:
+                    result = primaryResult[n]
+                    self.ui.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                    col += 1
+                row += 1
 
 
 

@@ -81,12 +81,13 @@ class mainWindow():
 
     def __init__(self):
         # super(myWindow, self).__init__()
-        self.reloadVars()
+
 
         self.rfidMultiCount = 0
         self.rfidMultiUniqSlno = {}
         self.ui = uic.loadUi(os.path.join(uiDir,"Grantha.ui"))
 
+        self.reloadVars()
         self.allBtnClick()
         # self.ui.mainSplitter.setSizes([50, 50])
 
@@ -543,11 +544,18 @@ class mainWindow():
                     self.ui.tableWidget.takeItem(row, 10)
                     path = str(imgCell.text())
                     if path:
+                        # try:
+                        #     imageNames = json.loads(str(path).replace("\'", "\""))
+                        # except:
+                        #     debug.info(str(sys.exc_info()))
+                        # names = " , ".join(imageNames.keys())
                         # slNo = self.ui.tableWidget.item(row, 0).text()
                         # imageThumb = ImageWidget(path, 32)
                         imageButton = QtWidgets.QPushButton()
+                        # imageButton.setText(names)
                         imageButton.setText("Image")
-
+                        # imageButton.setIcon(QtGui.QIcon(os.path.join(imageDir, 'info-icon-1.png')))
+                        # imageButton.setToolTip(names)
                         # imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
                         # # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
                         # imageThumb.clicked.connect(lambda x,path=path, rowId=row: self.loadImageThumbs(path, rowId))
