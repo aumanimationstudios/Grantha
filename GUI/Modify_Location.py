@@ -32,7 +32,7 @@ class modifyWidget():
     loc = db.execute(queryLoc, dictionary=True)
     LOC = [x['location'] for x in loc]
 
-    queryParLoc = "SELECT location FROM LOCATION WHERE location NOT LIKE 'blue%' "
+    queryParLoc = "SELECT location FROM LOCATION WHERE location NOT LIKE 'blue%' AND location NOT LIKE 'REPAIR' "
     par = db.execute(queryParLoc, dictionary=True)
     PAR = [x['location'] for x in par]
 

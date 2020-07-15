@@ -391,6 +391,7 @@ class mainWindow():
                             viewParentAction = menu.addAction("View Parent Location")
                             if user in authUsers:
                                 modifyLocationAction = menu.addAction("Modify Location")
+                                repairAction = menu.addAction("Repair")
 
                             action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
 
@@ -404,6 +405,11 @@ class mainWindow():
                             try:
                                 if (action == modifyLocationAction):
                                     self.modify(selectedText)
+                            except:
+                                pass
+                            try:
+                                if (action == repairAction):
+                                    self.repair(selectedText)
                             except:
                                 pass
                         else:
@@ -431,12 +437,17 @@ class mainWindow():
                             self.messages('white', '')
                             if user in authUsers:
                                 manageItemAction = menu.addAction("Manage Item")
-
+                                repairAction = menu.addAction("Repair")
                             action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
 
                             try:
                                 if (action == manageItemAction):
                                     self.manageItems(selectedText)
+                            except:
+                                pass
+                            try:
+                                if (action == repairAction):
+                                    self.repair(selectedText)
                             except:
                                 pass
                         else:
@@ -989,7 +1000,8 @@ class mainWindow():
         else:
             p.start(sys.executable + " " + Modify)
 
-    def repair(self):
+    def repair(self,item=""):
+        debug.info(item)
         debug.info("Opening Repair Menu")
         p = QProcess(parent=self.ui)
         processes.append(p)
@@ -998,7 +1010,10 @@ class mainWindow():
         p.readyReadStandardOutput.connect(self.read_out)
         p.readyReadStandardError.connect(self.read_err)
         p.finished.connect(self.enableButtons)
-        p.start(sys.executable, Repair.split())
+        if item:
+            p.start(sys.executable + " " + Repair + " --item " + item)
+        else:
+            p.start(sys.executable + " " + Repair)
 
     def log(self):
         debug.info("Opening Logs")

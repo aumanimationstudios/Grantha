@@ -24,6 +24,7 @@ import glob
 import datetime
 import json
 from collections import OrderedDict
+import argparse
 
 filePath = os.path.abspath(__file__)
 # debug.info(filePath)
@@ -41,6 +42,10 @@ db = dbGrantha.dbGrantha()
 slNos = []
 blues = []
 
+parser = argparse.ArgumentParser(description="Utility to repair items")
+parser.add_argument("-i","--item",dest="item",help="name of item")
+args = parser.parse_args()
+
 class repairWidget():
 
     def __init__(self):
@@ -56,7 +61,11 @@ class repairWidget():
         self.ui.cancelButton.clicked.connect(self.closeEvent)
         self.ui.clearButton.clicked.connect(self.clearAll)
         self.ui.saveButton.clicked.connect(self.confirmation)
+        self.load()
 
+        if args.item:
+            self.ui.itemBox.setEditText(str(args.item))
+            self.loadLocation()
 
 
         self.ui.setWindowTitle('Repair')
@@ -64,7 +73,6 @@ class repairWidget():
         self.ui.expectedDateButton.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
         self.ui.show()
-        self.load()
 
         try:
             theme = os.environ['GRANTHA_THEME']
@@ -153,11 +161,11 @@ class repairWidget():
         confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         cnfrm = confirm.exec_()
         if cnfrm == QtWidgets.QMessageBox.Ok:
-            self.update()
+            self.repair()
         else:
             pass
 
-    def update(self):
+    def repair(self):
         userInput = OrderedDict()
 
         userInput["item"] = str(self.ui.itemBox.currentText().strip())
@@ -189,9 +197,52 @@ class repairWidget():
         if addRepair == 1:
             addRepairLog = db.execute(queryRepairLog)
             if (addRepairLog == 1):
-                messageBox("item moved to repair")
+                logInput = OrderedDict()
+                if item in slNos:
+                    logInput["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+                    logInput["serial_no"] = item
+                    logInput["user"] = userInput["user"]
+                    logInput["action"] = 'Update: location="REPAIR" '
 
+                    logValues = []
+                    for key in logInput.keys():
+                        logValues.append(logInput[key])
+                    columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE\
+                                   TABLE_NAME = 'add_update_log' AND COLUMN_NAME NOT IN ('no')"
+                    column = db.execute(columnQuery, dictionary=True)
+                    logColumn = [x['COLUMN_NAME'] for x in column]
+                    LogQuery = "INSERT INTO add_update_log (" + ','.join(logColumn) + ")\
+                                VALUES %r" % (tuple(logValues),)
+                    logAddUpdate =db.execute(LogQuery)
+                    if (logAddUpdate == 1):
+                        messageBox("item moved to repair")
+                    else:
+                        messageBox("Logging Failed")
 
+                if item in blues:
+                    logInput["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+                    logInput["location"] = item
+                    logInput["old_parent_location"] = userInput["location"]
+                    logInput["new_parent_location"] = "REPAIR"
+                    logInput["user"] = userInput["user"]
+                    values = []
+                    for key in logInput.keys():
+                        values.append(logInput[key])
+                    columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE \
+                                   TABLE_NAME = 'location_update_log' AND COLUMN_NAME NOT IN ('no')"
+                    column = db.execute(columnQuery, dictionary=True)
+                    logColumn = [x['COLUMN_NAME'] for x in column]
+                    updateLogQuery = "INSERT INTO location_update_log (" + ','.join(logColumn) + ")\
+                                      VALUES %r" % (tuple(values),)
+                    logUpdated = db.execute(updateLogQuery)
+                    if (logUpdated == 1):
+                        messageBox("item moved to repair")
+                    else:
+                        messageBox("Logging Failed")
+            else:
+                messageBox("addRepairLog failed")
+        else:
+            messageBox("addRepair Failed")
 
 
     def clearAll(self):
