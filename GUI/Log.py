@@ -36,6 +36,8 @@ class logWidget():
         self.ui.repairLog.clicked.connect(lambda x, log="repair_log": self.loadLog(log))
         self.ui.searchBox.currentIndexChanged.connect(self.searchLog)
 
+        self.ui.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.center()
         self.ui.setWindowTitle('Log')
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
         # self.ui.move(470, 200)
@@ -126,6 +128,11 @@ class logWidget():
 
         # self.ui.tableWidget.resizeRowsToContents()
         self.ui.tableWidget.resizeColumnsToContents()
+        if (tablename == "add_update_log"):
+            self.ui.resize(700, 700)
+        else:
+            header = self.ui.tableWidget.horizontalHeader()
+            self.ui.resize(header.length()+52, 700)
 
 
     def searchLog(self):
@@ -169,6 +176,11 @@ class logWidget():
                     col += 1
                 row += 1
 
+    def center(self):
+        qr = self.ui.frameGeometry()
+        cp = QtWidgets.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.ui.move(qr.topLeft())
 
 
 if __name__ == '__main__':

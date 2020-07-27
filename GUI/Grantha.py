@@ -132,7 +132,7 @@ class mainWindow():
 
 
         self.ui.mapButton.clicked.connect(self.viewMap)
-        self.ui.moreButton.clicked.connect(self.moreView)
+        # self.ui.moreButton.clicked.connect(self.moreView)
         self.ui.allButton.clicked.connect(self.allBtnClick)
         self.ui.serialNoButton.clicked.connect(self.slNoBtnClick)
         self.ui.itemTypeButton.clicked.connect(self.itBtnClick)
@@ -191,12 +191,12 @@ class mainWindow():
         setStyleSheet(ui, theme)
         os.environ['GRANTHA_THEME'] = theme
 
-    def moreView(self):
-        # if self.ui.moreButtFrame.isHidden() == True:
-        #     self.ui.moreButtFrame.setHidden(False)
-        # else:
-        #     self.ui.moreButtFrame.setHidden(True)
-        pass
+    # def moreView(self):
+    #     # if self.ui.moreButtFrame.isHidden() == True:
+    #     #     self.ui.moreButtFrame.setHidden(False)
+    #     # else:
+    #     #     self.ui.moreButtFrame.setHidden(True)
+    #     pass
 
     def showHideColumnsInit(self,butt):
         if butt.isChecked() == True:
@@ -219,6 +219,7 @@ class mainWindow():
             self.ui.tableWidget.resizeColumnsToContents()
 
     def showHideColumns(self,butt):
+        global theColumn
         if butt.isChecked() == False:
             buttText = butt.text()
             for x in range(0, len(theColumn)):
@@ -237,7 +238,9 @@ class mainWindow():
                     self.ui.tableWidget.setColumnHidden(x, True)
             self.ui.tableWidget.resizeRowsToContents()
             self.ui.tableWidget.resizeColumnsToContents()
-        self.search()
+
+        if self.ui.locationButton.isChecked():
+            self.search()
         # header = self.ui.tableWidget.horizontalHeader()
         # self.ui.tableWidget.setMaximumWidth(header.length())
 
@@ -360,6 +363,11 @@ class mainWindow():
 
 
     def ItemPopUp(self,pos):
+        '''
+        The context menu for items on table.
+        :param pos:
+        :return:
+        '''
 
         selectedCellIndex = self.ui.tableWidget.selectedIndexes()
         for index in selectedCellIndex:
@@ -434,7 +442,7 @@ class mainWindow():
                     if selectedText:
                         # debug.info(selectedText)
                         if selectedText in slList:
-                            self.messages('white', '')
+                            self.messages('white','')
                             if user in authUsers:
                                 manageItemAction = menu.addAction("Manage Item")
                                 repairAction = menu.addAction("Repair")
@@ -451,7 +459,7 @@ class mainWindow():
                             except:
                                 pass
                         else:
-                            self.messages('white', '')
+                            self.messages('white','')
             else:
                 pass
 
@@ -757,6 +765,8 @@ class mainWindow():
                         self.buttsPress[butt] = 0
                         # self.blueBtnNoPressed = 0
                     debug.info(self.buttsPress)
+                self.ui.tableWidget.resizeColumnsToContents()
+                self.ui.tableWidget.resizeRowsToContents()
             else:
                 pass
 
@@ -866,6 +876,7 @@ class mainWindow():
         self.ui.tableWidget.resizeRowsToContents()
 
     def fillTable(self,rows):
+        global theColumn
         row = 0
         while True:
             if (row == len(rows)):
@@ -1079,16 +1090,27 @@ class mainWindow():
         rT.start()
 
     def msg(self, plceMsg):
+        self.messages('white','Connecting...')
         messagebox = TimerMessageBox(1, plceMsg)
         messagebox.exec_()
 
 
     def closePlaceTagMessage(self, tagId):
-        try:
-            debug.info("Message Closed")
-        except:
-            debug.info (str(sys.exc_info()))
+        if (tagId =="Connection Timeout"):
+            self.messages('red','<b>Connection Timeout</b>')
+            self.ui.readSingleButton.setEnabled(True)
+            self.ui.readMultiButton.setEnabled(True)
+            return
+        else:
             pass
+
+        global sn
+        global theColumn
+        # try:
+        #     debug.info("Message Closed")
+        # except:
+        #     debug.info (str(sys.exc_info()))
+        #     pass
 
         TI = [x['tag_id'] for x in sn]
         # debug.info  (TI)
@@ -1112,6 +1134,8 @@ class mainWindow():
 
             self.ui.tableWidget.setRowCount(len(rows))
             self.fillTable(rows)
+
+            self.messages('white',' ')
             self.ui.readSingleButton.setEnabled(True)
             self.ui.readMultiButton.setEnabled(True)
 
@@ -1141,6 +1165,7 @@ class mainWindow():
 
         # rmrT.slNoReceived.connect(self.updateTable)
         # rmrT.finished.connect(self.readButtonEnable)
+        rmT.waiting.connect(self.msg)
         rmT.tagIdReceived.connect(self.updateTable)
 
         # rmrT.start()
@@ -1152,6 +1177,13 @@ class mainWindow():
     def updateTable(self, tagId):
         if (tagId == "MULTI_READ_STARTED"):
             pass
+
+        elif (tagId =="Connection Timeout"):
+            self.messages('red','<b>Connection Timeout</b>')
+            self.ui.readSingleButton.setEnabled(True)
+            self.ui.readMultiButton.setEnabled(True)
+            self.ui.stopReadButton.setEnabled(False)
+            return
 
         else:
 
@@ -1292,26 +1324,38 @@ class readThread(QThread):
         super(readThread, self).__init__(parent)
 
     def run(self):
-        self.waiting.emit("Place your tag...")
+        self.waiting.emit("Connecting...")
 
         
         debug.info("connecting to rfid Scanner Server...")
         self.socket = context.socket(zmq.REQ)
+        self.socket.setsockopt(zmq.LINGER, 0)
         try:
             self.socket.connect("tcp://192.168.1.183:4689")
-            debug.info("connected.")
+            # debug.info("connected.")
         except:
             debug.info (str(sys.exc_info()))
         self.socket.send("READ")
 
         # slNo = self.socket.recv()
         # debug.info "Received sl.No: " + slNo
+
+        poller = zmq.Poller()
+        poller.register(self.socket, zmq.POLLIN)
         try:
-            tagId = self.socket.recv()
-            debug.info( "Received Tag Id :" + tagId)
-            self.tagIdReceived.emit(tagId)
+            if poller.poll(5 * 1000):  # 10s timeout in milliseconds
+                try:
+                    debug.info("connected")
+                    tagId = self.socket.recv()
+                    debug.info("Received Tag Id :" + tagId)
+                    self.tagIdReceived.emit(tagId)
+                except:
+                    debug.info(str(sys.exc_info()))
+            else:
+                raise IOError("Timeout processing auth request")
         except:
-            debug.info (str(sys.exc_info()))
+            debug.info(str(sys.exc_info()))
+            self.tagIdReceived.emit("Connection Timeout")
 
         self.socket.close()
         
@@ -1320,7 +1364,7 @@ class readThread(QThread):
 
 
 class readMultiThread(QThread):
-    # waiting = pyqtSignal()
+    waiting = pyqtSignal(str)
     tagIdReceived = pyqtSignal(str)
 
     def __init__(self, parent):
@@ -1328,18 +1372,46 @@ class readMultiThread(QThread):
         # self.to = to
 
     def run(self):
-        # self.waiting.emit()
+        self.waiting.emit("Connecting...")
 
         hostname = socket.gethostname()
         ip = socket.gethostbyname(hostname)
 
         debug.info("connecting to rfid Scanner Server...")
         self.socket = context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.1.183:4689")
-        debug.info("connected.")
+        self.socket.setsockopt(zmq.LINGER, 0)
+        try:
+            self.socket.connect("tcp://192.168.1.183:4689")
+        except:
+            debug.info(str(sys.exc_info()))
+        # self.socket.send("READ")
+        # self.socket = context.socket(zmq.REQ)
+        # self.socket.connect("tcp://192.168.1.183:4689")
+        # debug.info("connected.")
         self.socket.send_multipart(["READ_MULTI",ip])
-        rep = self.socket.recv_multipart()
-        debug.info (rep)
+
+        poller = zmq.Poller()
+        poller.register(self.socket, zmq.POLLIN)
+        try:
+            if poller.poll(5 * 1000):  # 10s timeout in milliseconds
+                try:
+                    debug.info("connected")
+                    # tagId = self.socket.recv()
+                    rep = self.socket.recv_multipart()
+                    debug.info(rep)
+                    # debug.info("Received Tag Id :" + tagId)
+                    # self.tagIdReceived.emit(tagId)
+                except:
+                    debug.info(str(sys.exc_info()))
+            else:
+                raise IOError("Timeout processing auth request")
+        except:
+            debug.info(str(sys.exc_info()))
+            self.tagIdReceived.emit("Connection Timeout")
+            return
+
+        # rep = self.socket.recv_multipart()
+        # debug.info (rep)
         # self.socket.close()
         #
         # if (context.closed == True) and (self.socket.closed == True):
@@ -1349,7 +1421,11 @@ class readMultiThread(QThread):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         server_address = (ip, 4695)
-        sock.bind(server_address)
+        try:
+            sock.bind(server_address)
+            debug.info("bind successful")
+        except:
+            debug.info(str(sys.exc_info()))
         sock.listen(1)
         connection, client_address = sock.accept()
         #####################################
@@ -1383,16 +1459,38 @@ class stopReadThread(QThread):
         
         debug.info("connecting to rfid Scanner Server...")
         self.socket = context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.1.183:4689")
-        debug.info("connected.")
+        self.socket.setsockopt(zmq.LINGER, 0)
+        try:
+            self.socket.connect("tcp://192.168.1.183:4689")
+        except:
+            debug.info(str(sys.exc_info()))
+        # self.socket = context.socket(zmq.REQ)
+        # self.socket.connect("tcp://192.168.1.183:4689")
+        # debug.info("connected.")
 
         self.socket.send("STOP")
 
         # slNo = self.socket.recv()
         # debug.info "Received sl.No: " + slNo
-        ack = self.socket.recv()
-        debug.info (ack)
-        self.ackReceived.emit(ack)
+        poller = zmq.Poller()
+        poller.register(self.socket, zmq.POLLIN)
+        try:
+            if poller.poll(5 * 1000):  # 10s timeout in milliseconds
+                try:
+                    debug.info("connected")
+                    ack = self.socket.recv()
+                    debug.info(ack)
+                    self.ackReceived.emit(ack)
+                except:
+                    debug.info(str(sys.exc_info()))
+            else:
+                raise IOError("Timeout processing auth request")
+        except:
+            debug.info(str(sys.exc_info()))
+            self.ackReceived.emit("Connection Timeout")
+        # ack = self.socket.recv()
+        # debug.info (ack)
+        # self.ackReceived.emit(ack)
         self.socket.close()
         
         if (self.socket.closed == True):

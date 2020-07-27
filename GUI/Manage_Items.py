@@ -663,6 +663,12 @@ class manageItemsWidget():
 
 
     def closePlaceTagMessage(self, tagId):
+        if (tagId =="Connection Timeout"):
+            messagebox = TimerMessageBox(1, tagId)
+            messagebox.exec_()
+            return
+        else:
+            pass
         try:
             debug.info("Message Closed")
             # self.plcMsg.close()
@@ -1066,25 +1072,38 @@ class readThread(QThread):
         super(readThread, self).__init__(parent)
 
     def run(self):
-        self.waiting.emit("Place your tag...")
+        self.waiting.emit("Connecting...")
 
         debug.info("connecting to rfid Scanner Server...")
         self.socket = context.socket(zmq.REQ)
+        self.socket.setsockopt(zmq.LINGER, 0)
+
         try:
             self.socket.connect("tcp://192.168.1.183:4689")
-            debug.info("connected.")
+            # debug.info("connected.")
         except:
             debug.info(str(sys.exc_info()))
         self.socket.send("READ")
 
         # slNo = self.socket.recv()
         # debug.info "Received sl.No: " + slNo
+
+        poller = zmq.Poller()
+        poller.register(self.socket, zmq.POLLIN)
         try:
-            tagId = self.socket.recv()
-            debug.info("Received Tag Id :" + tagId)
-            self.tagIdReceived.emit(tagId)
+            if poller.poll(5 * 1000):  # 10s timeout in milliseconds
+                try:
+                    debug.info("connected")
+                    tagId = self.socket.recv()
+                    debug.info("Received Tag Id :" + tagId)
+                    self.tagIdReceived.emit(tagId)
+                except:
+                    debug.info(str(sys.exc_info()))
+            else:
+                raise IOError("Timeout processing auth request")
         except:
             debug.info(str(sys.exc_info()))
+            self.tagIdReceived.emit("Connection Timeout")
 
         self.socket.close()
 

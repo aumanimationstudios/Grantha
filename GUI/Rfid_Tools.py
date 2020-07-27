@@ -70,6 +70,11 @@ class rfidToolsWidget():
             self.plcMsg.close()
         except:
             pass
+
+        if (tagId =="Connection Timeout"):
+            self.ui.textEdit.append(tagId)
+            return
+
         # self.clearAll()
         self.ui.tagIdBox.clear()
         self.ui.serialNoBox.clear()
@@ -193,7 +198,7 @@ class rfidToolsWidget():
 
 
     def writeToRfidTag(self):
-        print("writing")
+        debug.info("writing")
         tagId = str(self.ui.randomHexBox.text())
         if tagId:
             wT = writeThread(tagId, app)
@@ -239,21 +244,40 @@ class readThread(QThread):
 
         debug.info("connecting to rfid Scanner Server...")
         self.socket = context.socket(zmq.REQ)
+        self.socket.setsockopt(zmq.LINGER, 0)
         try:
             self.socket.connect("tcp://192.168.1.183:4689")
-            debug.info("connected.")
+            # debug.info("connected.")
         except:
             debug.info(str(sys.exc_info()))
         self.socket.send_multipart(["READ"])
 
         # slNo = self.socket.recv()
         # debug.info "Received sl.No: " + slNo
+        # try:
+        #     tagId = self.socket.recv_multipart()
+        #     debug.info("Received Tag Id :" + tagId[0])
+        #     self.tagIdReceived.emit(tagId[0])
+        # except:
+        #     debug.info(str(sys.exc_info()))
+
+        poller = zmq.Poller()
+        poller.register(self.socket, zmq.POLLIN)
         try:
-            tagId = self.socket.recv_multipart()
-            debug.info("Received Tag Id :" + tagId[0])
-            self.tagIdReceived.emit(tagId[0])
+            if poller.poll(5 * 1000):  # 10s timeout in milliseconds
+                try:
+                    debug.info("Connected.")
+                    tagId = self.socket.recv_multipart()
+                    debug.info("Received Tag Id :" + tagId[0])
+                    self.tagIdReceived.emit(tagId[0])
+                except:
+                    debug.info(str(sys.exc_info()))
+            else:
+                raise IOError("Timeout processing auth request")
         except:
             debug.info(str(sys.exc_info()))
+            self.tagIdReceived.emit("Connection Timeout")
+
 
         self.socket.close()
 

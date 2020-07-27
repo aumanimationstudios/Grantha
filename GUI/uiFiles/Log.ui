@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>748</width>
+    <width>810</width>
     <height>488</height>
    </rect>
   </property>
@@ -123,7 +123,14 @@
     </layout>
    </item>
    <item row="1" column="0">
-    <widget class="QTableWidget" name="tableWidget"/>
+    <widget class="QTableWidget" name="tableWidget">
+     <property name="verticalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="horizontalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

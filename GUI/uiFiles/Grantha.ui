@@ -28,13 +28,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="moreButton">
-        <property name="text">
-         <string>More</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -61,6 +54,9 @@
        <widget class="QRadioButton" name="serialNoButton">
         <property name="text">
          <string>Serial No</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
