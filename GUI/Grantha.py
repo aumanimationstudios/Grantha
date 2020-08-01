@@ -25,6 +25,7 @@ import xml.dom.minidom
 import glob
 import datetime
 import json
+import re
 
 filePath = os.path.abspath(__file__)
 # debug.info(filePath)
@@ -58,10 +59,15 @@ LOCS = None
 locs = None
 pLocs = None
 theColumn = None
+
 slList = None
 itList = None
-# locList = None
+locList = None
 usrList = None
+descList = None
+makeList = None
+modelList = None
+
 sn = None
 blues = []
 
@@ -253,8 +259,11 @@ class mainWindow():
         global theColumn
         global slList
         global itList
-        # global locList
+        global locList
         global usrList
+        global descList
+        global makeList
+        global modelList
         global sn
         global blues
         # List Authorized users to access modify functions
@@ -270,11 +279,16 @@ class mainWindow():
         column = self.db.execute(queryCol, dictionary=True)
         theColumn = [x['COLUMN_NAME'] for x in column]
 
-        completer = "SELECT serial_no,item_type,location,user FROM ITEMS"
+
+        completer = "SELECT * FROM ITEMS"
         theList = self.db.execute(completer, dictionary=True)
         slList = [x['serial_no'] for x in theList]
         itList = list(set([x['item_type'] for x in theList]))
+        locList = list(set([x['location'] for x in theList]))
         usrList = list(set([x['user'] for x in theList]))
+        descList = list(set([x['description'] for x in theList]))
+        makeList = list(set([x['make'] for x in theList]))
+        modelList = list(set([x['model'] for x in theList]))
 
         # getLocs = "SELECT location FROM LOCATION"
         # locs = self.db.execute(getLocs, dictionary=True)
@@ -689,7 +703,41 @@ class mainWindow():
         # debug.info currTxt
 
         if self.ui.allButton.isChecked():
-            self.allBtnClick()
+            # self.allBtnClick()
+            txt = str(self.ui.comboBox.currentText().strip()).replace(" ","_")
+            debug.info(txt)
+            r = re.compile(".*"+txt, re.IGNORECASE)
+            txtList = list(filter(r.match, slList+itList+locList+usrList+descList+makeList+modelList))
+            debug.info(txtList)
+            # txtTup = tuple(txtList)
+            # debug.info(len(txtTup))
+            # searchColumns = theColumn
+            # debug.info(searchColumns)
+            searchColumns = ['serial_no','item_type','location','user', 'description', 'make', 'model']
+
+            # qTags = "SELECT * FROM ITEMS WHERE " + (' OR '.join([l+"='{0}'" for l in searchColumns])).format(txtList[0])
+            # debug.info(qTags)
+            # qTags = "SELECT * FROM ITEMS WHERE " + (' OR '.join([l+" IN '{0}'" for l in searchColumns])).format(txtList[0])
+            # debug.info(qTags)
+
+            # query = "SELECT * FROM ITEMS WHERE " + qTags
+            # debug.info(query)
+            query = ""
+            if (len(txtList) == 0):
+                return
+            elif (len(txtList) ==1):
+                # query = "SELECT * FROM ITEMS WHERE serial_no='%s' OR item_type='%s' OR location='%s' OR user='%s'" %(txtList[0],txtList[0],txtList[0],txtList[0])
+                query = "SELECT * FROM ITEMS WHERE " + (' OR '.join([l+"='{0}'" for l in searchColumns])).format(txtList[0])
+            else:
+                # query = "SELECT * FROM ITEMS WHERE serial_no IN %s OR item_type IN %s OR location IN %s OR user IN %s " %(tuple(txtList),tuple(txtList),tuple(txtList),tuple(txtList),)
+                query = "SELECT * FROM ITEMS WHERE " + (' OR '.join([l+" IN {0}" for l in searchColumns])).format(tuple(txtList),)
+
+            debug.info(query)
+            rows = self.db.execute(query, dictionary=True)
+            # debug.info(rows)
+            self.ui.tableWidget.setRowCount(len(rows))
+            self.fillTable(rows)
+
 
         if self.ui.serialNoButton.isChecked():
             if (currTxt in slList):
