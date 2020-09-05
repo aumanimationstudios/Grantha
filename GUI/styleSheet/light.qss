@@ -428,3 +428,28 @@ QToolButton::menu-button:pressed {
     background-color: #c25116;
 }
 
+/* Tab Widget */
+
+QTabWidget {
+    border: 0px transparent black;
+}
+
+QTabWidget::pane {
+    border: 0px solid #76797C;
+    padding: 0px;
+    margin: -10px -9px -9px -9px;
+}
+
+QTabBar::tab:top {
+    border: 1px solid #76797C;
+    padding: 5px;
+    min-width: 50px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+
+QTabBar::tab:top:selected {
+    background-color: #cec9c4;
+    border-bottom: 2px solid black;
+}
+

@@ -51,17 +51,30 @@ class repairWidget():
     def __init__(self):
 
         self.loadVars()
-        self.ui = uic.loadUi(os.path.join(uiDir,'Repair.ui'))
+        # self.ui = uic.loadUi(os.path.join(uiDir,'Repair.ui'))
+        self.ui = uic.loadUi(os.path.join(projDir,"Test","Repair_test.ui"))
+
 
         self.ui.itemBox.currentIndexChanged.connect(self.loadLocation)
         self.ui.submissionDateButton.clicked.connect(self.showSubmissionCal)
         self.ui.expectedDateButton.clicked.connect(self.showExpectedCal)
+        self.ui.dateButton.clicked.connect(self.showDateCal)
         self.ui.submissionNoneButton.clicked.connect(self.submissionNone)
         self.ui.expectedNoneButton.clicked.connect(self.expectedNone)
+        self.ui.dateNoneButton.clicked.connect(self.dateNone)
+
         self.ui.cancelButton.clicked.connect(self.closeEvent)
         self.ui.clearButton.clicked.connect(self.clearAll)
         self.ui.saveButton.clicked.connect(self.confirmation)
+
+        self.ui.cancelButton_modify.clicked.connect(self.closeEvent)
+        self.ui.clearButton_modify.clicked.connect(self.clearAll)
+        self.ui.saveButton_modify.clicked.connect(self.confirmationModify)
+
+
         self.load()
+        self.loadRepairs()
+        self.loadModify()
 
         if args.item:
             self.ui.itemBox.setEditText(str(args.item))
@@ -71,6 +84,7 @@ class repairWidget():
         self.ui.setWindowTitle('Repair')
         self.ui.submissionDateButton.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
         self.ui.expectedDateButton.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
+        self.ui.dateButton.setIcon(QtGui.QIcon(os.path.join(imageDir, 'cal.png')))
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
         self.ui.show()
 
@@ -97,8 +111,12 @@ class repairWidget():
 
         for pl in pLocs:
             if pl != None:
-                bloc = next(x['location'] for x in LOCS if x['parent_location'] == pl)
-                blues.append(bloc)
+                debug.info(pl)
+                for x in LOCS:
+                    if x['parent_location'] == pl:
+                        bloc = x['location']
+                # bloc = next(x['location'] for x in LOCS if x['parent_location'] == pl)
+                        blues.append(bloc)
         blues = list(set(blues))
         blues.sort()
 
@@ -126,6 +144,59 @@ class repairWidget():
         self.ui.locationBox.setText(loc)
         debug.info(loc)
 
+    def loadRepairs(self):
+        '''
+        Loads repair items to the table in repairs tab
+        :return:
+        '''
+        self.ui.repairsTable.clearContents()
+        self.ui.repairsTable.setRowCount(0)
+        self.ui.repairsTable.setColumnCount(0)
+        columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'repairs' AND \
+                    COLUMN_NAME NOT IN ('no')"
+        column = db.execute(columnQuery, dictionary=True)
+        theColumn = [x['COLUMN_NAME'] for x in column]
+        self.ui.repairsTable.setColumnCount(len(theColumn))
+        self.ui.repairsTable.setHorizontalHeaderLabels(theColumn)
+
+        query = "SELECT " + ','.join(theColumn) + " FROM 'repairs' "
+        query = query.replace("\'", "")
+        rows = db.execute(query, dictionary=True)
+
+        if rows != 0:
+            self.ui.repairsTable.setRowCount(len(rows))
+
+            row = 0
+            while True:
+                if (row == len(rows)):
+                    break
+                primaryResult = rows[row]
+                col = 0
+                for n in theColumn:
+                    result = primaryResult[n]
+                    self.ui.repairsTable.setItem(row, col, QtWidgets.QTableWidgetItem(str(result)))
+                    col += 1
+                row += 1
+
+        self.ui.repairsTable.resizeColumnsToContents()
+
+    def loadModify(self):
+        getItems = "SELECT * FROM repairs"
+        ITEMS = db.execute(getItems, dictionary=True)
+        if ITEMS == 0:
+            return
+        items = [x['item'] for x in ITEMS]
+
+        getLOC = "SELECT * FROM LOCATION"
+        LOCS = db.execute(getLOC, dictionary=True)
+        locs = [x['location'] for x in LOCS]
+
+        currDate = time.strftime('%Y-%m-%d')
+
+        self.ui.itemReturnBox.addItems(items)
+        self.ui.moveToBox.addItems(locs)
+        self.ui.dateBox.setText(currDate)
+
     def showSubmissionCal(self):
         self.cal = QtWidgets.QCalendarWidget()
         self.cal.clicked.connect(self.updateSubmissionDate)
@@ -134,6 +205,11 @@ class repairWidget():
     def showExpectedCal(self):
         self.cal = QtWidgets.QCalendarWidget()
         self.cal.clicked.connect(self.updateExpectedDate)
+        self.cal.show()
+
+    def showDateCal(self):
+        self.cal = QtWidgets.QCalendarWidget()
+        self.cal.clicked.connect(self.updateDate)
         self.cal.show()
 
     def updateSubmissionDate(self):
@@ -146,11 +222,19 @@ class repairWidget():
         self.ui.expectedDateBox.setText(date)
         self.cal.close()
 
+    def updateDate(self):
+        date = self.cal.selectedDate().toString(QtCore.Qt.ISODate)
+        self.ui.dateBox.setText(date)
+        self.cal.close()
+
     def submissionNone(self):
         self.ui.submissionDateBox.setText("0000-00-00")
 
     def expectedNone(self):
         self.ui.expectedDateBox.setText("0000-00-00")
+
+    def dateNone(self):
+        self.ui.dateBox.setText("0000-00-00")
 
 
     def confirmation(self):
@@ -165,6 +249,18 @@ class repairWidget():
         else:
             pass
 
+    def confirmationModify(self):
+        confirm = QtWidgets.QMessageBox()
+        confirm.setIcon(QtWidgets.QMessageBox.Question)
+        confirm.setWindowTitle("Confirmation")
+        confirm.setInformativeText("Are you sure you want to save?")
+        confirm.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        cnfrm = confirm.exec_()
+        if cnfrm == QtWidgets.QMessageBox.Ok:
+            self.modify()
+        else:
+            pass
+
     def repair(self):
         userInput = OrderedDict()
 
@@ -174,6 +270,7 @@ class repairWidget():
         userInput["submission_date"] = str(self.ui.submissionDateBox.text().strip())
         userInput["expected_completion_date"] = str(self.ui.expectedDateBox.text().strip())
         userInput["user"] = os.environ['USER']
+        userInput["repairer"] = str(self.ui.repairerBox.text().strip())
 
         keys = []
         values = []
@@ -193,10 +290,20 @@ class repairWidget():
         queryRepairLog = "INSERT INTO repair_log (" + ','.join(keys) + ") VALUES %r" % (tuple(values),)
         debug.info(queryRepairLog)
 
+        columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE\
+                    TABLE_NAME = 'repairs' AND COLUMN_NAME NOT IN ('no')"
+        column = db.execute(columnQuery, dictionary=True)
+        repairsColumn = [x['COLUMN_NAME'] for x in column]
+        repairsValues = []
+        for n in repairsColumn:
+            repairsValues.append(userInput[n])
+        queryRepairs = "INSERT INTO repairs (" + ','.join(repairsColumn) + ") VALUES %r" % (tuple(repairsValues),)
+
         addRepair = db.execute(queryRepair)
         if addRepair == 1:
             addRepairLog = db.execute(queryRepairLog)
-            if (addRepairLog == 1):
+            addRepairs = db.execute(queryRepairs)
+            if (addRepairLog == 1) and (addRepairs == 1):
                 logInput = OrderedDict()
                 if item in slNos:
                     logInput["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -244,13 +351,93 @@ class repairWidget():
         else:
             messageBox("addRepair Failed")
 
+    def modify(self):
+        item = str(self.ui.itemReturnBox.currentText().strip())
+        if item in slNos:
+            location = str(self.ui.moveToBox.currentText().strip())
+            query = "UPDATE ITEMS SET location = '{0}' WHERE serial_no = '{1}' ".format(location, item)
+            debug.info(query)
+            updated = db.execute(query)
+            debug.info(updated)
+            if (updated == 1):
+                deleteQuery = "DELETE from repairs WHERE item = '{0}'".format(item)
+                debug.info(deleteQuery)
+                deleted = db.execute(deleteQuery)
+                if (deleted == 1):
+
+                    log = OrderedDict()
+
+                    log["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+                    log["serial_no"] = item
+                    log["user"] = os.environ['USER']
+                    log["action"] = "Update: location={0}".format(location)
+
+                    logValues = []
+                    for key in log.keys():
+                        logValues.append(log[key])
+                    columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'add_update_log' \
+                                    AND COLUMN_NAME NOT IN ('no')"
+                    column = db.execute(columnQuery, dictionary=True)
+                    self.logColumn = [x['COLUMN_NAME'] for x in column]
+                    LogQuery = "INSERT INTO add_update_log (" + ','.join(self.logColumn) + ") VALUES %r" % (tuple(logValues),)
+                    logAddUpdate = db.execute(LogQuery)
+                    if (logAddUpdate == 1):
+                        messageBox("item moved")
+                    else:
+                        messageBox("modify failed")
+                else:
+                    messageBox("modify failed")
+            else:
+                messageBox("modify Failed")
+
+        if item in blues:
+            if (item == ""):
+                messageBox("No item")
+            else:
+                location = str(self.ui.moveToBox.currentText().strip())
+                query = "UPDATE LOCATION SET parent_location = '{0}' WHERE location = '{1}'" .format(location, item)
+                debug.info(query)
+                updated = db.execute(query)
+                debug.info(updated)
+                if (updated == 1):
+                    deleteQuery = "DELETE from repairs WHERE item = '{0}'".format(item)
+                    debug.info(deleteQuery)
+                    deleted = db.execute(deleteQuery)
+                    if (deleted == 1):
+                        userInput = OrderedDict()
+                        userInput["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+                        userInput["location"] = item
+                        userInput["old_parent_location"] = "REPAIR"
+                        userInput["new_parent_location"] = location
+                        userInput["user"] = os.environ['USER']
+                        values = []
+                        for key in userInput.keys():
+                            values.append(userInput[key])
+                        columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'location_update_log' \
+                                        AND COLUMN_NAME NOT IN ('no')"
+                        column = db.execute(columnQuery, dictionary=True)
+                        self.theColumn = [x['COLUMN_NAME'] for x in column]
+                        updateLogQuery = "INSERT INTO location_update_log (" + ','.join(self.theColumn) + ") VALUES %r" % (tuple(values),)
+                        logUpdated = db.execute(updateLogQuery)
+                        if (logUpdated == 1):
+                            messageBox("Update Successful")
+                        else:
+                            messageBox("modify failed")
+                    else:
+                        messageBox("modify failed")
+                else:
+                    messageBox("modify Failed")
+
 
     def clearAll(self):
         self.ui.itemBox.setCurrentText(" ")
+        self.ui.itemReturnBox.setCurrentText(" ")
+        self.ui.moveToBox.setCurrentText(" ")
         self.ui.locationBox.clear()
         self.ui.symptomsBox.clear()
         self.submissionNone()
         self.expectedNone()
+        self.dateNone()
 
     def closeEvent(self):
         self.ui.close()

@@ -52,7 +52,7 @@ class manageItemsWidget():
     getDESC = "SELECT * FROM DESCRIPTION"
     getMK = "SELECT * FROM MAKE"
     getMDL = "SELECT * FROM MODEL"
-    getLOC = "SELECT location FROM LOCATION WHERE location NOT LIKE 'REPAIR' "
+    getLOC = "SELECT location FROM LOCATION"
     getUSR = "SELECT * FROM USER"
 
     sn = db.execute(getSN,dictionary=True)

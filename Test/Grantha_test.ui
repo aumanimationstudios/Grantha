@@ -28,13 +28,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="moreButton">
-        <property name="text">
-         <string>More</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -61,6 +54,9 @@
        <widget class="QRadioButton" name="serialNoButton">
         <property name="text">
          <string>Serial No</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -161,6 +157,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="repairButton">
+        <property name="text">
+         <string>REPAIR</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="logButton">
         <property name="text">
          <string>LOG</string>
@@ -255,7 +258,7 @@
         <bool>true</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>

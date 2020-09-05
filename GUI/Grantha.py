@@ -27,12 +27,14 @@ import datetime
 import json
 import re
 
+# Filepaths and directories
 filePath = os.path.abspath(__file__)
-# debug.info(filePath)
 projDir = os.sep.join(filePath.split(os.sep)[:-2])
 uiDir = os.path.join(projDir,"GUI","uiFiles")
 imageDir = os.path.join(projDir, "GUI","imageFiles")
 fileDir = os.path.join(projDir, "GUI")
+mapPath = os.path.join(imageDir, "map.svg")
+imagePicsDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
 
 sys.path.append(uiDir)
 sys.path.append(imageDir)
@@ -41,18 +43,15 @@ sys.path.append(fileDir)
 # Path of side panel button scripts
 Manage_Items = os.path.join(fileDir, "Manage_Items.py")
 Rfid_Tools = os.path.join(fileDir, "Rfid_Tools.py")
-# Update = "Update.py"
-# Update_Tag = "Update_Tag.py"
 Modify = os.path.join(fileDir, "Modify_Location.py")
 Repair = os.path.join(fileDir, "Repair.py")
 Log = os.path.join(fileDir, "Log.py")
-Find_Tag = os.path.join(fileDir, "Find_Tag.py")
+# Find_Tag = os.path.join(fileDir, "Find_Tag.py")
 
+# Constants an Variables
 user = os.environ['USER']
 context = zmq.Context()
 processes = []
-# tempDir = tempfile.gettempdir()
-mapPath = os.path.join(imageDir, "map.svg")
 
 authUsers = None
 LOCS = None
@@ -71,9 +70,6 @@ modelList = None
 sn = None
 blues = []
 
-imagePicsDir = "/blueprod/STOR2/stor2/grantha/share/pics/"
-# imageFormats = ("jpg", "png")
-
 os.environ['QT_LOGGING_RULES'] = "qt5ct.debug=false"
 
 hiddenColumns = ["serial_no","model","price","purchased_on","warranty_valid_till","user"]
@@ -86,38 +82,22 @@ class mainWindow():
     db = dbGrantha.dbGrantha()
 
     def __init__(self):
-        # super(myWindow, self).__init__()
 
+        global theColumn
 
         self.rfidMultiCount = 0
         self.rfidMultiUniqSlno = {}
+
+        # Load ui file and set icon and title
         self.ui = uic.loadUi(os.path.join(uiDir,"Grantha.ui"))
+        # self.ui = uic.loadUi(os.path.join(projDir,"Test","Grantha_test.ui"))
+        self.ui.setWindowTitle('GRANTHA')
+        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
 
         self.reloadVars()
         self.allBtnClick()
-        # self.ui.mainSplitter.setSizes([50, 50])
 
-        # lay = QtWidgets.QHBoxLayout()
-        # self.ui.moreButtFrame.setLayout(lay)
-        # horizontalSpacer = QtWidgets.QSpacerItem(400, 20)
-        # lay.addItem(horizontalSpacer)
-        #
-        # for header in theColumn:
-        #     butt = QtWidgets.QCheckBox(header)
-        #     butt.setText(header)
-        #     lay.addWidget(butt)
-        #     if header not in hiddenColumns:
-        #         butt.setChecked(True)
-        #     else:
-        #         butt.setChecked(False)
-        #     butt.pressed.connect(lambda butt=butt: self.showHideColumns(butt))
-        #     self.showHideColumnsInit(butt)
-        #
-        # lay.addItem(horizontalSpacer)
-        #
-        # self.ui.moreButtFrame.hide()
-
-
+        # Set filter checkboxes and their states
         layV = QtWidgets.QVBoxLayout()
         self.ui.filterFrame.setLayout(layV)
         filtLabel = QtWidgets.QLabel()
@@ -131,14 +111,11 @@ class mainWindow():
                 butt.setChecked(True)
             else:
                 butt.setChecked(False)
-            butt.pressed.connect(lambda butt=butt: self.showHideColumns(butt))
-            self.showHideColumnsInit(butt)
-        # verticalSpacer = QtWidgets.QSpacerItem(20, 600)
-        # layV.addItem(verticalSpacer)
+            butt.clicked.connect(lambda x, butt=butt: self.showHideColumns(butt))
+            self.showHideColumns(butt)
 
-
+        # Functions of ui button click
         self.ui.mapButton.clicked.connect(self.viewMap)
-        # self.ui.moreButton.clicked.connect(self.moreView)
         self.ui.allButton.clicked.connect(self.allBtnClick)
         self.ui.serialNoButton.clicked.connect(self.slNoBtnClick)
         self.ui.itemTypeButton.clicked.connect(self.itBtnClick)
@@ -149,11 +126,11 @@ class mainWindow():
 
         self.ui.comboBox.currentIndexChanged.connect(self.search)
 
+        self.ui.tableWidget.customContextMenuRequested.connect(self.ItemPopUp)
+
         if user in authUsers:
             self.ui.manageItemsButton.clicked.connect(self.manageItems)
             self.ui.rfidToolsButton.clicked.connect(self.rfidTools)
-            # self.ui.updateButton.clicked.connect(self.update)
-            # self.ui.updateTagButton.clicked.connect(self.updateTag)
             self.ui.modifyButton.clicked.connect(self.modify)
             self.ui.repairButton.clicked.connect(self.repair)
             self.ui.logButton.clicked.connect(self.log)
@@ -163,95 +140,65 @@ class mainWindow():
             self.ui.stopReadButton.setEnabled(False)
             self.ui.stopReadButton.clicked.connect(self.stopRead)
 
-        self.ui.setWindowTitle('GRANTHA')
-        self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
 
-        self.ui.tableWidget.customContextMenuRequested.connect(self.ItemPopUp)
+
+
         self.ui.tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-
-        # self.ui.tableWidget.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-
-        # self.ui.splitter.setStretchFactor(2,0.25)
-        # self.ui.splitter.setSizes([900, 50])
+        self.ui.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.ui.tableSplitter.setSizes([800, 50])
 
-        # self.ui.tableWidget.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        # header = self.ui.tableWidget.horizontalHeader()
-        # self.ui.tableWidget.setMaximumWidth(header.length())
-        # self.ui.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.ui.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-
-        # self.setMap()
         self.center()
         self.ui.showMaximized()
 
-        # setStyleSheet(self.ui)
+        # Set Stylesheet
         Themes = ["dark", "light", "default"]
         self.ui.themeBox.addItems(Themes)
         self.changeStyleSheet()
         self.ui.themeBox.currentIndexChanged.connect(self.changeStyleSheet)
 
     def changeStyleSheet(self):
+        '''
+        Sets Stylesheet to the ui
+        :return: theme
+        '''
         ui = self.ui
         theme = self.ui.themeBox.currentText().strip()
         setStyleSheet(ui, theme)
         os.environ['GRANTHA_THEME'] = theme
 
-    # def moreView(self):
-    #     # if self.ui.moreButtFrame.isHidden() == True:
-    #     #     self.ui.moreButtFrame.setHidden(False)
-    #     # else:
-    #     #     self.ui.moreButtFrame.setHidden(True)
-    #     pass
 
-    def showHideColumnsInit(self,butt):
+    def showHideColumns(self,butt):
+        '''
+        :param button:
+        :return true or false states of column corresponding to button:
+        '''
+        global theColumn
         if butt.isChecked() == True:
             buttText = butt.text()
             for x in range(0, len(theColumn)):
-                headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
-                # debug.info(headertext)
-                if headertext == buttText:
+                headerText = self.ui.tableWidget.horizontalHeaderItem(x).text()
+                if headerText == buttText:
                     self.ui.tableWidget.setColumnHidden(x, False)
             self.ui.tableWidget.resizeRowsToContents()
             self.ui.tableWidget.resizeColumnsToContents()
         else:
             buttText = butt.text()
             for x in range(0, len(theColumn)):
-                headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
-                # debug.info(headertext)
-                if headertext == buttText:
-                    self.ui.tableWidget.setColumnHidden(x, True)
-            self.ui.tableWidget.resizeRowsToContents()
-            self.ui.tableWidget.resizeColumnsToContents()
-
-    def showHideColumns(self,butt):
-        global theColumn
-        if butt.isChecked() == False:
-            buttText = butt.text()
-            for x in range(0, len(theColumn)):
-                headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
-                # debug.info(headertext)
-                if headertext == buttText:
-                    self.ui.tableWidget.setColumnHidden(x, False)
-            self.ui.tableWidget.resizeRowsToContents()
-            self.ui.tableWidget.resizeColumnsToContents()
-        else:
-            buttText = butt.text()
-            for x in range(0, len(theColumn)):
-                headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
-                # debug.info(headertext)
-                if headertext == buttText:
+                headerText = self.ui.tableWidget.horizontalHeaderItem(x).text()
+                if headerText == buttText:
                     self.ui.tableWidget.setColumnHidden(x, True)
             self.ui.tableWidget.resizeRowsToContents()
             self.ui.tableWidget.resizeColumnsToContents()
 
         if self.ui.locationButton.isChecked():
             self.search()
-        # header = self.ui.tableWidget.horizontalHeader()
-        # self.ui.tableWidget.setMaximumWidth(header.length())
 
 
     def reloadVars(self):
+        '''
+        Loads values of all variables needed
+        :return:
+        '''
         global authUsers
         global LOCS
         global locs
@@ -266,19 +213,15 @@ class mainWindow():
         global modelList
         global sn
         global blues
+
         # List Authorized users to access modify functions
         getAuthUsers = "SELECT * FROM AUTH_USERS"
         aU = self.db.execute(getAuthUsers, dictionary=True)
         authUsers = [x['auth_users'] for x in aU]
 
-        # getLOC = "SELECT location FROM LOCATION"
-        # loc = self.db.execute(getLOC, dictionary=True)
-        # LOC = [x['location'] for x in loc]
-
         queryCol = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ITEMS' AND COLUMN_NAME NOT IN ('item_id')"
         column = self.db.execute(queryCol, dictionary=True)
         theColumn = [x['COLUMN_NAME'] for x in column]
-
 
         completer = "SELECT * FROM ITEMS"
         theList = self.db.execute(completer, dictionary=True)
@@ -290,17 +233,8 @@ class mainWindow():
         makeList = list(set([x['make'] for x in theList]))
         modelList = list(set([x['model'] for x in theList]))
 
-        # getLocs = "SELECT location FROM LOCATION"
-        # locs = self.db.execute(getLocs, dictionary=True)
-        # locList = list(set([x['location'] for x in locs]))
-
         getSN = "SELECT * FROM SERIAL_NO"
         sn = self.db.execute(getSN, dictionary=True)
-        # slNoList = [x['serial_no'] for x in sn]
-        # getParentLocs = "SELECT parent_location FROM LOCATION "
-        # pL = self.db.execute(getParentLocs, dictionary=True)
-        # pLocs = list(set([x['parent_location'] for x in pL]))
-        # debug.info(pLL)
 
         getLOC = "SELECT * FROM LOCATION"
         LOCS = self.db.execute(getLOC, dictionary=True)
@@ -320,6 +254,10 @@ class mainWindow():
         # debug.info(blues)
 
     def loadMap(self):
+        '''
+        loads the location values to svg
+        :return:
+        '''
         global LOCS
         global locs
         global pLocs
@@ -330,11 +268,6 @@ class mainWindow():
         for t in name:
             id = str(t.attributes['id'].value)
             ids.append(id)
-
-        # getLOC = "SELECT * FROM LOCATION"
-        # LOC = self.db.execute(getLOC, dictionary=True)
-        # pLoc = [x['parent_location'] for x in LOC]
-        # loc = [x['location'] for x in LOC]
 
         for lc in locs:
             if lc in ids:
@@ -358,19 +291,11 @@ class mainWindow():
         f.write(doc.toxml())
         f.close()
 
-
-    # def setMap(self):
-    #     self.loadMap()
-    #     layout = QtWidgets.QVBoxLayout()
-    #     self.ui.frame.setLayout(layout)
-    #     for i in reversed(range(layout.count())):
-    #         layout.itemAt(i).widget().setParent(None)
-    #     imageThumbMap = ImageWidget(mapPath, 32)
-    #     # imageThumbMap.clicked.connect(lambda x, imagePath = mapPath: imageWidgetClicked(imagePath))
-    #     imageThumbMap.clicked.connect(self.showMap)
-    #     layout.addWidget(imageThumbMap)
-
     def viewMap(self):
+        '''
+        Loads map image from svg
+        :return:
+        '''
         self.reloadVars()
         self.loadMap()
         imageWidgetClicked(mapPath)
@@ -417,8 +342,6 @@ class mainWindow():
 
                             action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
 
-                            # if(selected):
-                            #     selectedText = str(self.ui.tableWidget.currentItem().text().strip())
                             try:
                                 if (action == viewParentAction):
                                     self.viewParent()
@@ -602,6 +525,12 @@ class mainWindow():
         self.ui.tableWidget.resizeRowsToContents()
         self.ui.tableWidget.resizeColumnsToContents()
         debug.info("Loaded list of all items.")
+
+        # image = "/home/sanath.shetty/loading01.gif"
+        # pixmap = QtGui.QMovie(image)
+        # self.ui.messages.setMovie(pixmap)
+        # pixmap.start()
+
         self.messages('white','Loaded list of all items')
         # self.ui.messages.setStyleSheet('color: white')
         # self.ui.messages.setText("Loaded list of all items.")
