@@ -42,8 +42,11 @@ db = dbGrantha.dbGrantha()
 slNos = []
 blues = []
 
+repairItems = None
+
 parser = argparse.ArgumentParser(description="Utility to repair items")
 parser.add_argument("-i","--item",dest="item",help="name of item")
+parser.add_argument("-n","--index",dest="index",help="index of tab")
 args = parser.parse_args()
 
 class repairWidget():
@@ -54,7 +57,7 @@ class repairWidget():
         # self.ui = uic.loadUi(os.path.join(uiDir,'Repair.ui'))
         self.ui = uic.loadUi(os.path.join(projDir,"Test","Repair_test.ui"))
 
-
+        self.ui.tabWidget.currentChanged.connect(self.tabChange)
         self.ui.itemBox.currentIndexChanged.connect(self.loadLocation)
         self.ui.submissionDateButton.clicked.connect(self.showSubmissionCal)
         self.ui.expectedDateButton.clicked.connect(self.showExpectedCal)
@@ -71,14 +74,30 @@ class repairWidget():
         self.ui.clearButton_modify.clicked.connect(self.clearAll)
         self.ui.saveButton_modify.clicked.connect(self.confirmationModify)
 
+        self.ui.repairsTable.customContextMenuRequested.connect(self.ItemPopUp)
 
         self.load()
         self.loadRepairs()
         self.loadModify()
+        self.ui.tabWidget.setCurrentIndex(1)
 
         if args.item:
             self.ui.itemBox.setEditText(str(args.item))
+            try:
+                if args.item in repairItems:
+                    self.ui.itemReturnBox.setEditText(args.item)
+                else:
+                    self.ui.itemReturnBox.setEditText("")
+            except:
+                pass
+
             self.loadLocation()
+
+        if args.index:
+            self.ui.tabWidget.setCurrentIndex(int(args.index))
+
+        # if args.index:
+        #     self.ui.tabWidget.setCurrentTab(2)
 
 
         self.ui.setWindowTitle('Repair')
@@ -95,9 +114,23 @@ class repairWidget():
         except:
             pass
 
+    def ItemPopUp(self):
+        debug.info("pop up!")
+
+    def tabChange(self):
+        index = self.ui.tabWidget.currentIndex()
+        currentTabText = self.ui.tabWidget.tabText(index)
+        debug.info(currentTabText)
+        if currentTabText == "Repairs":
+            header = self.ui.repairsTable.horizontalHeader()
+            self.ui.resize(header.length() + 45, 350)
+        else:
+            self.ui.resize(468, 350)
+
     def loadVars(self):
         global slNos
         global blues
+        global repairItems
 
         getSN = "SELECT * FROM SERIAL_NO"
         sn = db.execute(getSN, dictionary=True)
@@ -111,7 +144,7 @@ class repairWidget():
 
         for pl in pLocs:
             if pl != None:
-                debug.info(pl)
+                # debug.info(pl)
                 for x in LOCS:
                     if x['parent_location'] == pl:
                         bloc = x['location']
@@ -119,6 +152,12 @@ class repairWidget():
                         blues.append(bloc)
         blues = list(set(blues))
         blues.sort()
+
+        getRepairItems = "SELECT * FROM repairs"
+        REPAIR_ITEMS = db.execute(getRepairItems, dictionary=True)
+        if REPAIR_ITEMS == 0:
+            return
+        repairItems = [x['item'] for x in REPAIR_ITEMS]
 
     def load(self):
         # debug.info(slNos)
@@ -159,8 +198,8 @@ class repairWidget():
         self.ui.repairsTable.setColumnCount(len(theColumn))
         self.ui.repairsTable.setHorizontalHeaderLabels(theColumn)
 
-        query = "SELECT " + ','.join(theColumn) + " FROM 'repairs' "
-        query = query.replace("\'", "")
+        query = "SELECT " + ','.join(theColumn) + " FROM repairs "
+        # query = query.replace("\'", "")
         rows = db.execute(query, dictionary=True)
 
         if rows != 0:
@@ -367,7 +406,8 @@ class repairWidget():
 
                     log = OrderedDict()
 
-                    log["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+                    # log["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+                    log["date"] = str(self.ui.dateBox.text().strip())
                     log["serial_no"] = item
                     log["user"] = os.environ['USER']
                     log["action"] = "Update: location={0}".format(location)
@@ -404,15 +444,16 @@ class repairWidget():
                     debug.info(deleteQuery)
                     deleted = db.execute(deleteQuery)
                     if (deleted == 1):
-                        userInput = OrderedDict()
-                        userInput["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
-                        userInput["location"] = item
-                        userInput["old_parent_location"] = "REPAIR"
-                        userInput["new_parent_location"] = location
-                        userInput["user"] = os.environ['USER']
+                        log = OrderedDict()
+                        # userInput["date"] = time.strftime('%Y-%m-%d %H:%M:%S')
+                        log["date"] = str(self.ui.dateBox.text().strip())
+                        log["location"] = item
+                        log["old_parent_location"] = "REPAIR"
+                        log["new_parent_location"] = location
+                        log["user"] = os.environ['USER']
                         values = []
-                        for key in userInput.keys():
-                            values.append(userInput[key])
+                        for key in log.keys():
+                            values.append(log[key])
                         columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'location_update_log' \
                                         AND COLUMN_NAME NOT IN ('no')"
                         column = db.execute(columnQuery, dictionary=True)

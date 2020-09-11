@@ -70,6 +70,8 @@ modelList = None
 sn = None
 blues = []
 
+repairItmlist = None
+
 os.environ['QT_LOGGING_RULES'] = "qt5ct.debug=false"
 
 hiddenColumns = ["serial_no","model","price","purchased_on","warranty_valid_till","user"]
@@ -89,13 +91,14 @@ class mainWindow():
         self.rfidMultiUniqSlno = {}
 
         # Load ui file and set icon and title
-        self.ui = uic.loadUi(os.path.join(uiDir,"Grantha.ui"))
-        # self.ui = uic.loadUi(os.path.join(projDir,"Test","Grantha_test.ui"))
+        # self.ui = uic.loadUi(os.path.join(uiDir,"Grantha.ui"))
+        self.ui = uic.loadUi(os.path.join(projDir,"Test","Grantha_test.ui"))
         self.ui.setWindowTitle('GRANTHA')
         self.ui.setWindowIcon(QtGui.QIcon(os.path.join(imageDir, 'granthaLogo.png')))
 
         self.reloadVars()
         self.allBtnClick()
+        self.loadNotifications()
 
         # Set filter checkboxes and their states
         layV = QtWidgets.QVBoxLayout()
@@ -146,6 +149,7 @@ class mainWindow():
         self.ui.tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.ui.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.ui.tableSplitter.setSizes([800, 50])
+        self.ui.notificationSplitter.setSizes([800, 50])
 
         self.center()
         self.ui.showMaximized()
@@ -213,6 +217,9 @@ class mainWindow():
         global modelList
         global sn
         global blues
+        global repairItmlist
+
+        self.loadNotifications()
 
         # List Authorized users to access modify functions
         getAuthUsers = "SELECT * FROM AUTH_USERS"
@@ -243,15 +250,22 @@ class mainWindow():
 
         for pl in pLocs:
             if pl != None:
-                bloc = next(x['location'] for x in LOCS if x['parent_location'] == pl)
-                # for x in LOCS:
-                #     if x['parent_location'] == pl:
-                #         bloc = x['location']
-                blues.append(bloc)
+                # bloc = next(x['location'] for x in LOCS if x['parent_location'] == pl)
+                for x in LOCS:
+                    if x['parent_location'] == pl:
+                        bloc = x['location']
+                        blues.append(bloc)
         # debug.info(blues)
         blues = list(set(blues))
         blues.sort()
         # debug.info(blues)
+
+        getRepairItems = "SELECT * FROM repairs"
+        REP_ITEMS = self.db.execute(getRepairItems, dictionary=True)
+        if REP_ITEMS == 0:
+            pass
+        else:
+            repairItmlist = [x['item'] for x in REP_ITEMS]
 
     def loadMap(self):
         '''
@@ -300,8 +314,67 @@ class mainWindow():
         self.loadMap()
         imageWidgetClicked(mapPath)
 
+    def loadNotifications(self):
+        '''
+        Loads notifications to the ui
+        :return:
+        '''
+        # Get the Column names from repairs table
+        columnQuery = "SELECT (COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'repairs' AND \
+                       COLUMN_NAME NOT IN ('no')"
+        column = self.db.execute(columnQuery, dictionary=True)
+        theColumn = [x['COLUMN_NAME'] for x in column]
+
+        # Get all entries from the repairs table
+        query = "SELECT " + ','.join(theColumn) + " FROM repairs "
+        rows = self.db.execute(query, dictionary=True)
+
+        # List for storing all notifications
+        notifications = []
+
+        # For each row in the result from repairs table, prepare a notification string
+        for x in rows:
+            itemType = ""
+            item =(x['item'])
+            query = "SELECT item_type from ITEMS WHERE serial_no='{0}'".format(item)
+            res = self.db.execute(query,dictionary=True)
+            if res!=0:
+                itemType = (res[0]['item_type'])
+            symptom = (x['symptoms'])
+            repairer = (x['repairer'])
+            dueDate = str((x['expected_completion_date']).strftime("%a %b %d %Y"))
+            if itemType:
+                item = itemType+"("+item+")"
+            notification = item +" with "+ symptom +" at "+ repairer +" is due on "+ dueDate
+            debug.info(notification)
+            notifications.append(notification)
+
+        # Populate the ui with notifications
+        self.ui.listWidgetNotifications.clear()
+        for i in notifications:
+            item = QtWidgets.QListWidgetItem(i)
+            self.ui.listWidgetNotifications.addItem(item)
+
+
+    def repairPopUp(self,butt,buttText,pos):
+        debug.info("repair pop up")
+        debug.info(buttText)
+        menu = QtWidgets.QMenu()
+        theme = os.environ['GRANTHA_THEME']
+        setStyleSheet(menu, theme)
+
+        modifyRepairAction = menu.addAction("Modify Repair")
+
+        action = menu.exec_(butt.mapToGlobal(pos))
+
+        try:
+            if (action == modifyRepairAction):
+                self.repair(buttText, "2")
+        except:
+            debug.info(str(sys.exc_info()))
 
     def ItemPopUp(self,pos):
+        # debug.info("pop up!")
         '''
         The context menu for items on table.
         :param pos:
@@ -338,7 +411,10 @@ class mainWindow():
                             viewParentAction = menu.addAction("View Parent Location")
                             if user in authUsers:
                                 modifyLocationAction = menu.addAction("Modify Location")
-                                repairAction = menu.addAction("Repair")
+                                if selectedText in repairItmlist:
+                                    modifyRepairAction = menu.addAction("Modify Repair")
+                                else:
+                                    repairAction = menu.addAction("Repair")
 
                             action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
 
@@ -354,7 +430,13 @@ class mainWindow():
                                 pass
                             try:
                                 if (action == repairAction):
-                                    self.repair(selectedText)
+                                    self.repair(selectedText,"0")
+                            except:
+                                pass
+                            try:
+                                if (action == modifyRepairAction):
+                                    # debug.info("Modify Repair!!!")
+                                    self.repair(selectedText,"2")
                             except:
                                 pass
                         else:
@@ -382,7 +464,10 @@ class mainWindow():
                             self.messages('white','')
                             if user in authUsers:
                                 manageItemAction = menu.addAction("Manage Item")
-                                repairAction = menu.addAction("Repair")
+                                if selectedText in repairItmlist:
+                                    modifyRepairAction = menu.addAction("Modify Repair")
+                                else:
+                                    repairAction = menu.addAction("Repair")
                             action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
 
                             try:
@@ -392,7 +477,13 @@ class mainWindow():
                                 pass
                             try:
                                 if (action == repairAction):
-                                    self.repair(selectedText)
+                                    self.repair(selectedText,"0")
+                            except:
+                                pass
+                            try:
+                                if (action == modifyRepairAction):
+                                    # debug.info("Modify Repair!!!")
+                                    self.repair(selectedText,"2")
                             except:
                                 pass
                         else:
@@ -448,12 +539,6 @@ class mainWindow():
         self.ui.tableWidget.setColumnCount(len(theColumn))
         self.ui.tableWidget.setHorizontalHeaderLabels(theColumn)
 
-        # for x in range(0, len(theColumn)):
-        #     headertext = self.ui.tableWidget.horizontalHeaderItem(x).text()
-        #     debug.info(headertext)
-        #     if headertext in hiddenColumns:
-        #         self.ui.tableWidget.setColumnHidden(x, True)
-
         queryAll = "SELECT * FROM ITEMS ORDER BY item_type"
         theRows = self.db.execute(queryAll,dictionary=True)
         # debug.info(len(theRows))
@@ -471,26 +556,6 @@ class mainWindow():
                 col +=1
             row +=1
 
-        # numRows = self.ui.tableWidget.rowCount()
-        # paths = {}
-        # for row in range(numRows):
-        #     path = str(self.ui.tableWidget.item(row, 10).text())
-        #     paths[row]=path
-        #
-        # if paths:
-        #     for x in paths.keys():
-        #         if paths[x]:
-        #             # debug.info(paths[x])
-        #             self.ui.tableWidget.takeItem(x, 10)
-        #             slNo = self.ui.tableWidget.item(x, 0).text()
-        #             # imageThumb = ImageWidget(paths[x], 32)
-        #             imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
-        #             # imageThumb.clicked.connect(lambda x, imagePath=paths[x]: imageWidgetClicked(imagePath))
-        #             imageThumb.clicked.connect(lambda x, slNo=slNo, rowId=x: self.loadImageThumbs(slNo,rowId))
-        #             self.ui.tableWidget.setCellWidget(x, 10, imageThumb)
-        #         else:
-        #             pass
-
         numRows = self.ui.tableWidget.rowCount()
         debug.info(numRows)
         if numRows:
@@ -500,24 +565,10 @@ class mainWindow():
                     self.ui.tableWidget.takeItem(row, 10)
                     path = str(imgCell.text())
                     if path:
-                        # try:
-                        #     imageNames = json.loads(str(path).replace("\'", "\""))
-                        # except:
-                        #     debug.info(str(sys.exc_info()))
-                        # names = " , ".join(imageNames.keys())
-                        # slNo = self.ui.tableWidget.item(row, 0).text()
-                        # imageThumb = ImageWidget(path, 32)
+
                         imageButton = QtWidgets.QPushButton()
-                        # imageButton.setText(names)
                         imageButton.setText("Image")
-                        # imageButton.setIcon(QtGui.QIcon(os.path.join(imageDir, 'info-icon-1.png')))
-                        # imageButton.setToolTip(names)
-                        # imageThumb = ImageWidget(os.path.join(imageDir, "image.png"), 32)
-                        # # imageThumb.clicked.connect(lambda x, imagePath=path: imageWidgetClicked(imagePath))
-                        # imageThumb.clicked.connect(lambda x,path=path, rowId=row: self.loadImageThumbs(path, rowId))
-                        # index = QtCore.QPersistentModelIndex(self.ui.tableWidget.model().index(row, 10))
                         imageButton.clicked.connect(lambda x,path=path, button=imageButton: self.loadImageThumbs(path, button))
-                        # self.ui.tableWidget.setCellWidget(row, 10, imageThumb)
                         self.ui.tableWidget.setCellWidget(row, 10, imageButton)
 
 
@@ -585,40 +636,6 @@ class mainWindow():
             # self.ui.messages.setText("No images")
             self.messages('red','No images')
 
-        # slNoDir = imagePicsDir + slNo
-        # # formats = ("jpg", "png")
-        # images = []
-        # for format in imageFormats:
-        #     images.extend(glob.glob(slNoDir.rstrip(os.sep) + os.sep + "*.%s" % format))
-        # images.sort()
-        # debug.info(images)
-        # if images:
-        #     for i in images:
-        #         imageName = str(i)
-        #
-        #         imageThumb = ImageWidget(i, 64)
-        #         imageThumb.clicked.connect(lambda x, imagePath=imageName: imageWidgetClicked(imagePath))
-        #
-        #         label = QtWidgets.QLabel()
-        #
-        #         picName = imageName.split(os.sep)[-1:][0]
-        #         size = getFileSize(os.path.getsize(imageName))
-        #         # timeModified = str(time.ctime(os.path.getmtime(imageName)))
-        #         timeModified = datetime.datetime.fromtimestamp(os.path.getmtime(imageName)).strftime('%d-%m-%Y %H:%M:%S')
-        #
-        #         label.setText("Name: "+picName+"\n"+"Size: "+size+"\n"+"Modified: "+timeModified)
-        #
-        #         itemWidget = QtWidgets.QWidget()
-        #         hl = QtWidgets.QHBoxLayout()
-        #         itemWidget.setLayout(hl)
-        #         # hl.addWidget(checkbox)
-        #         hl.addWidget(imageThumb)
-        #         hl.addWidget(label)
-        #
-        #         item = QListWidgetItemSort()
-        #         item.setSizeHint(itemWidget.sizeHint() + QtCore.QSize(10, 10))
-        #         self.ui.listWidget.addItem(item)
-        #         self.ui.listWidget.setItemWidget(item,itemWidget)
 
     def search(self):
         global theColumn
@@ -716,14 +733,20 @@ class mainWindow():
 
                         self.butts["blueButt"+str(n)] = QtWidgets.QPushButton()
                         self.butts["blueButt"+str(n)].setText(bl)
+                        if (currTxt=="REPAIR"):
+                            # self.butts["blueButt"+str(n)].customContextMenuRequested.connect(self.repairPopUp)
+                            self.butts["blueButt" + str(n)].setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+                            butt = self.butts["blueButt" + str(n)]
+                            self.butts["blueButt" + str(n)].customContextMenuRequested.connect(lambda x, butt=butt, buttText=bl: self.repairPopUp(butt,buttText,x))
+                        # if (currTxt == "REPAIR"):
+                        #     menu = QtWidgets.QMenu()
+                        #     theme = os.environ['GRANTHA_THEME']
+                        #     setStyleSheet(menu, theme)
+                        #     modifyRepairAction = menu.addAction("Modify Repair")
+                        #     action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
+                        #     if (action == viewParentAction):
+                        #         self.viewParent()
 
-                        # debug.info(bpL)
-                        # blueBtn = QtWidgets.QPushButton()
-                        # blueBtn.setText(bl)
-                        # BL = str(blueBtn.text()).strip()
-                        # blueBtn.clicked.connect(lambda x, rows=rows: self.extraTable(BL))
-                        # butts["blueButt" + str(n)].clicked.connect(lambda x, rows=rows: self.extraTable(bl))
-                        # self.blueBtnNoPressed = 0
                         colIndex = 0
                         for x in range(0, len(theColumn)):
                             if self.ui.tableWidget.isColumnHidden(colIndex) == True:
@@ -988,7 +1011,7 @@ class mainWindow():
         else:
             p.start(sys.executable + " " + Modify)
 
-    def repair(self,item=""):
+    def repair(self,item="",index="1"):
         debug.info(item)
         debug.info("Opening Repair Menu")
         p = QProcess(parent=self.ui)
@@ -999,9 +1022,9 @@ class mainWindow():
         p.readyReadStandardError.connect(self.read_err)
         p.finished.connect(self.enableButtons)
         if item:
-            p.start(sys.executable + " " + Repair + " --item " + item)
+            p.start(sys.executable + " " + Repair + " --item " + item + " --index " + index)
         else:
-            p.start(sys.executable + " " + Repair)
+            p.start(sys.executable + " " + Repair + " --index " + index)
 
     def log(self):
         debug.info("Opening Logs")
