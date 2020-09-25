@@ -1,6 +1,7 @@
 #!/usr/bin/python2
 # *-* coding: utf-8 *-*
-# Code bytes taken from https://github.com/marcel-goldschen-ohm/PyQtImageViewer/blob/master/QtImageViewer.py
+
+### Code bytes taken from https://github.com/marcel-goldschen-ohm/PyQtImageViewer/blob/master/QtImageViewer.py ###
 
 __author__ = "Sanath Shetty K"
 __license__ = "GPL"

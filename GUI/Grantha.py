@@ -333,6 +333,9 @@ class mainWindow():
         notifications = []
 
         # For each row in the result from repairs table, prepare a notification string
+        currDate = time.strftime('%Y-%m-%d')
+        debug.info(currDate)
+
         for x in rows:
             itemType = ""
             item =(x['item'])
@@ -347,13 +350,45 @@ class mainWindow():
                 item = itemType+"("+item+")"
             notification = item +" with "+ symptom +" at "+ repairer +" is due on "+ dueDate
             debug.info(notification)
-            notifications.append(notification)
+
+            DueDate = str((x['expected_completion_date']).strftime('%Y-%m-%d'))
+            debug.info(DueDate)
+
+            label = QtWidgets.QLabel()
+            label.setWordWrap(True)
+            if currDate >= DueDate:
+                label.setStyleSheet("color: %s" % 'red')
+            label.setText(notification)
+
+            notifications.append(label)
 
         # Populate the ui with notifications
         self.ui.listWidgetNotifications.clear()
+        # self.ui.listWidgetNotifications.setStyleSheet("color: %s" % 'red')
         for i in notifications:
-            item = QtWidgets.QListWidgetItem(i)
+            # label = QtWidgets.QLabel()
+            # label.setWordWrap(True)
+            # label.setStyleSheet("color: %s" % 'red')
+            # picName = str(imPath.split(os.sep)[-1:][0])
+            # size = getFileSize(os.path.getsize(imPath))
+            # # timeModified = str(time.ctime(os.path.getmtime(imageName)))
+            # timeModified = datetime.datetime.fromtimestamp(os.path.getmtime(imPath)).strftime('%d-%m-%Y %H:%M:%S')
+
+            # label.setText(i)
+
+            itemWidget = QtWidgets.QWidget()
+            hl = QtWidgets.QHBoxLayout()
+            itemWidget.setLayout(hl)
+            # hl.addWidget(checkbox)
+            # hl.addWidget(imageThumb)
+            hl.addWidget(i)
+
+            item = QListWidgetItemSort()
+            item.setSizeHint(itemWidget.sizeHint() + QtCore.QSize(10, 10))
+            # self.ui.listWidget.addItem(item)
             self.ui.listWidgetNotifications.addItem(item)
+            self.ui.listWidgetNotifications.setItemWidget(item, itemWidget)
+            # item = QtWidgets.QListWidgetItem(i)
 
 
     def repairPopUp(self,butt,buttText,pos):
